@@ -306,3 +306,78 @@ tabulate = function(data){
 #curate(nodes, edges) %>% equate() %>% formulate() %>% calculate() %>% concentrate() %>% tabulate()
 
 
+## 1.3 Format a `tidygraph` object
+
+#Next, we can use the tidygraph package to bind these lists into a tidygraph format, good for visualization.
+
+library(tidyfault)
+library(tidyverse)
+library(tidygraph)
+library(ggraph)
+
+data("fakenodes")
+data("fakeedges")
+
+curate(fakenodes, fakeedges)
+
+# get the tidygraph of our rooted fault tree
+g = tbl_graph(
+  nodes = fakenodes, edges = fakeedges, 
+  directed = TRUE, node_key = "id")
+
+gi = g %>% 
+  ggraph(layout = "tree") %>%
+  with(data)
+
+ge = fakeedges %>%
+  # Join in coordinates for from id
+  left_join(by = c("from" = "id"), y = gi %>% select(id, from_x = x, from_y = y)) %>%
+  # Join in coordinates for to id
+  left_join(by = c("to" = "id"), y = gi %>% select(id, to_x = x, to_y = y))  %>%
+  # give each edge an id
+  mutate(edge_id = 1:n())  %>%
+
+  # For each edge,
+  group_by(edge_id) %>%
+  summarize(
+    # I'm stacking an identifier for direction atop each other
+    direction = c("from", "to"),
+    # I'm just stacking the from and to ids on top of each other, in that order
+    id = c(from, to),
+    # I'm also stacking the variables for x
+    x = c(from_x, to_x),
+    # and the variables for y
+    y = c(from_y, to_y))
+
+
+
+ggplot() +
+  geom_segment(data = ge, mapping = aes(x = from_x, y = from_y, xend = to_x, yend = to_y)) +
+  geom_point(data = gi, mapping = aes(x = x, y = y, color = type), size = 5) 
+
+ggplot() +
+  geom_line(data = ge, mapping = aes(x = x, y = y, group = edge_id)) +
+  geom_point(data = gi, mapping = aes(x = x, y = y, color = type), size = 5) 
+
+
+# Then, we can use the ggraph package to visualize a layout
+ggraph(g, layout = "tree") +
+  # draw edge links between nodes
+  geom_edge_link(color = "grey") +
+  # draw points for each node
+  geom_node_point(
+    # where the shape and color are derived from the node type
+    mapping = aes(shape = type, fill = type),
+    color = "darkgrey", size = 10) +
+  # and the label is derived from the 'event' name 
+  geom_node_text(mapping = aes(label = event)) +
+  # We can also assign shapes!
+  # (shapes 21, 22, 23, 24, and 25 have fill and color)
+  scale_shape_manual(values = c(22, 24, 25, 21)) +
+  # And assign some poppy colors here
+  scale_fill_manual(values = c("darkgrey", "cyan", "coral", "lightgrey")) +
+  # Finally, we can make a clean void theme, with the legend below.
+  theme_void(base_size = 14) +
+  theme(legend.position = "bottom")
+
+

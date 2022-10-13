@@ -5,7 +5,7 @@
 
 # Remove, Rinse, and Repeat
 detach("package:tidyfault", unload = TRUE)
-uninstall("tidyfault")
+devtools::uninstall("tidyfault")
 .rs.restartR()
 
 
@@ -49,13 +49,15 @@ library(devtools)
 install_github("timothyfraser/tidyfault")
 
 library(tidyfault)
+
+tidyfault()
 vignette("tidyfault")
 
 
 ##############
 # Trial Run
 #################
-data("starwars")
+#data("starwars")
 
 # Load dependencies
 library(tidyverse)
@@ -76,3 +78,8 @@ curate(
   concentrate() %>% 
   tabulate()
 
+gg = illustrate(nodes = fakenodes, edges = fakeedges, type = c("both"))
+
+gg$nodes %>% head()
+
+gg$edges %>% head()
