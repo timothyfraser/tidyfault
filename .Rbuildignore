@@ -1,0 +1,5 @@
+^tidyfault\.Rproj$
+^\.Rproj\.user$
+^tidyfault\.Rcheck$
+^tidyfault.*\.tar\.gz$
+^tidyfault.*\.tgz$
