@@ -62,7 +62,7 @@ vignette("tidyfault")
 # Load dependencies
 library(tidyverse)
 library(tidyfault)
-library(QCA)
+#library(QCA)
  
 # Load example data into our environment
 data("fakenodes")
@@ -86,6 +86,26 @@ ggplot() +
 gg$nodes %>% head()
 
 gg$edges %>% head()
+
+
+# Extract minimum cutset from fault tree data
+g = curate(
+  nodes = fakenodes, 
+  edges = fakeedges)
+
+f = g %>% 
+  equate() %>%
+  formulate()
+
+g %>% 
+  concentrate() %>%
+  tabulate(formula = f, method = "mocus")
+
+  calculate() %>%
+  concentrate() %>% 
+  tabulate()
+
+
 
 
 

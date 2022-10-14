@@ -46,7 +46,13 @@ concentrate = function(data, method = "mocus"){
       values = output %>% unlist() %>% unique() %>% sort() %>% paste(collapse = ", ")
       
       # Simplify the expression!
-      admisc::simplify(combos, snames = values) %>% as.vector() %>%
+      result = admisc::simplify(combos, snames = values) %>% as.vector() %>%
+        # split into separate strings any time we see a '+'
+        str_split(pattern = "[+]", simplify = FALSE) %>%
+        # trim white space
+        str_trim(side = "both") %>%
+        # and convert back to vector
+        unlist() %>%
         return()
       
   }else if(method == "CCubes"){
