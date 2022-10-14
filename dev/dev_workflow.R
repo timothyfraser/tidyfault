@@ -94,15 +94,9 @@ f = g %>%
   equate() %>%
   formulate()
 
-g %>% 
-  concentrate() 
-  tabulate(formula = f, method = "mocus")
-
-  calculate() %>%
-  concentrate() %>% 
-  tabulate()
-
-
+x = g %>% 
+  concentrate() %>%
+  tabulate(formula = f)
 
 
 

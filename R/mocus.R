@@ -103,7 +103,7 @@ mocus = function(data){
       remaining = sum( unlist(m) %in% data$gate )
       
       # Update the reader!
-      print(paste("remaining: ", remaining, sep = ""))
+      # print(paste("remaining: ", remaining, sep = ""))
       
       # If it contains any remaining gates, 
       # repeat the loop, looking at each item in k again
