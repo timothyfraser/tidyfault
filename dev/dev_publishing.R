@@ -7,3 +7,7 @@ library(tidyverse)
 library(devtools)
 library(roxygen2)
 library(usethis)
+
+document()
+library(credentials)
+set_github_pat()
