@@ -1,8 +1,9 @@
 #' concentrate() Function
 #'
-#' This function *concentrates* a `data.frame` of N possible combinations of input events in the graph (not counting gates or top events), by applying boolean minimalization to find the minimum cutsets in the fault tree. Uses the `QCA` package and the `"CCubes"` algorithm to perform boolean minimization.
+#' This function *concentrates* the boolean equation of a fault tree to find the minimum cutsets in the fault tree. Takes a data.frame outputted by the `curate()` function and applies the `mocus()` algorithm, or takes a data.frame outputted by the `calculate()` function and applies the QCA package's `"CCubes"` algorithm to perform boolean minimization.
 #' 
-#' @param data (Required) data.frame containing truth table of N possible combinations of input events (eg. `A`, `B`, `C`) as either failing (1) or not failing (0), and the corresponding `outcome` measured by `calculate()` showing overall system failure (1) or not (0). `outcome` must be the last column.
+#' @param data (Required) data.frame containing output from `curate()` function for the `"mocus"` algorithm. (Or output from `calculate()` for the `'CCubes' algorithm`.
+#' @param method (Optional) By default, runs `"mocus"` algorithm on output from `curate()` and simplifies to minimum cutsets. Alternatively, can run `"CCubes"` algorithm on the output from `calculate()` (but best on smaller datasets).
 #' @keywords minimalization qca minimum cutset fault tree
 #' @export
 #' @examples
@@ -18,19 +19,41 @@
 #' 
 #' # Extract minimum cutset from fault tree data
 #' curate(nodes = fakenodes, edges = fakeedges) %>%
-#'    equate() %>%
-#'    formulate() %>%
-#'    calculate() %>%
 #'    concentrate() %>% 
 #'    tabulate()
 
-concentrate = function(data){
+concentrate = function(data, method = "mocus"){
 
-  # Let's write a function to perfor boolean minimalization
+  # Let's write a function to simplify a boolean expression
   
   require(dplyr)
-  require(QCA)
+  require(admisc)
   
+  if(method == "mocus"){
+    # Taking an output from curate()
+    output = data %>%
+      # Run MOCUS algorithm
+      mocus()
+      
+      # Get list of outputted cutsets, formatted as boolean equation 
+      combos = output %>%
+        map(~paste(., collapse = " * ") %>% paste("(", ., ")", sep = "")) %>%
+        unlist() %>%
+        paste(., collapse = " + ")
+      
+      # Get the vector of events which will end up as prime implicants
+      # or parts of our minimum cutset
+      values = output %>% unlist() %>% unique() %>% sort() %>% paste(collapse = ", ")
+      
+      # Simplify the expression!
+      admisc::simplify(combos, snames = values) %>% as.vector() %>%
+        return()
+      
+  }else if(method == "CCubes"){
+    
+    require(QCA)
+    
+    # Taking an output from calculate()
   data %>%
     # Convert to matrix
     as.matrix() %>%
@@ -40,5 +63,5 @@ concentrate = function(data){
     # with the CCubes algorithm, to get the prime implicants!!!
     QCA::minimize("outcome", use.tilde = FALSE, method = "CCubes") %>%
     return()
-  
+  }
 }

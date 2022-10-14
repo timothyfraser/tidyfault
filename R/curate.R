@@ -36,7 +36,7 @@ curate = function(nodes, edges){
   # Take our list of nodes
   nodes %>%
     # Filter to just gates (meaning AND or OR operators)
-    filter(type %in% c("and", "or")) %>%
+    filter(type %in% c("top", "and", "or")) %>%
     # And join in the names of the nodes that connect 'to' each gate
     # (where gates are represented by 'id' in nodes dataset, 
     # and 'from' in edges dataset)
@@ -60,8 +60,18 @@ curate = function(nodes, edges){
     summarize(
       # the type of gate
       type = unique(type),
+      # Classify our gates into top event versus gate
+      class = case_when(
+        type == "top" ~ "top",
+        type %in% c("and", "or") ~ "gate"),
+      # Order as factor
+      class = factor(class, levels = c("top", "gate")),
+      # Count the number of events immediately following that gate
+      n = length(to_event),
       # concatenate together all the to_events, separated by a "|" symbol
-      set = paste(to_event, collapse = "|")) %>%
+      set = paste(to_event, collapse = "|"),
+      # Also contain the events in a list item
+      items = list(to_event)) %>%
     # Let's adjust our nomenclature a bit,
     # clarifying based on the gate 'type' whether that "|" signifies 
     # an AND relationship or an OR relationship 
@@ -75,15 +85,19 @@ curate = function(nodes, edges){
       type == "or" ~ set %>% 
         # Replace the "|" divider with an addition sign
         str_replace_all(pattern = "[|]", replacement = " + "),
-      # If the gate is not a gate (this should't happen)
+      # If the node is the top event, it will only have ONE node linked, 
+      # G1, the first gate, so we can leave it as is.
+      type == "top" ~ set,
+      # If the gate is not a gate (this shouldn't happen)
       # Just keep it as is
-      type == "not" ~ set,
-      type == "top" ~ set),
+      type == "not" ~ set),
       # Finally, let's bind them together between parentheses,
       # So as to respect order of operations
       set = paste(" (", set, ") ", sep = "")) %>%
+    # Sort so that the top event comes first, followed by the gates
+    arrange(class, gate) %>%
+    ungroup() %>%
     # Return the result
     return()
   
 }
-

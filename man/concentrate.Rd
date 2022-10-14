@@ -4,13 +4,15 @@
 \alias{concentrate}
 \title{concentrate() Function}
 \usage{
-concentrate(data)
+concentrate(data, method = "mocus")
 }
 \arguments{
-\item{data}{(Required) data.frame containing truth table of N possible combinations of input events (eg. \code{A}, \code{B}, \code{C}) as either failing (1) or not failing (0), and the corresponding \code{outcome} measured by \code{calculate()} showing overall system failure (1) or not (0). \code{outcome} must be the last column.}
+\item{data}{(Required) data.frame containing output from \code{curate()} function for the \code{"mocus"} algorithm. (Or output from \code{calculate()} for the \verb{'CCubes' algorithm}.}
+
+\item{method}{(Optional) By default, runs \code{"mocus"} algorithm on output from \code{curate()} and simplifies to minimum cutsets. Alternatively, can run \code{"CCubes"} algorithm on the output from \code{calculate()} (but best on smaller datasets).}
 }
 \description{
-This function \emph{concentrates} a \code{data.frame} of N possible combinations of input events in the graph (not counting gates or top events), by applying boolean minimalization to find the minimum cutsets in the fault tree. Uses the \code{QCA} package and the \code{"CCubes"} algorithm to perform boolean minimization.
+This function \emph{concentrates} the boolean equation of a fault tree to find the minimum cutsets in the fault tree. Takes a data.frame outputted by the \code{curate()} function and applies the \code{mocus()} algorithm, or takes a data.frame outputted by the \code{calculate()} function and applies the QCA package's \code{"CCubes"} algorithm to perform boolean minimization.
 }
 \examples{
 
@@ -25,9 +27,6 @@ data("fakeedges")
 
 # Extract minimum cutset from fault tree data
 curate(nodes = fakenodes, edges = fakeedges) \%>\%
-   equate() \%>\%
-   formulate() \%>\%
-   calculate() \%>\%
    concentrate() \%>\% 
    tabulate()
 }

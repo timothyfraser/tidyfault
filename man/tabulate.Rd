@@ -4,10 +4,12 @@
 \alias{tabulate}
 \title{tabulate() Function}
 \usage{
-tabulate(data)
+tabulate(data, formula, method = "mocus")
 }
 \arguments{
 \item{data}{(Required) output from \code{concentrate()} function; a \code{QCA} object representing the boolean minimalization of the truth table of all possible sets. Used to find the \code{mincut} sets.}
+
+\item{formula}{(Required) output from \code{formulate()} function.}
 }
 \description{
 This function \emph{tabulates} a \code{data.frame} of \code{N} minimum cutsets in your fault tree, describing each \code{mincut} set, a \code{query} used to filter a table of all sets, the number of \code{cutsets} that include that \code{mincut}, the total number of cutsets leading to \code{failure}, and the \code{coverage} (percentage of \code{cutsets} covered out of total failures) for that \code{mincut}.

@@ -3,6 +3,7 @@
 #' This function *tabulates* a `data.frame` of `N` minimum cutsets in your fault tree, describing each `mincut` set, a `query` used to filter a table of all sets, the number of `cutsets` that include that `mincut`, the total number of cutsets leading to `failure`, and the `coverage` (percentage of `cutsets` covered out of total failures) for that `mincut`.
 #'
 #' @param data (Required) output from `concentrate()` function; a `QCA` object representing the boolean minimalization of the truth table of all possible sets. Used to find the `mincut` sets.
+#' @param formula (Required) output from `formulate()` function.
 #' @keywords minimum cutset
 #' @export
 #' @examples 
@@ -24,15 +25,28 @@
 #'    concentrate() %>% 
 #'    tabulate()
 
-tabulate = function(data){
+tabulate = function(data, formula, method = "mocus"){
   
   require(dplyr)
   require(tibble)
   require(stringr)
-  require(QCA)
   
-  # Extract the truth table from the boolean minimalization solution object
-  tab = data$tt$tt %>% select(1:OUT) %>% rename(outcome = OUT)
+  if(method == "mocus"){
+    # Extract the truth table from our formula
+    tab = formula %>%
+      calculate() %>%
+      select(1:outcome)
+    
+  }else if(method == "CCubes"){
+    require(QCA)
+    
+    # Extract the truth table from the boolean minimalization solution object
+    tab = data$tt$tt %>% select(1:OUT) %>% rename(outcome = OUT)
+    
+    # Convert from QCA format
+    data = data %>%
+      with(essential)
+  }
   
   # Extract the solution set as a tibble(),
   # where each column shows one solution, 
@@ -40,7 +54,6 @@ tabulate = function(data){
   # in that vector named for the solution 
   # (eg. solution M1 gets its own column)
   data %>%
-    with(essential) %>%
     tibble(mincut = .) %>%
     # For each minimum cutset,
     group_by(mincut) %>%
