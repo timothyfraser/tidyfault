@@ -49,10 +49,10 @@ concentrate = function(data, method = "mocus"){
       result = admisc::simplify(combos, snames = values) %>% as.vector() %>%
         # split into separate strings any time we see a '+'
         str_split(pattern = "[+]", simplify = FALSE) %>%
-        # trim white space
-        str_trim(side = "both") %>%
         # and convert back to vector
         unlist() %>%
+        # trim white space
+        str_trim(side = "both") %>%
         return()
       
   }else if(method == "CCubes"){

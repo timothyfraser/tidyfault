@@ -50,9 +50,6 @@ install_github("timothyfraser/tidyfault")
 
 library(tidyfault)
 
-tidyfault()
-vignette("tidyfault")
-
 
 ##############
 # Trial Run
@@ -98,7 +95,7 @@ f = g %>%
   formulate()
 
 g %>% 
-  concentrate() %>%
+  concentrate() 
   tabulate(formula = f, method = "mocus")
 
   calculate() %>%
