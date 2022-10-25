@@ -1,0 +1,496 @@
+---
+title: "Building a `ggplot` extension for the `tidyfault` package"
+author: "Tim Fraser"
+date: sys.Date()
+output: 
+  rmdformats::downcute:
+    toc_depth: 3
+    use_bookdown: TRUE
+    default_style: "dark" 
+    downcute_theme: "chaos"
+---
+
+```{r setup, include = FALSE, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(rmdformats)
+library(knitr)
+library(ggplot2)
+library(magick)
+```
+
+# Introduction
+
+Ever since releasing the `tidyfault` package, which allows us to do quick and easy analysis and visualization of probabilistic fault trees, I've wondered - how can I get the cool symbols most commonly used in fault tree visualizations to show up in `ggplot`? I'm not exactly new to `ggplot` at this point, and I frequently use different shape arguments or port in `svg` images using `ggimage` and `ggtext`. But these methods require users to have a high level of `R` fluency, and I wanted something that would be good for beginner-to-intermediate `R` coders learning fault trees in a class. So I wondered: **what if we could create a `geom_gate()` function?**
+
+This guide below details the steps in my process, in the hope that it might help others seeking to create their own custom visualization tools in `ggplot`-compatible packages.
+
+## Packages
+
+To get started, we'll need to load the following packages:
+
+```{r}
+library(tidyverse)
+```
+
+# Understanding `ggplot`
+
+## Key Guides
+
+The team behind [`ggplot2`](https://ggplot2.tidyverse.org/) has an extensive vignette on ["Extending `ggplot2`"](https://ggplot2.tidyverse.org/articles/extending-ggplot2.html), which I highly recommend. It's not for the faint of heart - you'll need to know a lot about `ggplot2` and making `R` functions to get started. But, it provides some managable starter examples to help you think through creating a new `geom_` function.
+
+## What's in a `ggplot`?
+
+The function we're going to be making is a `geom_gate()` function, which will be a simple `geom_point()` function that plots some irregular polygons centered on points.
+
+So it would probably help us to know what's *in* a `ggplot` to start! Let's use the `mtcars` dataset.
+
+All plots are built on top of a `ggplot()` base function, which creates an object with classes `gg` and `ggplot`. We can examine its structure with the `str()`, which tends to be overwhelming, but reveals that in essense, the object is a `list()` of 9 objects.
+
+```{r}
+ggplot() %>% str() 
+```
+We can get a better sense just from looking at the `names` of the items within this object.
+
+```{r}
+ggplot() %>% names()
+```
+
+Let's make an example plot, `g`.
+
+```{r}
+g = mtcars %>%
+  ggplot(mapping = aes(x = hp, y = mpg)) +
+  geom_point()
+```
+
+`g$data` now contains the data we supply the plot in the `data` argument.
+
+```{r}
+g$data %>% head(2)
+```
+
+But if we construct many different layers, like `geom_point()` and `geom_line()`, relying on potentially different data inputs, then that `g$data` object becomes just a waiver, and the data gets stored elsewhere instead.
+
+```{r}
+# Let's overwrite with a more flexible version
+g = ggplot() + 
+  geom_point(data = mtcars, mapping = aes(x = hp, y = mpg)) +
+  geom_line(data = mtcars, mapping = aes(x = hp, y = mpg))
+# Check its contents.
+g$data
+```
+
+`g$layers` is a `list()` of many composite functions, containing `ggproto` objects.
+
+```{r}
+# View all layers
+g$layers
+# Investigate one
+g$layers[[1]] %>% class()
+```
+These represent the main things we need to know if we're going to build a `geom_` function on top of the existing `ggplot` package, without changing any of the core functionality of `ggplot`.
+
+
+## make a `ggproto()`
+
+So what is this `ggproto()` object? I'm going to gently reuse and adapt the content on the ["Extending `ggplot`"](https://ggplot2.tidyverse.org/articles/extending-ggplot2.html) tutorial, purely as a way for me to think through what's happening here. Please definitely check out the original vignettes on their [**package website**](https://ggplot2.tidyverse.org).
+
+
+Let's create a `ggproto()` object. It's a [`prototype`](https://adv-r.hadley.nz/oo.html#:~:text=An%20OOP%20system%20makes%20it,class%20is%20called%20a%20method.), technically an `Environment`, a virtual space containing a bunch of objects, variables, and functions. We've named this `ggproto()` environment `adder`.
+
+```{r}
+adder = ggproto(
+  # Give the object a name
+  `_class` = "A", 
+  # Inherit any previous information (eg. data) from the preceding function
+  `_inherit` = NULL,
+  # x is an object to test
+  x = 1,
+  # A list of members (??), which appear to be functions
+  # Make a function, plusone, which takes a list self
+  plusone = function(self) {
+    # finds the x object within that list/data.frame,
+    # and does something to do, permanently updating it
+    # in this case, we add 1 to x
+    self$x <- self$x + 1
+  }
+)
+# Let's view our function
+adder
+```
+We can access this `ggproto()`'s contents `x` any time:
+```{r}
+adder$x
+```
+
+And we can run our function `plusone()` within that environment...
+ 
+```{r}
+adder$plusone()
+```
+
+Whatever `function` got run above in the `adder` environment *permanently* changed the `x` object that was also in the `adder` environment. (This is different from how functions work in the global `R` environment, where any changes they make are usually only temporary within the function itself, and the only thing that actually changes at the end is that we receive an output. Not so with `ggproto` objects.)
+
+```{r}
+adder$x
+```
+
+## make a `layer()`
+
+Next, they instruct us to make a `ggproto` environment, which will 
+
+Then, we're going to embed that environment as the `geom` argument within a `function` we name `geom_something()`. That `function` will internally call the `layer()` function from `ggplot`. A `layer()` is a combination of `data`, `stat`, and `geom`, generally, and is the core part of any `geom_something()` function.
+
+For example, `geom_point()`, it turns out, is a shortcut for `layer()`. See the following example, borrowed from the documentation of `?layer()`!
+
+```{r}
+mtcars %>%
+  ggplot(mapping = aes(x = hp, y = mpg)) +
+  # Everything that follows is just the same as a `geom_point()!
+  layer(
+    geom = "point", stat = "identity", position = "identity",
+    params = list(na.rm = FALSE)
+  )
+```
+
+## Points
+
+For example, let's write a custom `ggproto` environment called `GeomBigSquare` that we'll use to visualize really big squares.
+
+```{r}
+GeomBigSquare <- ggproto(
+  # Give this object a class named GeomBigSquare
+  `_class` = "GeomBigSquare", 
+  # Use the functionality from the Geom toolkit in ggplot2
+  `_inherit` = ggplot2::Geom,
+  # Require an x and y input
+  required_aes = c("x", "y"),
+  # set these default aes values, which gets sent to coord
+  default_aes = aes(shape = 22, size = 20, fill = "steelblue", colour = "white"),
+  
+  # Draw the point that gets shown in the legend
+  draw_key = draw_key_point,
+  
+  # Write a function that will take the ENTIRE dataframe `data`
+  # and associated panel parameters and coordinates
+  # and then draw 1 grid Grob
+  draw_panel = function(data, panel_params, coord) {
+    # Transform the data and extra panel parameters into 
+    # just one dataset of coordinates
+    coords <- coord$transform(data, panel_params)
+    # then plot those coordinates and related attributes
+    grid::pointsGrob(
+      x = coords$x, 
+      y = coords$y,
+      pch = coords$shape,
+      size = unit(coords$size, units = "pt"), 
+    # gpar() is where the magic happens
+    gp = grid::gpar(col = coords$colour, fill = coords$fill) ) }
+)
+
+# Then, we'll write the actual geom_function, which is just a wrapper around the layer() argument.
+geom_big_square <- function(mapping = NULL, data = NULL, stat = "identity",
+                              position = "identity", na.rm = FALSE, show.legend = NA, 
+                              inherit.aes = TRUE, ...) {
+  layer(
+    geom = GeomBigSquare, mapping = mapping,  data = data, stat = stat, 
+    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+    params = list(na.rm = na.rm, ...)
+  )
+}
+```
+
+Let's try it out!
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_big_square()
+```
+
+<br>
+<br>
+
+## Polygons
+
+Many `geom_something()` layers are really polygons, though. So how do we make these?
+
+```{r}
+StatBox <- ggproto(
+  `_class` = "StatBox", Stat,
+  compute_group = function(data, scales){
+    xmin = min(data$x, na.rm = TRUE)
+    xmax = max(data$x, na.rm = TRUE)
+    ymin = min(data$y, na.rm = TRUE)
+    ymax = max(data$y, na.rm = TRUE)
+    
+    tribble(
+      ~group, ~side,  ~x,   ~y,
+      1,      "from", xmin, ymin,
+      1,      "to",   xmin, ymax,
+      2,      "from", xmin, ymax,
+      2,      "to",   xmax, ymax,
+      3,      "from", xmax, ymax,
+      3,      "to",   xmax, ymin,
+      4,      "from", xmax, ymin,
+      4,      "to",   xmin, ymin) },
+  required_aes = c("x", "y")
+)
+
+stat_box <- function(mapping = NULL, data = NULL, geom = "line",
+                       position = "identity", na.rm = FALSE, show.legend = NA, 
+                       inherit.aes = TRUE, ...) {
+  layer(
+    stat = StatBox, data = data, mapping = mapping, geom = geom, 
+    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+    params = list(na.rm = na.rm, ...)
+  )
+}
+
+mtcars %>%
+  ggplot(mapping = aes(x = hp, y = mpg)) +
+  geom_big_square() +
+  stat_box()
+```
+
+But what if we want to make that into a polygon instead? Let's try!
+
+```{r}
+
+GeomBox <- ggproto(
+  `_class` = "GeomBox", 
+  `_inherit` = GeomPolygon,
+  default_aes = aes(colour = "black", fill = "blue", size = 0.5, linetype = 1,
+                    alpha = NA)
+)
+
+# Make the overall geom_ layer
+geom_box <- function(mapping = NULL, data = NULL,
+                                position = "identity", na.rm = FALSE, show.legend = NA, 
+                                inherit.aes = TRUE, ...) {
+  layer(
+    geom = GeomBox, mapping = mapping, data = data, stat = StatBox, 
+    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+    params = list(na.rm = na.rm, ...)
+  )
+}
+
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() +
+  geom_box() 
+```
+
+
+# Designing the function
+
+So now, let's get started! For any `c(x,y)` pair, I need to generate the required symbol polygon. To do so, I'll need:
+
+1. a `stat_gate()` function, containing a `compute_group()` function.
+
+2. a `geom_gate()` function, which visualizes those polygons.
+
+3. a `draw_group()` function, which literally makes the grobs for the polygons using a series of x,y coordinates and any other attributes.
+
+Let's start by getting the data behind the symbols.
+
+
+```{r}
+
+StatGate <- ggproto(
+  `_class` = "StatGate", Stat,
+  # Let's write a compute_group function for visualizing the gates
+  compute_group = function(data){
+    
+    # Based on the range of the data,
+    # estimate k, a scaling factor for the gates
+    #xrange = data$x %>% range(na.rm = TRUE) %>% diff() %>% abs()
+    #yrange = data$y %>% range(na.rm = TRUE) %>% diff() %>% abs()
+    #k = mean(c(xrange, yrange) / 15)
+    
+    data %>%
+      filter(gate %in% c("and", "or", "top")) %>%
+      # create a subgroup id
+      group_by(group = 1:n()) %>%
+      # and for each, get the coordinates for a gate
+      summarize(
+        get_gate(x,y,gate = gate, size = 3, res = 100)
+      ) %>%
+      return()
+  },
+  required_aes = c("x", "y", "gate")
+)
+
+
+
+geom_gate <- function(mapping = NULL, data = NULL, geom = "polygon",
+                       position = "identity", na.rm = FALSE, show.legend = NA, 
+                       inherit.aes = TRUE, ...) {
+  layer(
+    stat = StatGate, data = data, mapping = mapping, geom = geom, 
+    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+    params = list(na.rm = na.rm, ...)
+  )
+}
+
+```
+
+## Example Gate Maker
+
+```{r}
+# Let's write a function for making an or gate
+gate_or = function(size, res){
+  
+  xmid = size/2
+  
+  bind_rows(
+    # Draw something
+    dplyr::tibble(
+      x = seq(from = 0, to = size, length.out = res),
+      y = dplyr::case_when(
+        # On left side,
+        x < xmid ~ 1/(size)*sqrt(x) * 2/3,
+        # On right side...
+        x >= xmid ~ 1/(size)*sqrt(size - x)*2/3 )),
+    dplyr::tibble(
+      x = seq(from = size, to = 0, length.out = res),
+      y = dplyr::case_when(
+        # On left side,
+        x < xmid ~  size*sqrt(x) * 2/3,
+        # On right side...
+        x >= xmid ~ size*sqrt(size - x) * 2/3))
+  ) %>%
+    # Offset, so middle is center
+    mutate(x = x - xmid,
+           y = y - max(y, na.rm = TRUE) / 2)
+}
+
+# Let's write a function for making an and gate
+gate_and = function(size, res){
+  
+  xmid = size/2
+  
+  bind_rows(
+    # Draw something
+    dplyr::tibble(
+      x = seq(from = 0, to = size, length.out = 1),
+      y = 0),
+    dplyr::tibble(
+      x = seq(from = size, to = 0, length.out = res),
+      y = dplyr::case_when(
+        # On left side,
+        x < xmid ~  size*sqrt(x) * 2/3,
+        # On right side...
+        x >= xmid ~ size*sqrt(size - x) * 2/3 ))
+  ) %>%
+    mutate(x = x - xmid,
+           y = y - max(y, na.rm = TRUE) / 2)
+}
+
+gate_top = function(size, res){
+  
+  dplyr::tibble(
+    xmin = 0,
+    xmax = size,
+    ymin = 0,
+    ymax = size
+  ) %>%
+    with(
+      tribble(
+         ~x,   ~y,
+        xmin, ymin,
+        xmin, ymax,
+        xmin, ymax,
+        xmax, ymax,
+        xmax, ymax,
+        xmax, ymin,
+        xmax, ymin,
+        xmin, ymin)
+    ) %>%
+    mutate(x = x - size/2,
+           y = y - size/2) %>%
+    dplyr::select(x, y)
+}
+
+gate_not = function(size, res){
+  
+  xmid = size/2
+  circle = function(x, r = size){ y = sqrt(r^2 - x^2); return(y) }
+  
+  bind_rows(
+    # Top half of circle
+    tibble(x = seq(from = -size, to = size, length.out = res),
+           y = circle(x, r = xmid)),
+    # Bottom half!
+    tibble(x = seq(from = size, to = -size, length.out = res),
+           y = -circle(x, r = xmid))
+  ) %>%
+    mutate(x = x - xmid,
+           y = y - max(y, na.rm = TRUE) / 2) 
+}
+
+gate_or(size = 2, res= 50) %>% summary()
+gate_and(size = 2, res= 50) %>% summary()
+
+gate_not(size = 2, res= 50) %>% summary()
+gate_top(size = 2, res= 50) %>% summary()
+
+```
+
+
+```{r}
+
+get_gate = function(x,y, gate, size = 1, res = 50){
+  # Let's make a wrapper function for rendering any gate
+  # Get the first gate in your group
+  # Your group should have only one gate in it
+  gate = unique(gate)[1]
+  
+  if(gate == "or"){
+    g = gate_or(res = res)
+  }
+  
+  if(gate == "and"){
+    g = gate_and(res = res)
+  }
+  
+  if(gate == "top"){
+    g = gate_top(res = res)
+  }
+  if(!gate %in% c("top", "and", "or")){
+    next()
+  }
+  # Adjust shape to match point coordinates
+  tibble(
+    x = x + scales::rescale(g$x, to = c(-size, size)),
+    y = y + scales::rescale(g$y, to = c(-size, size))) %>%
+    return()
+}
+gate = function(data, group = "id", gate = "type", size = 2, res = 50){
+  data %>%
+    rename(group = !!sym(group), gate = !!sym(gate)) %>%
+    filter(gate %in% c("and", "or", "top")) %>%
+    group_by(group, gate) %>%
+    summarize(get_gate(x,y, gate = gate, size = size, res = res))
+}
+```
+
+
+```{r}
+library(tidyfault)
+data("fakeedges")
+data("fakenodes")
+
+gg = illustrate(fakenodes, fakeedges, type = "both", size = 0.25)
+
+
+gg$nodes %>% gate(group = "id", gate = "type")
+
+ggplot() +
+  geom_line(data = gg$edges, mapping = aes(x = x, y = y, group = edge_id)) +
+  geom_point(data = gg$nodes, mapping = aes(x = x, y = y, fill = type), shape = 21, size = 8) +
+  geom_polygon(data = gg$gates, 
+            mapping = aes(x = x, y = y, gate = gate, group = group, fill = gate),  
+            color = "grey") +
+  coord_fixed(ratio = 1) +
+  geom_text(data = gg$nodes, mapping = aes(x = x, y = y, label = event), color = "white")
+```

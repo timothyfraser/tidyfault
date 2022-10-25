@@ -9,7 +9,9 @@ illustrate(
   edges,
   type = c("nodes", "edges", "both", "all"),
   node_key = "id",
-  layout = "tree"
+  layout = "tree",
+  size = 1,
+  res = 50
 )
 }
 \arguments{
@@ -22,6 +24,10 @@ illustrate(
 \item{node_key}{(Optional) By default, \code{node_key} = \verb{"id'} from \code{nodes}}
 
 \item{layout}{(Optional) By default, network layout is \code{"tree"}. \code{"dendrogram"} also works pretty well. See \code{ggraph} package for more layout options.}
+
+\item{size}{(Optional) Passed to \code{gate()} function for constructing polygons. Defaults to size = 1.}
+
+\item{res}{(Optional) Passed to \code{gate()} function for constructing polygons. Defaults to res = 50.}
 }
 \description{
 This function takes a dataset of nodes and edges dataset from a fault tree, calculate a \strong{tree} layout using \code{tidygraph} and \code{ggraph}, and then outputs ggplot-friendly data.frames of nodes and edges.

@@ -7,10 +7,12 @@
 #' @param type (Optional) By default, returns `"both"` the `"nodes"` and `"edges"` as items in a list. Alternatively, you can select just `"nodes"`, `"edges"`, or `"all"` to receive other formats of outputs.
 #' @param node_key (Optional) By default, `node_key` = `"id'` from `nodes`
 #' @param layout (Optional) By default, network layout is `"tree"`. `"dendrogram"` also works pretty well. See `ggraph` package for more layout options.
+#' @param size (Optional) Passed to `gate()` function for constructing polygons. Defaults to size = 0.25.
+#' @param res (Optional) Passed to `gate()` function for constructing polygons. Defaults to res = 50.
 #' @keywords ggplot visualize network
 #' @export
 
-illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), node_key = "id", layout = "tree"){
+illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), node_key = "id", layout = "tree", size = 0.25, res = 50){
   
   require(dplyr)
   require(tidygraph)
@@ -56,6 +58,10 @@ illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), n
         # and the variables for y
         y = c(from_y, to_y))
 
+    # Extract the gate polygons for this network
+    ggates = gnodes %>%
+      gate(group = "id", gate = "type", size = size, res = res)
+    
     # If the user requests edges
     if(type == "edges"){
       return(gedges)
@@ -63,14 +69,14 @@ illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), n
       # alternatively, if the use requests BOTH
     }else if(type == "both"){
       # Bind the nodes and edges together as a list and return them!
-      list(gnodes, gedges) %>% 
-        set_names(nm = c("nodes", "edges")) %>%
+      list(gnodes, gedges, ggates) %>% 
+        set_names(nm = c("nodes", "edges", "gates")) %>%
         return()
     }else if(type == "all"){
       # Alternatively, if you select "all"
       # then return every version of the data
-      list(gnodes, gedges, gpairs) %>% 
-        setnames(nm = c("nodes", "edges", "pairwise")) %>%
+      list(gnodes, gedges, ggates, gpairs) %>% 
+        setnames(nm = c("nodes", "edges", "pairwise", "gates")) %>%
         return()
     }
   }
