@@ -2,7 +2,7 @@
 
 ## R Package for tidy *Fault Tree Analysis* (FTA)! 
 
-Uses `tidyverse`, `tidygraph`, and `QCA` packages, among others, to visualize fault trees, identify minimal cutsets, and other quantities of interest.
+Uses `tidyverse`, `tidygraph`, and `QCA` packages, among others, to visualize fault trees, identify minimal cutsets, and other quantities of interest. 
 
 ## Basic Usage
 
