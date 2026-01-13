@@ -44,11 +44,16 @@ illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), n
   require(tidygraph)
   require(ggraph)
   
+  # Match type argument
+  type = match.arg(type)
+  
   # get the tidygraph of our rooted fault tree
-  gnodes = tbl_graph(
+  g = tbl_graph(
     nodes = nodes, edges = edges, 
-    directed = TRUE, node_key = node_key) %>%
-    # Get graph layout data
+    directed = TRUE, node_key = node_key)
+  
+  # Get graph layout data
+  gnodes = g %>%
     create_layout(layout = layout) %>%
     # Keep any columns that match x and y plus the names from nodes
     select(any_of(c("x", "y", names(nodes))))
@@ -66,13 +71,13 @@ illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), n
       left_join(by = c("to" = node_key),
                 y = gnodes %>% select(!!sym(node_key), to_x = x, to_y = y))  %>%
       # give each edge an id
-      mutate(edge_id = 1:n())
+      mutate(edge_id = seq_len(n()))
     
     # Then simplify this into something readable by geom_line
     gedges = gpairs %>%
       # For each edge,
       group_by(edge_id) %>%
-      summarize(
+      reframe(
         # I'm stacking an identifier for direction atop each other
         direction = c("from", "to"),
         # I'm just stacking the from and to ids on top of each other, in that order
@@ -94,13 +99,13 @@ illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), n
     }else if(type == "both"){
       # Bind the nodes and edges together as a list and return them!
       list(gnodes, gedges, ggates) %>% 
-        set_names(nm = c("nodes", "edges", "gates")) %>%
+        purrr::set_names(nm = c("nodes", "edges", "gates")) %>%
         return()
     }else if(type == "all"){
       # Alternatively, if you select "all"
       # then return every version of the data
       list(gnodes, gedges, ggates, gpairs) %>% 
-        setnames(nm = c("nodes", "edges", "pairwise", "gates")) %>%
+        purrr::set_names(nm = c("nodes", "edges", "pairwise", "gates")) %>%
         return()
     }
   }

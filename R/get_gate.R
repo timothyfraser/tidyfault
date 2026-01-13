@@ -31,15 +31,19 @@ get_gate = function(x,y, gate, size = 1, res = 50){
   gate = unique(gate)[1]
   
   if(gate == "or"){
-    g = gate_or(res = res)
+    g = gate_or(size = size, res = res)
   }
   
   if(gate == "and"){
-    g = gate_and(res = res)
+    g = gate_and(size = size, res = res)
   }
   
   if(gate == "top"){
-    g = gate_top(res = res)
+    g = gate_top(size = size, res = res)
+    # For top gate, preserve 2:1 aspect ratio (height:width)
+    return(tibble(
+      x = x + scales::rescale(g$x, to = c(-1.5*size, 1.5*size)),
+      y = y + scales::rescale(g$y, to = c(-size, size))))
   }
   if(!gate %in% c("top", "and", "or")){
     next()
