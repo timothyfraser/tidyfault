@@ -7,12 +7,41 @@
 concentrate(data, method = "mocus")
 }
 \arguments{
-\item{data}{(Required) data.frame containing output from \code{curate()} function for the \code{"mocus"} algorithm. (Or output from \code{calculate()} for the \verb{'CCubes' algorithm}.}
+\item{data}{(Required) data.frame containing output from \code{curate()} function for the \code{"mocus"} algorithm, or output from \code{calculate()} for the \code{"CCubes"} algorithm. For \code{method = "mocus"}, expects the gates data.frame with columns \code{gate}, \code{type}, \code{set}, and \code{items}. For \code{method = "CCubes"}, expects a truth table data.frame with event columns and an \code{outcome} column.}
 
-\item{method}{(Optional) By default, runs \code{"mocus"} algorithm on output from \code{curate()} and simplifies to minimum cutsets. Alternatively, can run \code{"CCubes"} algorithm on the output from \code{calculate()} (but best on smaller datasets).}
+\item{method}{(Optional) Character string specifying the minimization algorithm. Default is \code{"mocus"}, which runs the MOCUS algorithm on output from \code{curate()} and simplifies to minimum cutsets using boolean algebra. Alternatively, \code{"CCubes"} runs the QCA package's CCubes algorithm on output from \code{calculate()} (recommended for smaller datasets due to computational complexity).}
+}
+\value{
+The return type depends on the \code{method}:
+\itemize{
+\item For \code{method = "mocus"}: A character vector where each element is a minimum cutset represented as a boolean expression (e.g., \code{"A * B"} for events A AND B). Each cutset represents a minimal set of events whose simultaneous occurrence causes system failure.
+\item For \code{method = "CCubes"}: A QCA solution object (list) containing the boolean minimization results, including prime implicants and solution details. This object can be used with QCA package functions or passed to \code{tabulate()} for further analysis.
+}
 }
 \description{
 This function \emph{concentrates} the boolean equation of a fault tree to find the minimum cutsets in the fault tree. Takes a data.frame outputted by the \code{curate()} function and applies the \code{mocus()} algorithm, or takes a data.frame outputted by the \code{calculate()} function and applies the QCA package's \code{"CCubes"} algorithm to perform boolean minimization.
+}
+\details{
+This function performs boolean minimization to identify the minimum cutsets (minimal failure paths) in a fault tree. Two algorithms are available:
+\itemize{
+\item \strong{MOCUS method} (\code{method = "mocus"}):
+\itemize{
+\item Uses the MOCUS (Method of Obtaining Cutsets) algorithm implemented in \code{mocus()} to generate all cutsets
+\item Converts cutsets to a boolean equation format
+\item Applies boolean simplification using \code{admisc::simplify()} to find minimum cutsets
+\item Returns simplified cutsets as character strings
+\item Recommended for most use cases, especially larger fault trees
+}
+\item \strong{CCubes method} (\code{method = "CCubes"}):
+\itemize{
+\item Uses the QCA (Qualitative Comparative Analysis) package's truth table and minimization functions
+\item Converts the truth table to QCA format
+\item Applies the CCubes algorithm for boolean minimization
+\item Returns a QCA solution object with detailed minimization results
+\item Best for smaller datasets due to exponential complexity of truth tables (2^n rows)
+}
+}
+Minimum cutsets represent the smallest combinations of basic events that can cause the top event (system failure) to occur. These are critical for understanding system vulnerabilities and prioritizing risk mitigation efforts.
 }
 \examples{
 
@@ -29,6 +58,9 @@ data("fakeedges")
 curate(nodes = fakenodes, edges = fakeedges) \%>\%
    concentrate() \%>\% 
    tabulate()
+}
+\seealso{
+\code{\link{curate}} for preparing gate data for MOCUS method, \code{\link{calculate}} for generating truth tables for CCubes method, \code{\link{mocus}} for the MOCUS algorithm implementation, \code{\link{tabulate}} for analyzing and summarizing minimum cutsets
 }
 \keyword{cutset}
 \keyword{fault}

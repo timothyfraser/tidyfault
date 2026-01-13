@@ -4,11 +4,37 @@
 #' 
 #' @param nodes (Required) dataset of nodes, including an `id` field (or whatever is written in `node_key`)
 #' @param edges (Required) dataset of edges, including `from` and `to` fields corresponding to the `id` of each node
-#' @param type (Optional) By default, returns `"both"` the `"nodes"` and `"edges"` as items in a list. Alternatively, you can select just `"nodes"`, `"edges"`, or `"all"` to receive other formats of outputs.
-#' @param node_key (Optional) By default, `node_key` = `"id'` from `nodes`
-#' @param layout (Optional) By default, network layout is `"tree"`. `"dendrogram"` also works pretty well. See `ggraph` package for more layout options.
-#' @param size (Optional) Passed to `gate()` function for constructing polygons. Defaults to size = 0.25.
-#' @param res (Optional) Passed to `gate()` function for constructing polygons. Defaults to res = 50.
+#' @param type (Optional) Character string specifying output format. Default is `"both"`, which returns a list with `"nodes"`, `"edges"`, and `"gates"`. Other options: `"nodes"` returns only node coordinates, `"edges"` returns only edge coordinates, `"all"` returns nodes, edges, gates, and pairwise edge data.
+#' @param node_key (Optional) Character string naming the column in `nodes` that contains unique node identifiers. Default is `"id"`.
+#' @param layout (Optional) Character string specifying the graph layout algorithm. Default is `"tree"`. `"dendrogram"` also works well. See `ggraph::create_layout()` for more layout options (e.g., `"fr"`, `"kk"`, `"nicely"`).
+#' @param size (Optional) Numeric value passed to `gate()` function for constructing polygons. Controls the diameter of gate shapes. Defaults to `0.25`.
+#' @param res (Optional) Numeric value passed to `gate()` function for constructing polygons. Controls the number of line segments used to draw curved gate shapes. Defaults to `50`.
+#' 
+#' @return The return type depends on the `type` parameter:
+#'   \itemize{
+#'     \item For `type = "nodes"`: A data.frame with node coordinates (`x`, `y`) and all original columns from `nodes`
+#'     \item For `type = "edges"`: A data.frame with edge coordinates formatted for `geom_line()`, containing columns `direction`, `id`, `x`, `y`, `edge_id`
+#'     \item For `type = "both"` (default): A named list with three elements:
+#'       \itemize{
+#'         \item `nodes`: Node coordinates data.frame
+#'         \item `edges`: Edge coordinates data.frame
+#'         \item `gates`: Gate polygon coordinates data.frame with `x`, `y` columns for drawing gate shapes
+#'       }
+#'     \item For `type = "all"`: A named list with four elements: `nodes`, `edges`, `gates`, and `pairwise` (edge data with from/to coordinates)
+#'   }
+#' 
+#' @details This function prepares fault tree data for visualization with ggplot2 by:
+#'   \itemize{
+#'     \item Creating a `tidygraph` object from nodes and edges
+#'     \item Computing graph layout coordinates using `ggraph::create_layout()` with the specified layout algorithm
+#'     \item Extracting node coordinates and preserving original node attributes
+#'     \item Computing edge coordinates by joining node positions to edge endpoints
+#'     \item Generating gate polygon shapes for AND, OR, and top event gates using the `gate()` function
+#'   }
+#'   The output is designed to work seamlessly with ggplot2. Nodes can be plotted with `geom_point()`, edges with `geom_line()`, and gates with `geom_polygon()`. The tree layout algorithm positions nodes hierarchically, making fault tree structure easy to visualize.
+#' 
+#' @seealso \code{\link{gate}} for generating gate polygons, \code{\link[tidygraph]{tbl_graph}} for creating graph objects, \code{\link[ggraph]{create_layout}} for layout algorithms
+#' 
 #' @keywords ggplot visualize network
 #' @export
 
@@ -22,10 +48,8 @@ illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), n
   gnodes = tbl_graph(
     nodes = nodes, edges = edges, 
     directed = TRUE, node_key = node_key) %>%
-    # Get graph layout
-    ggraph(layout = layout) %>%
-    # Extract data
-    with(data) %>%
+    # Get graph layout data
+    create_layout(layout = layout) %>%
     # Keep any columns that match x and y plus the names from nodes
     select(any_of(c("x", "y", names(nodes))))
   

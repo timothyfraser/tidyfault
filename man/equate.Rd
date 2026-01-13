@@ -7,10 +7,31 @@
 equate(data)
 }
 \arguments{
-\item{data}{(Required) data.frame of N gates, containing columns for \code{gate}, \code{type}, and \code{set}. Outputted by \code{curate()}.}
+\item{data}{(Required) data.frame of N gates, containing columns for \code{gate}, \code{type}, and \code{set}. Outputted by \code{curate()}. Must have at least one row with \code{class == "top"} representing the top event.}
+}
+\value{
+A character string containing the complete boolean equation for the entire fault tree. The equation:
+\itemize{
+\item Uses \code{*} (multiplication) to represent AND operations
+\item Uses \code{+} (addition) to represent OR operations
+\item Contains only basic event names (no gate references)
+\item Is wrapped in parentheses to preserve order of operations
+\item Represents the top event's boolean logic in terms of all basic events
+}
+This equation can be passed directly to \code{formulate()} to create an executable function.
 }
 \description{
 This function extracts the equation for a fault tree from a \code{data.frame} of \code{gate}s and \code{set}s, outputted by \code{curate()}.
+}
+\details{
+This function builds the complete boolean equation through an iterative substitution algorithm:
+\itemize{
+\item Starts with the top event's \code{set} expression, which may contain references to other gates
+\item Iteratively replaces each gate name with its corresponding \code{set} boolean expression
+\item Continues until no gate names remain in any expression (only basic events remain)
+\item Returns the fully expanded equation from the top event (first row of the data.frame)
+}
+The algorithm processes gates in order and handles nested gate structures by repeatedly substituting until convergence. The substitution preserves the boolean operators (\code{*} for AND, \code{+} for OR) and parentheses structure created by \code{curate()}.
 }
 \examples{
 
@@ -30,6 +51,9 @@ curate(nodes = fakenodes, edges = fakeedges) \%>\%
    calculate() \%>\%
    concentrate() \%>\% 
    tabulate()
+}
+\seealso{
+\code{\link{curate}} for creating the gates data.frame, \code{\link{formulate}} for converting the equation string into an executable function
 }
 \keyword{equation}
 \keyword{fault}

@@ -7,14 +7,34 @@
 get_gate(x, y, gate, size = 1, res = 50)
 }
 \arguments{
-\item{x}{(Required) x coordinate of gate in the layout.}
+\item{x}{(Required) Numeric value or vector representing the x coordinate(s) of the gate center in the layout.}
 
-\item{y}{(Required) y coordinate of gate in the layout.}
+\item{y}{(Required) Numeric value or vector representing the y coordinate(s) of the gate center in the layout.}
 
-\item{gate}{(Required) vector of gate names. Must be one of c("top", "and", "or")}
+\item{gate}{(Required) Character vector of gate type names. Must contain one or more of \code{"top"}, \code{"and"}, or \code{"or"}. If multiple values are provided, only the first unique value is used.}
+
+\item{size}{(Default = 1) Numeric value controlling the diameter of the gate polygon. The shape is scaled proportionally around the center point. Default is \code{1}.}
+
+\item{res}{(Default = 50) Numeric value controlling the resolution (number of line segments) used to draw curved gate shapes. Higher values create smoother curves. Default is \code{50}.}
+}
+\value{
+A data.frame (tibble) with columns \code{x} and \code{y} containing coordinate pairs that define the gate polygon shape. The coordinates are centered at the provided \verb{(x, y)} position and scaled according to \code{size}. The shape depends on the gate type: AND gates have a rounded rectangle shape, OR gates have a curved shape, and top events have a rectangular shape.
 }
 \description{
 This function produces the gate polygons for a set of supplied gate types and their x and y coordinates.
+}
+\details{
+This function is a wrapper that selects and generates the appropriate gate shape based on the gate type:
+\itemize{
+\item Determines the gate type from the \code{gate} parameter (uses first unique value if multiple provided)
+\item Calls the appropriate shape-generating function: \code{gate_and()} for AND gates, \code{gate_or()} for OR gates, or \code{gate_top()} for top events
+\item Scales and translates the base shape to match the specified \verb{(x, y)} coordinates and \code{size} parameter
+\item Returns coordinates ready for use with \code{geom_polygon()} in ggplot2
+}
+The function handles coordinate transformation using \code{scales::rescale()} to position the gate shape correctly. Each gate type has a distinct visual representation following standard fault tree analysis conventions.
+}
+\seealso{
+\code{\link{gate_and}} for AND gate shape generation, \code{\link{gate_or}} for OR gate shape generation, \code{\link{gate_top}} for top event shape generation
 }
 \keyword{fault}
 \keyword{gate}

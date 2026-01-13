@@ -2,7 +2,29 @@
 #'
 #' This function extracts the equation for a fault tree from a `data.frame` of `gate`s and `set`s, outputted by `curate()`.
 #' 
-#' @param data (Required) data.frame of N gates, containing columns for `gate`, `type`, and `set`. Outputted by `curate()`.
+#' @param data (Required) data.frame of N gates, containing columns for `gate`, `type`, and `set`. Outputted by `curate()`. Must have at least one row with `class == "top"` representing the top event.
+#' 
+#' @return A character string containing the complete boolean equation for the entire fault tree. The equation:
+#'   \itemize{
+#'     \item Uses `*` (multiplication) to represent AND operations
+#'     \item Uses `+` (addition) to represent OR operations
+#'     \item Contains only basic event names (no gate references)
+#'     \item Is wrapped in parentheses to preserve order of operations
+#'     \item Represents the top event's boolean logic in terms of all basic events
+#'   }
+#'   This equation can be passed directly to `formulate()` to create an executable function.
+#' 
+#' @details This function builds the complete boolean equation through an iterative substitution algorithm:
+#'   \itemize{
+#'     \item Starts with the top event's `set` expression, which may contain references to other gates
+#'     \item Iteratively replaces each gate name with its corresponding `set` boolean expression
+#'     \item Continues until no gate names remain in any expression (only basic events remain)
+#'     \item Returns the fully expanded equation from the top event (first row of the data.frame)
+#'   }
+#'   The algorithm processes gates in order and handles nested gate structures by repeatedly substituting until convergence. The substitution preserves the boolean operators (`*` for AND, `+` for OR) and parentheses structure created by `curate()`.
+#' 
+#' @seealso \code{\link{curate}} for creating the gates data.frame, \code{\link{formulate}} for converting the equation string into an executable function
+#' 
 #' @keywords fault tree equation
 #' @export
 #' @examples

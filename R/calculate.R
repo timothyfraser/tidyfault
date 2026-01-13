@@ -2,7 +2,26 @@
 #'
 #' This function takes a supplied function `f` and computes the system failure outcomes (1 = failure vs. 0 = not) given every possible combination of input events failing (1) or not failing (0). Outputs a `data.frame`.
 #' 
-#' @param data (Required) function outputted by `equate()`, including arguments for all input events in the fault tree (excluing gates or top events) 
+#' @param f (Required) Function outputted by `formulate()`, including arguments for all input events in the fault tree (excluding gates or top events). The function should accept binary (0/1) arguments for each basic event and return a numeric value.
+#' 
+#' @return A `data.frame` containing a truth table with:
+#'   \itemize{
+#'     \item One column for each input event (named according to the function's formal arguments)
+#'     \item An `outcome` column indicating system failure (1) or no failure (0)
+#'   }
+#'   Rows are arranged in descending order by `outcome`, with failure cases listed first. The truth table contains 2^n rows where n is the number of input events, representing all possible combinations of event states.
+#' 
+#' @details This function generates a complete truth table by:
+#'   \itemize{
+#'     \item Extracting the formal arguments from the supplied function to identify all input events
+#'     \item Creating a grid of all possible binary combinations (0/1) for each event using `tidyr::expand_grid()`
+#'     \item Evaluating the function for each combination to determine system failure
+#'     \item Converting outcomes to binary: any value >= 1 indicates failure (1), otherwise no failure (0)
+#'   }
+#'   The function is designed to work with boolean functions created by `formulate()` that represent fault tree logic. The outcome threshold (>= 1) allows for functions that may return counts or probabilities rather than strict boolean values.
+#' 
+#' @seealso \code{\link{formulate}} for creating the function from a boolean equation, \code{\link{concentrate}} for finding minimum cutsets from the truth table
+#' 
 #' @keywords boolean logic fault tree equation
 #' @export
 #' @examples
