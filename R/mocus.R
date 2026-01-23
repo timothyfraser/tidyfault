@@ -24,6 +24,8 @@
 #' @seealso \code{\link{curate}} for preparing the gates data.frame, \code{\link{concentrate}} for finding minimum cutsets from the generated cutsets
 #' 
 #' @keywords boolean cutset fault tree
+#' @importFrom dplyr %>% filter
+#' @importFrom purrr map
 #' @export
 
 mocus = function(data){
@@ -66,8 +68,7 @@ mocus = function(data){
               filter(gate == mygates[j])
             
             # gather the set events ('items') linked to that gate.
-            myset = jgate %>%
-              with(items) %>% unlist()
+            myset = jgate$items %>% unlist()
             
             # And record the type of that gate
             mytype = jgate$type

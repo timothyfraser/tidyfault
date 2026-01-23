@@ -45,12 +45,15 @@ data("fakenodes")
 data("fakeedges")
 
 # Extract minimum cutset from fault tree data
+formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
+   equate() \%>\%
+   formulate()
 curate(nodes = fakenodes, edges = fakeedges) \%>\%
    equate() \%>\%
    formulate() \%>\%
    calculate() \%>\%
    concentrate() \%>\% 
-   tabulate()
+   tabulate(formula = formula)
 }
 \seealso{
 \code{\link{curate}} for creating the gates data.frame, \code{\link{formulate}} for converting the equation string into an executable function

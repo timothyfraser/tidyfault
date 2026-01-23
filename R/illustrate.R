@@ -36,6 +36,11 @@
 #' @seealso \code{\link{gate}} for generating gate polygons, \code{\link[tidygraph]{tbl_graph}} for creating graph objects, \code{\link[ggraph]{create_layout}} for layout algorithms
 #' 
 #' @keywords ggplot visualize network
+#' @importFrom dplyr %>% select left_join mutate group_by reframe any_of n
+#' @importFrom tidygraph tbl_graph
+#' @importFrom ggraph create_layout
+#' @importFrom purrr set_names
+#' @importFrom rlang sym
 #' @export
 
 illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), node_key = "id", layout = "tree", size = 0.25, res = 50){

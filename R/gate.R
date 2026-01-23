@@ -22,6 +22,8 @@
 #' @seealso \code{\link{get_gate}} for generating individual gate polygons, \code{\link{gate_and}} for AND gate shapes, \code{\link{gate_or}} for OR gate shapes, \code{\link{gate_top}} for top event shapes
 #' 
 #' @keywords fault tree gate polygon maker
+#' @importFrom dplyr %>% rename filter group_by summarize
+#' @importFrom rlang sym
 #' @export
 
 gate = function(data, group = "id", gate = "type", size = 1, res = 50){

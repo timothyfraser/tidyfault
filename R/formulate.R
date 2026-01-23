@@ -25,6 +25,9 @@
 #' @seealso \code{\link{equate}} for generating the boolean equation string, \code{\link{calculate}} for generating truth tables from the function
 #' 
 #' @keywords fault tree formula boolean equation
+#' @importFrom dplyr %>%
+#' @importFrom stringr str_split str_trim
+#' @importFrom dplyr na_if
 #' @export
 #' @examples
 #' 
@@ -38,12 +41,15 @@
 #' data("fakeedges")
 #' 
 #' # Extract minimum cutset from fault tree data
+#' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    equate() %>%
+#'    formulate()
 #' curate(nodes = fakenodes, edges = fakeedges) %>%
 #'    equate() %>%
 #'    formulate() %>%
 #'    calculate() %>%
 #'    concentrate() %>% 
-#'    tabulate()
+#'    tabulate(formula = formula)
 
 formulate = function(formula){
   # As our next step we need to format that equation

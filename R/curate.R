@@ -29,6 +29,9 @@
 #' @seealso \code{\link{equate}} for building the complete boolean equation from curated gates, \code{\link{illustrate}} for visualizing the fault tree structure
 #' 
 #' @keywords fault tree
+#' @importFrom dplyr %>% filter left_join select group_by summarize mutate arrange ungroup case_when
+#' @importFrom tibble tibble
+#' @importFrom stringr str_replace_all
 #' @export
 #' @examples
 #' 
@@ -42,12 +45,15 @@
 #' data("fakeedges")
 #' 
 #' # Extract minimum cutset from fault tree data
+#' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    equate() %>%
+#'    formulate()
 #' curate(nodes = fakenodes, edges = fakeedges) %>%
 #'    equate() %>%
 #'    formulate() %>%
 #'    calculate() %>%
 #'    concentrate() %>% 
-#'    tabulate()
+#'    tabulate(formula = formula)
 
 curate = function(nodes, edges){
   

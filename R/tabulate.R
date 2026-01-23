@@ -28,6 +28,9 @@
 #' @seealso \code{\link{concentrate}} for generating minimum cutsets, \code{\link{formulate}} for creating the function used in truth table generation, \code{\link{calculate}} for generating truth tables
 #' 
 #' @keywords minimum cutset
+#' @importFrom dplyr %>% select filter group_by summarize mutate ungroup if_else
+#' @importFrom tibble tibble
+#' @importFrom stringr str_split str_detect str_remove
 #' @export
 #' @examples 
 #' 
@@ -41,12 +44,15 @@
 #' data("fakeedges")
 #' 
 #' # Extract minimum cutset from fault tree data
+#' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    equate() %>%
+#'    formulate()
 #' curate(nodes = fakenodes, edges = fakeedges) %>%
 #'    equate() %>%
 #'    formulate() %>%
 #'    calculate() %>%
 #'    concentrate() %>% 
-#'    tabulate()
+#'    tabulate(formula = formula)
 
 tabulate = function(data, formula, method = "mocus"){
   

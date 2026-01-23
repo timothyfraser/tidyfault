@@ -17,6 +17,7 @@
 #'   The AND gate shape is generated using mathematical curves: the left side uses `sqrt(x)` and the right side uses `sqrt(size - x)` to create symmetric rounded edges. The shape is then centered vertically and horizontally.
 #' 
 #' @keywords fault tree gate polygon maker
+#' @importFrom dplyr %>% tibble bind_rows mutate case_when
 #' @export
 
 gate_and = function(size = 2, res){

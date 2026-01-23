@@ -42,12 +42,15 @@ data("fakenodes")
 data("fakeedges")
 
 # Extract minimum cutset from fault tree data
+formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
+   equate() \%>\%
+   formulate()
 curate(nodes = fakenodes, edges = fakeedges) \%>\%
    equate() \%>\%
    formulate() \%>\%
    calculate() \%>\%
    concentrate() \%>\% 
-   tabulate()
+   tabulate(formula = formula)
 }
 \seealso{
 \code{\link{formulate}} for creating the function from a boolean equation, \code{\link{concentrate}} for finding minimum cutsets from the truth table

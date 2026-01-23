@@ -55,9 +55,15 @@ data("fakenodes")
 data("fakeedges")
 
 # Extract minimum cutset from fault tree data
+formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
+   equate() \%>\%
+   formulate()
 curate(nodes = fakenodes, edges = fakeedges) \%>\%
+   equate() \%>\%
+   formulate() \%>\%
+   calculate() \%>\%
    concentrate() \%>\% 
-   tabulate()
+   tabulate(formula = formula)
 }
 \seealso{
 \code{\link{curate}} for preparing gate data for MOCUS method, \code{\link{calculate}} for generating truth tables for CCubes method, \code{\link{mocus}} for the MOCUS algorithm implementation, \code{\link{tabulate}} for analyzing and summarizing minimum cutsets

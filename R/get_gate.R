@@ -22,6 +22,8 @@
 #' @seealso \code{\link{gate_and}} for AND gate shape generation, \code{\link{gate_or}} for OR gate shape generation, \code{\link{gate_top}} for top event shape generation
 #' 
 #' @keywords fault tree gate polygon maker
+#' @importFrom dplyr tibble
+#' @importFrom scales rescale
 #' @export
 
 get_gate = function(x,y, gate, size = 1, res = 50){
@@ -46,7 +48,7 @@ get_gate = function(x,y, gate, size = 1, res = 50){
       y = y + scales::rescale(g$y, to = c(-size, size))))
   }
   if(!gate %in% c("top", "and", "or")){
-    next()
+    return(NULL)
   }
   # Adjust shape to match point coordinates
   tibble(

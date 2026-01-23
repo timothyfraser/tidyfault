@@ -17,6 +17,7 @@
 #'   The top event shape is the simplest gate shape, consisting of a square defined by four corner points. The rectangle is created by specifying the four corners in order, then centering the shape by offsetting coordinates by `size/2` in both x and y directions. Unlike AND and OR gates, the top event shape does not use curved edges, so the `res` parameter is included for consistency but doesn't affect the output.
 #' 
 #' @keywords fault tree gate polygon maker
+#' @importFrom dplyr %>% tibble tribble mutate select
 #' @export
 
 gate_top = function(size = 2, res){

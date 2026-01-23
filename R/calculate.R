@@ -23,6 +23,9 @@
 #' @seealso \code{\link{formulate}} for creating the function from a boolean equation, \code{\link{concentrate}} for finding minimum cutsets from the truth table
 #' 
 #' @keywords boolean logic fault tree equation
+#' @importFrom dplyr %>% mutate arrange desc
+#' @importFrom methods formalArgs
+#' @importFrom tidyr expand_grid
 #' @export
 #' @examples
 #' 
@@ -36,12 +39,15 @@
 #' data("fakeedges")
 #' 
 #' # Extract minimum cutset from fault tree data
+#' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    equate() %>%
+#'    formulate()
 #' curate(nodes = fakenodes, edges = fakeedges) %>%
 #'    equate() %>%
 #'    formulate() %>%
 #'    calculate() %>%
 #'    concentrate() %>% 
-#'    tabulate()
+#'    tabulate(formula = formula)
 
 
 calculate = function(f){
