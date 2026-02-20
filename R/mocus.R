@@ -35,7 +35,7 @@ mocus = function(data){
   
   # To start, let's get the TOP event (always just 1 value)
   m[[1]] = data %>%
-    filter(class == "top") %>%
+    filter(.data$class == "top") %>%
     with(gate) 
   
   continue = TRUE

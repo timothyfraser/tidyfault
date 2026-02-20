@@ -45,10 +45,6 @@
 
 illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), node_key = "id", layout = "tree", size = 0.25, res = 50){
   
-  require(dplyr)
-  require(tidygraph)
-  require(ggraph)
-  
   # Match type argument
   type = match.arg(type)
   

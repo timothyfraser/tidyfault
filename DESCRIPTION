@@ -2,21 +2,21 @@ Package: tidyfault
 Title: Fault Tree Analysis in R with Tidyverse Coding
 Version: 0.0.0.9000
 Authors@R: 
-    person("Fraser", "Timothy", , "timothy.fraser.1@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-4509-0244"))
+    c(person("Fraser", "Timothy", , "timothy.fraser.1@gmail.com", role = c("aut", "cre"),
+             comment = c(ORCID = "0000-0002-4509-0244")),
+      person("Tong", "Jingyao", , "jingyaotong6@gmail.com", role = c("aut", "cre"),
+             comment = c(ORCID = "0009-0009-6147-756X")))
 Description: R Package for tidy fault tree analysis! Uses tidygraph, tidyverse, and QCA packages, among others, to visualize fault trees, identify minimal cutsets, and other quantities of interest.
-License: GPL-3
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5)
 Imports:
     admisc,
     dplyr,
     ggraph,
-    ggplot2,
-    igraph,
     methods,
     purrr,
     QCA,

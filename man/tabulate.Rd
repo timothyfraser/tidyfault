@@ -49,15 +49,25 @@ data("fakenodes")
 data("fakeedges")
 
 # Extract minimum cutset from fault tree data
+# Method 1: MOCUS (no calculate() needed)
 formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
    equate() \%>\%
    formulate()
 curate(nodes = fakenodes, edges = fakeedges) \%>\%
+   concentrate(method = "mocus") \%>\% 
+   tabulate(formula = formula, method = "mocus")
+
+# Method 2: CCubes (calculate() required)
+formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
+   equate() \%>\%
+   formulate()
+truth_table <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
    equate() \%>\%
    formulate() \%>\%
-   calculate() \%>\%
-   concentrate() \%>\% 
-   tabulate(formula = formula)
+   calculate()
+truth_table \%>\%
+   concentrate(method = "CCubes") \%>\% 
+   tabulate(formula = formula, method = "CCubes")
 }
 \seealso{
 \code{\link{concentrate}} for generating minimum cutsets, \code{\link{formulate}} for creating the function used in truth table generation, \code{\link{calculate}} for generating truth tables

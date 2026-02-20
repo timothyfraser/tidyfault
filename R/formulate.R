@@ -56,9 +56,6 @@ formulate = function(formula){
   # transforming it from a character string
   # into a function we can compute!
   
-  require(dplyr)
-  require(stringr)
-  
   # Can I now remove ANYTHING that is not a (, ), +, or *?
   values = formula %>% 
     # Split into separate values anytime you see an operator
@@ -68,7 +65,7 @@ formulate = function(formula){
     # Trim any spaces
     str_trim(side = "both") %>%
     # If any values are now empty, eg. "", set to NA
-    na_if(y = "") %>%
+    dplyr::na_if("") %>%
     # Drop NAs
     .[!is.na(.)] %>%
     # Return just the unique list of inputs

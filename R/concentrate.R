@@ -56,19 +56,13 @@
 #' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
 #'    equate() %>%
 #'    formulate()
-#' curate(nodes = fakenodes, edges = fakeedges) %>%
-#'    equate() %>%
-#'    formulate() %>%
-#'    calculate() %>%
-#'    concentrate() %>% 
-#'    tabulate(formula = formula)
+#' curate(nodes = fakenodes, edges = fakeedges) %>% 
+#'    concentrate(method = "mocus") %>% 
+#'    tabulate(formula = formula, method = "mocus")
 
 concentrate = function(data, method = "mocus"){
 
   # Let's write a function to simplify a boolean expression
-  
-  require(dplyr)
-  require(admisc)
   
   if(method == "mocus"){
     # Taking an output from curate()
@@ -93,22 +87,24 @@ concentrate = function(data, method = "mocus"){
         # and convert back to vector
         unlist() %>%
         # trim white space
-        str_trim(side = "both") %>%
-        return()
+        str_trim(side = "both")
+      
+      return(result)
       
   }else if(method == "CCubes"){
     
-    require(QCA)
-    
     # Taking an output from calculate()
-  data %>%
-    # Convert to matrix
-    as.matrix() %>%
-    # Convert to truth table
-    QCA::truthTable(outcome = "outcome") %>%
-    # Use boolean minimalization,
-    # with the CCubes algorithm, to get the prime implicants!!!
-    QCA::minimize("outcome", use.tilde = FALSE, method = "CCubes") %>%
-    return()
+    result = data %>%
+      # Convert to matrix
+      as.matrix() %>%
+      # Convert to truth table
+      QCA::truthTable(outcome = "outcome") %>%
+      # Use boolean minimalization,
+      # with the CCubes algorithm, to get the prime implicants!!!
+      QCA::minimize("outcome", use.tilde = FALSE, method = "CCubes")
+    
+    return(result)
+  }else{
+    stop("Invalid method. Must be 'mocus' or 'CCubes' (case-sensitive).")
   }
 }

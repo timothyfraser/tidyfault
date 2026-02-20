@@ -58,10 +58,6 @@
 curate = function(nodes, edges){
   
   # Let's write a function to identify the paths for each gate
-
-  require(dplyr)
-  require(tibble)
-  require(stringr)
   
   # Take our list of nodes
   nodes %>%

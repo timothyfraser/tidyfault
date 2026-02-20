@@ -44,21 +44,27 @@
 #' data("fakeedges")
 #' 
 #' # Extract minimum cutset from fault tree data
+#' # Method 1: MOCUS (no calculate() needed)
 #' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
 #'    equate() %>%
 #'    formulate()
 #' curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    concentrate(method = "mocus") %>% 
+#'    tabulate(formula = formula, method = "mocus")
+#' 
+#' # Method 2: CCubes (calculate() required)
+#' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    equate() %>%
+#'    formulate()
+#' truth_table <- curate(nodes = fakenodes, edges = fakeedges) %>%
 #'    equate() %>%
 #'    formulate() %>%
-#'    calculate() %>%
-#'    concentrate() %>% 
-#'    tabulate(formula = formula)
+#'    calculate()
+#' truth_table %>%
+#'    concentrate(method = "CCubes") %>% 
+#'    tabulate(formula = formula, method = "CCubes")
 
 tabulate = function(data, formula, method = "mocus"){
-  
-  require(dplyr)
-  require(tibble)
-  require(stringr)
   
   if(method == "mocus"){
     # Extract the truth table from our formula
@@ -67,7 +73,6 @@ tabulate = function(data, formula, method = "mocus"){
       select(1:outcome)
     
   }else if(method == "CCubes"){
-    require(QCA)
     
     # Extract the truth table from the boolean minimalization solution object
     tab = data$tt$tt %>% select(1:OUT) %>% rename(outcome = OUT)

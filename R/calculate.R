@@ -54,9 +54,6 @@ calculate = function(f){
 
   # Let's write a function to extract the truth table
   
-  require(dplyr)
-  require(tidyr)
-  
   # Extract name of function object as text
   fname = deparse(quote(f))
   

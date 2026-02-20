@@ -56,8 +56,6 @@ equate = function(data){
   
   # Let's write a function to return the boolean equation
   # for any data.frame of gates and sets provided
-  require(dplyr)
-  require(stringr)
   
   # As long as [set] contains any value in gates$event,
   # continue doing str_replace
