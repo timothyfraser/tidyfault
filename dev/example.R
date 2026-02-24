@@ -1,16 +1,23 @@
 # example.R
 
 # This script shows examples of how to use the tidyfault package.
+rm(list = ls())
 setwd("C:/Users/tmf77/tidyfault_paper/tidyfault")
 remove.packages("tidyfault")
 unloadNamespace("tidyfault")
 devtools::document()
 # unloadNamespace("tidyfault")
-# devtools::build(vignettes = TRUE, manual = TRUE)
-# unlink("tidyfault_0.0.0.9.tar.gz")
-#install.packages("tidyfault_0.0.0.9.tar.gz", type = "source")
 
+# devtools::build(vignettes = TRUE, manual = TRUE)
+# file.copy("../tidyfault_0.0.0.9.tar.gz", "C:/Users/tmf77/tidyfault_paper/tidyfault/tidyfault_0.0.0.9.tar.gz", overwrite = TRUE)
+# file.remove("../tidyfault_0.0.0.9.tar.gz")
+# install.packages("tidyfault_0.0.0.9.tar.gz", type = "source")
+# unlink("tidyfault_0.0.0.9.tar.gz")
+
+getwd()
 library(tidyfault)
+
+
 
 data("db_nodes")
 data("db_edges")
@@ -28,10 +35,12 @@ myequation = mygates |> equate()
 myfunction = myequation |> formulate()
 
 # Get the minimal cutset
-mymin = mygates |> concentrate(method = "mocus")
+mymin = mygates |> concentrate()
 
 # Tabulate coverage of minimal cutsets
-mymin |> tabulate(formula = myfunction, method = "mocus")
+mymin |> tabulate(formula = myfunction)
+
+
 
 # Calculate the truth table
 mycombos = myfunction |> calculate()
@@ -56,6 +65,4 @@ ggplot() +
   geom_point(data = gg$nodes, mapping = aes(x = x, y = y, fill = type), shape = 21, size = 8) +
   geom_text(data = gg$nodes, mapping = aes(x = x, y = y, label = event), color = "white") +
   coord_fixed(ratio = 1)
-
-
 

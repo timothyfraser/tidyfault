@@ -81,7 +81,25 @@ concentrate = function(data, method = "mocus"){
       values = output %>% unlist() %>% unique() %>% sort() %>% paste(collapse = ", ")
       
       # Simplify the expression!
-      result = admisc::simplify(combos, snames = values) %>% as.vector() %>%
+      # Occasionally admisc::simplify() throws an internal
+      # "object 'sols' not found" error when there are no
+      # valid solutions to simplify; in that case we treat this as
+      # "cannot be simplified further" and fall back to the original
+      # (unsimplified) boolean expression.
+      result = tryCatch(
+        admisc::simplify(combos, snames = values),
+        error = function(e) {
+          msg = conditionMessage(e)
+          if (grepl("object 'sols' not found", msg, fixed = TRUE)) {
+            # Fall back to the original combined expression; this will
+            # later be split back into individual cutsets.
+            return(combos)
+          } else {
+            stop(e)
+          }
+        }
+      ) %>%
+        as.vector() %>%
         # split into separate strings any time we see a '+'
         str_split(pattern = "[+]", simplify = FALSE) %>%
         # and convert back to vector
