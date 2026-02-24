@@ -11,8 +11,31 @@ curate(nodes, edges)
 
 \item{edges}{(Required) data.frame of N \code{edges} (1 to N rows), showing ties between the \code{from} node's \code{id} to the \code{to} node's \code{id}.}
 }
+\value{
+A \code{data.frame} (tibble) with one row per gate, containing:
+\itemize{
+\item \code{gate}: Character vector of gate/event names
+\item \code{type}: Factor or character vector indicating gate type (\code{"top"}, \code{"and"}, or \code{"or"})
+\item \code{class}: Factor with levels \code{"top"} and \code{"gate"}, classifying nodes as top events or intermediate gates
+\item \code{n}: Integer count of events immediately connected to this gate
+\item \code{set}: Character string containing the boolean expression for this gate's inputs, using \code{*} for AND operations and \code{+} for OR operations, wrapped in parentheses
+\item \code{items}: List column containing character vectors of event names that are inputs to this gate
+}
+Rows are sorted with top events first, followed by gates in alphabetical order.
+}
 \description{
 This function \emph{curates} a \code{data.frame} of N \code{gates} and the \code{sets} of events immediately linked to those gates.
+}
+\details{
+This function performs the initial curation step in the fault tree analysis workflow:
+\itemize{
+\item Filters nodes to only gates and top events (excludes basic events with \code{type == "not"})
+\item Joins edge information to identify which events connect to each gate
+\item Converts gate relationships into boolean expressions: AND gates use \code{*} (multiplication), OR gates use \code{+} (addition)
+\item Wraps each gate's set expression in parentheses to preserve order of operations
+\item Creates both string (\code{set}) and list (\code{items}) representations of gate inputs for different downstream uses
+}
+The output serves as the foundation for subsequent steps: \code{equate()} uses the \code{set} column to build the complete boolean equation, while \code{mocus()} uses the \code{items} list column for cutset generation.
 }
 \examples{
 
@@ -26,12 +49,18 @@ data("fakenodes")
 data("fakeedges")
 
 # Extract minimum cutset from fault tree data
+formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
+   equate() \%>\%
+   formulate()
 curate(nodes = fakenodes, edges = fakeedges) \%>\%
    equate() \%>\%
    formulate() \%>\%
    calculate() \%>\%
    concentrate() \%>\% 
-   tabulate()
+   tabulate(formula = formula)
+}
+\seealso{
+\code{\link{equate}} for building the complete boolean equation from curated gates, \code{\link{illustrate}} for visualizing the fault tree structure
 }
 \keyword{fault}
 \keyword{tree}

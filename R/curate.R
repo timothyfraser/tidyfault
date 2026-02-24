@@ -4,7 +4,34 @@
 #' 
 #' @param nodes (Required) data.frame of N `nodes` (1 to N rows), with a unique `id` for each node, an `event` name describing the node (some events occur multiple times), and a `type` vector categorizing nodes as `"and"` | `"or"` gates, `"top"` nodes, or `"not"` a gate or top node (ie. a normal node)
 #' @param edges (Required) data.frame of N `edges` (1 to N rows), showing ties between the `from` node's `id` to the `to` node's `id`.
+#' 
+#' @return A `data.frame` (tibble) with one row per gate, containing:
+#'   \itemize{
+#'     \item `gate`: Character vector of gate/event names
+#'     \item `type`: Factor or character vector indicating gate type (`"top"`, `"and"`, or `"or"`)
+#'     \item `class`: Factor with levels `"top"` and `"gate"`, classifying nodes as top events or intermediate gates
+#'     \item `n`: Integer count of events immediately connected to this gate
+#'     \item `set`: Character string containing the boolean expression for this gate's inputs, using `*` for AND operations and `+` for OR operations, wrapped in parentheses
+#'     \item `items`: List column containing character vectors of event names that are inputs to this gate
+#'   }
+#'   Rows are sorted with top events first, followed by gates in alphabetical order.
+#' 
+#' @details This function performs the initial curation step in the fault tree analysis workflow:
+#'   \itemize{
+#'     \item Filters nodes to only gates and top events (excludes basic events with `type == "not"`)
+#'     \item Joins edge information to identify which events connect to each gate
+#'     \item Converts gate relationships into boolean expressions: AND gates use `*` (multiplication), OR gates use `+` (addition)
+#'     \item Wraps each gate's set expression in parentheses to preserve order of operations
+#'     \item Creates both string (`set`) and list (`items`) representations of gate inputs for different downstream uses
+#'   }
+#'   The output serves as the foundation for subsequent steps: `equate()` uses the `set` column to build the complete boolean equation, while `mocus()` uses the `items` list column for cutset generation.
+#' 
+#' @seealso \code{\link{equate}} for building the complete boolean equation from curated gates, \code{\link{illustrate}} for visualizing the fault tree structure
+#' 
 #' @keywords fault tree
+#' @importFrom dplyr %>% filter left_join select group_by summarize mutate arrange ungroup case_when
+#' @importFrom tibble tibble
+#' @importFrom stringr str_replace_all
 #' @export
 #' @examples
 #' 
@@ -18,20 +45,19 @@
 #' data("fakeedges")
 #' 
 #' # Extract minimum cutset from fault tree data
+#' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    equate() %>%
+#'    formulate()
 #' curate(nodes = fakenodes, edges = fakeedges) %>%
 #'    equate() %>%
 #'    formulate() %>%
 #'    calculate() %>%
 #'    concentrate() %>% 
-#'    tabulate()
+#'    tabulate(formula = formula)
 
 curate = function(nodes, edges){
   
   # Let's write a function to identify the paths for each gate
-
-  require(dplyr)
-  require(tibble)
-  require(stringr)
   
   # Take our list of nodes
   nodes %>%

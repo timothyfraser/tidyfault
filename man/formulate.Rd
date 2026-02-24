@@ -7,10 +7,30 @@
 formulate(formula)
 }
 \arguments{
-\item{formula}{(Required) a character string listing the boolean logic equation of a fault tree.}
+\item{formula}{(Required) A character string containing the boolean logic equation of a fault tree. Should use \code{*} for AND operations, \code{+} for OR operations, and parentheses for grouping. The equation should contain only basic event names (no gate references). Typically output from \code{equate()}.}
+}
+\value{
+A function object that:
+\itemize{
+\item Accepts named arguments for each basic event in the formula
+\item Each argument accepts numeric values (typically 0 or 1 for binary events)
+\item Returns a numeric value representing the system state (typically 0 for no failure, >= 1 for failure)
+\item Evaluates the boolean equation using R's arithmetic operators (\code{*} for AND, \code{+} for OR)
+}
+The function can be called directly with event values or passed to \code{calculate()} to generate a complete truth table.
 }
 \description{
 This function \emph{formulates} a \code{function} that can compute probabilities of system failure. To do so, it converts a character string describing the boolean equation of a fault tree into a \code{function} that can compute probabilities of system failure into that function. Handles AND and OR operations.
+}
+\details{
+This function converts a boolean equation string into an executable R function through the following process:
+\itemize{
+\item Extracts all unique event names from the formula by splitting on operators (\code{+}, \code{*}, \code{(}, \verb{)})
+\item Creates formal arguments for the function, one for each unique event name
+\item Sets the function body to parse and evaluate the formula string
+\item Returns a function that can be called with named arguments for each event
+}
+The function uses R's arithmetic operators where multiplication (\code{*}) represents AND logic and addition (\code{+}) represents OR logic. When called with binary inputs (0/1), the function returns 0 for no failure and a positive value for failure. The function preserves the order of operations through parentheses in the original formula.
 }
 \examples{
 
@@ -24,12 +44,18 @@ data("fakenodes")
 data("fakeedges")
 
 # Extract minimum cutset from fault tree data
+formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
+   equate() \%>\%
+   formulate()
 curate(nodes = fakenodes, edges = fakeedges) \%>\%
    equate() \%>\%
    formulate() \%>\%
    calculate() \%>\%
    concentrate() \%>\% 
-   tabulate()
+   tabulate(formula = formula)
+}
+\seealso{
+\code{\link{equate}} for generating the boolean equation string, \code{\link{calculate}} for generating truth tables from the function
 }
 \keyword{boolean}
 \keyword{equation}

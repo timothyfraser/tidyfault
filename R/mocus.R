@@ -1,9 +1,31 @@
 #' mocus() Function
 #'
-#' This function *simplifies* a `data.frame` of gates and their sets identified by `curate()`, generating each cutset in the fault tree using a simple implementation of the `mocus()` algorithm.
+#' This function *simplifies* a `data.frame` of gates and their sets identified by `curate()`, generating each cutset in the fault tree using a simple implementation of the MOCUS (Method of Obtaining Cutsets) algorithm.
 #' 
-#' @param data (Required) data.frame containing gates and their sets, outputted by `curate()`.
+#' @param data (Required) data.frame containing gates and their sets, outputted by `curate()`. Must contain columns `gate`, `type`, `class`, and `items` (list column of event vectors). The data.frame should have at least one row with `class == "top"` representing the top event.
+#' 
+#' @return A list where each element is a character vector representing a cutset (a set of basic events that can cause system failure). Each cutset vector contains the names of basic events. The list includes all cutsets found in the fault tree, not just minimum cutsets. Duplicate events within each cutset are removed (each event appears only once per cutset).
+#' 
+#' @details This function implements the MOCUS (Method of Obtaining Cutsets) algorithm, which systematically expands gates in a fault tree to identify all cutsets. The algorithm works as follows:
+#'   \itemize{
+#'     \item \strong{Initialization}: Starts with the top event as the first cutset
+#'     \item \strong{Iterative Expansion}: For each cutset containing gate references:
+#'       \itemize{
+#'         \item Identifies gates that appear in the current cutset
+#'         \item For AND gates: Replaces the gate with all its input events (events are combined)
+#'         \item For OR gates: Creates separate cutsets for each input path (events are alternatives)
+#'         \item Removes the expanded gate from consideration
+#'       }
+#'     \item \strong{Convergence}: Continues until no gates remain in any cutset (only basic events)
+#'     \item \strong{Deduplication}: Removes duplicate events within each cutset
+#'   }
+#'   The algorithm handles nested gate structures by repeatedly expanding gates until all references are resolved. AND gates represent events that must all occur together, while OR gates represent alternative failure paths. The result includes all possible cutsets, which can then be minimized using boolean algebra (e.g., via `concentrate()` with `method = "mocus"`).
+#' 
+#' @seealso \code{\link{curate}} for preparing the gates data.frame, \code{\link{concentrate}} for finding minimum cutsets from the generated cutsets
+#' 
 #' @keywords boolean cutset fault tree
+#' @importFrom dplyr %>% filter
+#' @importFrom purrr map
 #' @export
 
 mocus = function(data){
@@ -13,7 +35,7 @@ mocus = function(data){
   
   # To start, let's get the TOP event (always just 1 value)
   m[[1]] = data %>%
-    filter(class == "top") %>%
+    filter(.data$class == "top") %>%
     with(gate) 
   
   continue = TRUE
@@ -46,8 +68,7 @@ mocus = function(data){
               filter(gate == mygates[j])
             
             # gather the set events ('items') linked to that gate.
-            myset = jgate %>%
-              with(items) %>% unlist()
+            myset = jgate$items %>% unlist()
             
             # And record the type of that gate
             mytype = jgate$type

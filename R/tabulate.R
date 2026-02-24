@@ -2,9 +2,35 @@
 #'
 #' This function *tabulates* a `data.frame` of `N` minimum cutsets in your fault tree, describing each `mincut` set, a `query` used to filter a table of all sets, the number of `cutsets` that include that `mincut`, the total number of cutsets leading to `failure`, and the `coverage` (percentage of `cutsets` covered out of total failures) for that `mincut`.
 #'
-#' @param data (Required) output from `concentrate()` function; a `QCA` object representing the boolean minimalization of the truth table of all possible sets. Used to find the `mincut` sets.
-#' @param formula (Required) output from `formulate()` function.
+#' @param data (Required) Output from `concentrate()` function. For `method = "mocus"`, expects a character vector of minimum cutset expressions (e.g., `"A * B"`). For `method = "CCubes"`, expects a QCA solution object from `concentrate()` with `method = "CCubes"`.
+#' @param formula (Required) Function output from `formulate()`. Used to generate the truth table for calculating coverage statistics when `method = "mocus"`. Not used when `method = "CCubes"`.
+#' @param method (Optional) Character string specifying the method used. Default is `"mocus"`, which works with character vector output from `concentrate(method = "mocus")`. Alternatively, `"CCubes"` works with QCA solution objects from `concentrate(method = "CCubes")`.
+#' 
+#' @return A `data.frame` (tibble) with one row per minimum cutset, containing:
+#'   \itemize{
+#'     \item `mincut`: Character string representing the minimum cutset as a boolean expression (e.g., `"A * B"` for events A AND B)
+#'     \item `query`: Character string containing a filter expression that can be used to identify truth table rows matching this cutset (e.g., `"filter(A == 1, B == 1, outcome == 1)"`)
+#'     \item `cutsets`: Integer count of truth table rows (cutsets) that match this minimum cutset and result in system failure
+#'     \item `failures`: Integer count of total truth table rows that result in system failure (same for all rows)
+#'     \item `coverage`: Numeric value (0 to 1) representing the proportion of failure cases covered by this minimum cutset. Calculated as `cutsets / failures`. Higher coverage indicates a more critical failure path.
+#'   }
+#'   Rows are grouped by `mincut`, allowing easy identification of the most critical failure paths based on coverage.
+#' 
+#' @details This function analyzes minimum cutsets to quantify their importance in system failure:
+#'   \itemize{
+#'     \item \strong{Truth Table Generation}: For `method = "mocus"`, uses `formula` to generate a complete truth table via `calculate()`. For `method = "CCubes"`, extracts the truth table from the QCA solution object.
+#'     \item \strong{Cutset Parsing}: Splits each minimum cutset expression into individual events and determines their required states (1 for occurrence, 0 for non-occurrence, indicated by tilde `~` in QCA format)
+#'     \item \strong{Query Construction}: Creates filter expressions that identify truth table rows matching each cutset's event combination
+#'     \item \strong{Coverage Calculation}: Counts how many failure cases (rows with `outcome == 1`) are covered by each minimum cutset, then calculates coverage as a proportion
+#'   }
+#'   Coverage represents the explanatory power of each minimum cutset: a cutset with coverage = 0.5 means it explains 50% of all system failure cases. This metric helps prioritize which failure paths are most critical for risk mitigation. The `query` column provides reusable filter expressions for further analysis.
+#' 
+#' @seealso \code{\link{concentrate}} for generating minimum cutsets, \code{\link{formulate}} for creating the function used in truth table generation, \code{\link{calculate}} for generating truth tables
+#' 
 #' @keywords minimum cutset
+#' @importFrom dplyr %>% select filter group_by summarize mutate ungroup if_else
+#' @importFrom tibble tibble
+#' @importFrom stringr str_split str_detect str_remove
 #' @export
 #' @examples 
 #' 
@@ -18,18 +44,27 @@
 #' data("fakeedges")
 #' 
 #' # Extract minimum cutset from fault tree data
+#' # Method 1: MOCUS (no calculate() needed)
+#' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    equate() %>%
+#'    formulate()
 #' curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    concentrate(method = "mocus") %>% 
+#'    tabulate(formula = formula, method = "mocus")
+#' 
+#' # Method 2: CCubes (calculate() required)
+#' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    equate() %>%
+#'    formulate()
+#' truth_table <- curate(nodes = fakenodes, edges = fakeedges) %>%
 #'    equate() %>%
 #'    formulate() %>%
-#'    calculate() %>%
-#'    concentrate() %>% 
-#'    tabulate()
+#'    calculate()
+#' truth_table %>%
+#'    concentrate(method = "CCubes") %>% 
+#'    tabulate(formula = formula, method = "CCubes")
 
 tabulate = function(data, formula, method = "mocus"){
-  
-  require(dplyr)
-  require(tibble)
-  require(stringr)
   
   if(method == "mocus"){
     # Extract the truth table from our formula
@@ -38,7 +73,6 @@ tabulate = function(data, formula, method = "mocus"){
       select(1:outcome)
     
   }else if(method == "CCubes"){
-    require(QCA)
     
     # Extract the truth table from the boolean minimalization solution object
     tab = data$tt$tt %>% select(1:OUT) %>% rename(outcome = OUT)

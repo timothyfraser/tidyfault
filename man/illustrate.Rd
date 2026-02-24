@@ -10,7 +10,7 @@ illustrate(
   type = c("nodes", "edges", "both", "all"),
   node_key = "id",
   layout = "tree",
-  size = 1,
+  size = 0.25,
   res = 50
 )
 }
@@ -19,18 +19,46 @@ illustrate(
 
 \item{edges}{(Required) dataset of edges, including \code{from} and \code{to} fields corresponding to the \code{id} of each node}
 
-\item{type}{(Optional) By default, returns \code{"both"} the \code{"nodes"} and \code{"edges"} as items in a list. Alternatively, you can select just \code{"nodes"}, \code{"edges"}, or \code{"all"} to receive other formats of outputs.}
+\item{type}{(Optional) Character string specifying output format. Default is \code{"both"}, which returns a list with \code{"nodes"}, \code{"edges"}, and \code{"gates"}. Other options: \code{"nodes"} returns only node coordinates, \code{"edges"} returns only edge coordinates, \code{"all"} returns nodes, edges, gates, and pairwise edge data.}
 
-\item{node_key}{(Optional) By default, \code{node_key} = \verb{"id'} from \code{nodes}}
+\item{node_key}{(Optional) Character string naming the column in \code{nodes} that contains unique node identifiers. Default is \code{"id"}.}
 
-\item{layout}{(Optional) By default, network layout is \code{"tree"}. \code{"dendrogram"} also works pretty well. See \code{ggraph} package for more layout options.}
+\item{layout}{(Optional) Character string specifying the graph layout algorithm. Default is \code{"tree"}. \code{"dendrogram"} also works well. See \code{ggraph::create_layout()} for more layout options (e.g., \code{"fr"}, \code{"kk"}, \code{"nicely"}).}
 
-\item{size}{(Optional) Passed to \code{gate()} function for constructing polygons. Defaults to size = 1.}
+\item{size}{(Optional) Numeric value passed to \code{gate()} function for constructing polygons. Controls the diameter of gate shapes. Defaults to \code{0.25}.}
 
-\item{res}{(Optional) Passed to \code{gate()} function for constructing polygons. Defaults to res = 50.}
+\item{res}{(Optional) Numeric value passed to \code{gate()} function for constructing polygons. Controls the number of line segments used to draw curved gate shapes. Defaults to \code{50}.}
+}
+\value{
+The return type depends on the \code{type} parameter:
+\itemize{
+\item For \code{type = "nodes"}: A data.frame with node coordinates (\code{x}, \code{y}) and all original columns from \code{nodes}
+\item For \code{type = "edges"}: A data.frame with edge coordinates formatted for \code{geom_line()}, containing columns \code{direction}, \code{id}, \code{x}, \code{y}, \code{edge_id}
+\item For \code{type = "both"} (default): A named list with three elements:
+\itemize{
+\item \code{nodes}: Node coordinates data.frame
+\item \code{edges}: Edge coordinates data.frame
+\item \code{gates}: Gate polygon coordinates data.frame with \code{x}, \code{y} columns for drawing gate shapes
+}
+\item For \code{type = "all"}: A named list with four elements: \code{nodes}, \code{edges}, \code{gates}, and \code{pairwise} (edge data with from/to coordinates)
+}
 }
 \description{
 This function takes a dataset of nodes and edges dataset from a fault tree, calculate a \strong{tree} layout using \code{tidygraph} and \code{ggraph}, and then outputs ggplot-friendly data.frames of nodes and edges.
+}
+\details{
+This function prepares fault tree data for visualization with ggplot2 by:
+\itemize{
+\item Creating a \code{tidygraph} object from nodes and edges
+\item Computing graph layout coordinates using \code{ggraph::create_layout()} with the specified layout algorithm
+\item Extracting node coordinates and preserving original node attributes
+\item Computing edge coordinates by joining node positions to edge endpoints
+\item Generating gate polygon shapes for AND, OR, and top event gates using the \code{gate()} function
+}
+The output is designed to work seamlessly with ggplot2. Nodes can be plotted with \code{geom_point()}, edges with \code{geom_line()}, and gates with \code{geom_polygon()}. The tree layout algorithm positions nodes hierarchically, making fault tree structure easy to visualize.
+}
+\seealso{
+\code{\link{gate}} for generating gate polygons, \code{\link[tidygraph]{tbl_graph}} for creating graph objects, \code{\link[ggraph]{create_layout}} for layout algorithms
 }
 \keyword{ggplot}
 \keyword{network}

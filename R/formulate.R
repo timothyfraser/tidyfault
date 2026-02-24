@@ -2,8 +2,32 @@
 #'
 #' This function *formulates* a `function` that can compute probabilities of system failure. To do so, it converts a character string describing the boolean equation of a fault tree into a `function` that can compute probabilities of system failure into that function. Handles AND and OR operations.
 #' 
-#' @param formula (Required) a character string listing the boolean logic equation of a fault tree.
+#' @param formula (Required) A character string containing the boolean logic equation of a fault tree. Should use `*` for AND operations, `+` for OR operations, and parentheses for grouping. The equation should contain only basic event names (no gate references). Typically output from `equate()`.
+#' 
+#' @return A function object that:
+#'   \itemize{
+#'     \item Accepts named arguments for each basic event in the formula
+#'     \item Each argument accepts numeric values (typically 0 or 1 for binary events)
+#'     \item Returns a numeric value representing the system state (typically 0 for no failure, >= 1 for failure)
+#'     \item Evaluates the boolean equation using R's arithmetic operators (`*` for AND, `+` for OR)
+#'   }
+#'   The function can be called directly with event values or passed to `calculate()` to generate a complete truth table.
+#' 
+#' @details This function converts a boolean equation string into an executable R function through the following process:
+#'   \itemize{
+#'     \item Extracts all unique event names from the formula by splitting on operators (`+`, `*`, `(`, `)`)
+#'     \item Creates formal arguments for the function, one for each unique event name
+#'     \item Sets the function body to parse and evaluate the formula string
+#'     \item Returns a function that can be called with named arguments for each event
+#'   }
+#'   The function uses R's arithmetic operators where multiplication (`*`) represents AND logic and addition (`+`) represents OR logic. When called with binary inputs (0/1), the function returns 0 for no failure and a positive value for failure. The function preserves the order of operations through parentheses in the original formula.
+#' 
+#' @seealso \code{\link{equate}} for generating the boolean equation string, \code{\link{calculate}} for generating truth tables from the function
+#' 
 #' @keywords fault tree formula boolean equation
+#' @importFrom dplyr %>%
+#' @importFrom stringr str_split str_trim
+#' @importFrom dplyr na_if
 #' @export
 #' @examples
 #' 
@@ -17,20 +41,20 @@
 #' data("fakeedges")
 #' 
 #' # Extract minimum cutset from fault tree data
+#' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    equate() %>%
+#'    formulate()
 #' curate(nodes = fakenodes, edges = fakeedges) %>%
 #'    equate() %>%
 #'    formulate() %>%
 #'    calculate() %>%
 #'    concentrate() %>% 
-#'    tabulate()
+#'    tabulate(formula = formula)
 
 formulate = function(formula){
   # As our next step we need to format that equation
   # transforming it from a character string
   # into a function we can compute!
-  
-  require(dplyr)
-  require(stringr)
   
   # Can I now remove ANYTHING that is not a (, ), +, or *?
   values = formula %>% 
@@ -41,7 +65,7 @@ formulate = function(formula){
     # Trim any spaces
     str_trim(side = "both") %>%
     # If any values are now empty, eg. "", set to NA
-    na_if(y = "") %>%
+    dplyr::na_if("") %>%
     # Drop NAs
     .[!is.na(.)] %>%
     # Return just the unique list of inputs
