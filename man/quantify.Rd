@@ -4,36 +4,66 @@
 \alias{quantify}
 \title{quantify() Function}
 \usage{
-quantify(f, scenarios)
+quantify(f, newdata, prob = FALSE)
 }
 \arguments{
 \item{f}{(Required) Function from \code{formulate()}, with one argument per
 basic event. Used to identify event names and to evaluate the fault tree.}
 
-\item{scenarios}{(Required) Either a tibble/data frame with one column per
-basic event (names from \code{formalArgs(f)}), or a single vector/list.
-A single scenario can be an unnamed vector in \code{formalArgs(f)} order
-(e.g. \code{c(T, T, T, F)} or \code{c(1, 1, 0, 1)}), or a named vector/list.
-Values are logical (TRUE/FALSE) or numeric (0/1).}
+\item{newdata}{(Required) Data for evaluation. When \code{prob = FALSE}, this
+represents binary scenarios (0/1 or TRUE/FALSE) for each basic event. When
+\code{prob = TRUE}, this represents failure probabilities (0 to 1) for each
+basic event. Can be a tibble/data frame with one column per basic event, a
+single vector/list, or (for \code{prob = TRUE}) a matrix. See details below.}
+
+\item{prob}{(Optional) Logical. If \code{FALSE} (default), performs binary
+evaluation using \code{quantify_binary()}. If \code{TRUE}, computes failure
+probability using \code{quantify_prob()}.}
 }
 \value{
-If \code{scenarios} is a data frame: a tibble with the same columns
-plus an \code{outcome} column (logical: TRUE = system failure, FALSE = no
-failure). If \code{scenarios} is a named vector or list: a single logical
-(TRUE/FALSE).
+A vector of outcomes. The type depends on \code{prob}:
+\itemize{
+\item If \code{prob = FALSE}: Returns a logical vector (TRUE = system failure,
+FALSE = no failure). If \code{newdata} is a data frame with multiple rows,
+returns a vector with one outcome per row. If \code{newdata} is a single
+scenario, returns a single logical value.
+\item If \code{prob = TRUE}: Returns a numeric vector of top event failure
+probabilities. If \code{newdata} is a single scenario, returns a single
+numeric value. If \code{newdata} has multiple rows, returns a numeric
+vector with one probability per scenario.
+}
+Both modes return vectors in \code{predict()}-style format.
 }
 \description{
-Evaluates whether the top event occurs (system fails) when given whether each
-basic event occurs or not. Inputs are binary: each event is 0 (did not occur)
-or 1 (occurred). No probabilities—deterministic evaluation only.
+Unified wrapper function for evaluating fault trees. Evaluates whether the top
+event occurs (binary evaluation) or computes top event failure probability
+(probabilistic evaluation) based on the \code{prob} parameter.
 }
 \details{
-No probabilities are used; the function evaluates the fault tree
-on the given event states. Outcome is TRUE when \code{f(...) >= 1} (system
-failure). Logical and 0/1 inputs are coerced to 0/1 internally to match
-\code{calculate()} behavior. When \code{scenarios} is a data frame,
-evaluation is vectorized: \code{f} is called once with vector columns
-(one element per row), so many scenarios are handled efficiently.
+This function provides a unified interface for both binary and
+probabilistic fault tree evaluation:
+\itemize{
+\item \strong{Binary evaluation} (\code{prob = FALSE}): Uses \code{quantify_binary()}
+to evaluate whether the top event occurs given binary event states. Each
+event is 0 (did not occur) or 1 (occurred). No probabilities are used.
+\item \strong{Probabilistic evaluation} (\code{prob = TRUE}): Uses \code{quantify_prob()}
+to compute the top event failure probability from basic event failure
+probabilities. Assumes independent basic events and uses the complete
+truth table for exact computation (O(2^n) complexity).
+}
+When \code{prob = FALSE}, \code{newdata} can be:
+\itemize{
+\item A data frame with one column per basic event (names from \code{formalArgs(f)})
+\item A single vector/list (unnamed = positional, or named)
+\item Values are logical (TRUE/FALSE) or numeric (0/1)
+}
+When \code{prob = TRUE}, \code{newdata} can be:
+\itemize{
+\item A single vector or list (one scenario) with probabilities in \code{[0, 1]}
+\item A data frame or matrix with one row per scenario and columns for each
+basic event (names must match \code{formalArgs(f)})
+\item Unnamed vectors are interpreted in \code{formalArgs(f)} order
+}
 }
 \examples{
 library(tidyverse)
@@ -42,24 +72,15 @@ library(QCA)
 data("fakenodes")
 data("fakeedges")
 
-# Pipe-friendly: single scenario in event order (e.g. A, B, C, D)
-curate(nodes = fakenodes, edges = fakeedges) \%>\%
-  equate() \%>\%
-  formulate() \%>\%
-  quantify(c(T, T, T, F))
-
 f <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
   equate() \%>\%
   formulate()
 
-# Single scenario: unnamed vector in event order
+# Binary evaluation (default): single scenario
+f \%>\% quantify(c(T, T, T, F))
 f \%>\% quantify(c(TRUE, FALSE, TRUE, FALSE))
 
-# Single scenario: named vector (logical or 0/1)
-one_scenario <- setNames(c(TRUE, FALSE, TRUE, FALSE), formalArgs(f))
-f \%>\% quantify(one_scenario)
-
-# Tibble of scenarios: add outcome column (vectorized, one call to f for all rows)
+# Binary evaluation: multiple scenarios
 scenarios_tbl <- tibble(
   A = c(1L, 0L, 1L),
   B = c(0L, 1L, 1L),
@@ -67,13 +88,21 @@ scenarios_tbl <- tibble(
   D = c(0L, 1L, 1L)
 )
 f \%>\% quantify(scenarios_tbl)
+
+# Probabilistic evaluation: single scenario
+f \%>\% quantify(c(0.1, 0.2, 0.05, 0.15), prob = TRUE)
+
+# Probabilistic evaluation: multiple scenarios
+probs_df <- as.data.frame(replicate(4, runif(100), simplify = FALSE))
+names(probs_df) <- formalArgs(f)
+f \%>\% quantify(probs_df, prob = TRUE)
 }
 \seealso{
 \code{\link{formulate}} for creating the function, \code{\link{calculate}}
-for the full truth table, \code{\link{quantify_prob}} for top event failure
-probability given basic event probabilities.
+for the full truth table, \code{\link{quantify_binary}} for binary evaluation,
+\code{\link{quantify_prob}} for probabilistic evaluation
 }
-\keyword{binary}
 \keyword{evaluation}
 \keyword{fault}
+\keyword{quantification}
 \keyword{tree}

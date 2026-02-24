@@ -9,5 +9,5 @@
 #'   \item{to}{Unique `id` of the destination/`to` node that edge connects to.}
 #' }
 #'
-#' @seealso [db_nodes] for the corresponding nodes dataset
+#' @seealso \code{\link[tidyfault]{db_nodes}} for the corresponding nodes dataset
 "db_edges"

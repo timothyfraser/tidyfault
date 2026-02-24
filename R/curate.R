@@ -111,9 +111,11 @@ curate = function(nodes, edges){
       type == "or" ~ set %>% 
         # Replace the "|" divider with an addition sign
         str_replace_all(pattern = "[|]", replacement = " + "),
-      # If the node is the top event, it will only have ONE node linked, 
-      # G1, the first gate, so we can leave it as is.
-      type == "top" ~ set,
+      # If the node is the top event, treat multiple children as OR
+      # (though typically top events have only one child gate)
+      type == "top" ~ set %>%
+        # Replace the "|" divider with an addition sign (OR logic)
+        str_replace_all(pattern = "[|]", replacement = " + "),
       # If the gate is not a gate (this shouldn't happen)
       # Just keep it as is
       type == "not" ~ set),

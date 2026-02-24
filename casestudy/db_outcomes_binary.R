@@ -32,5 +32,5 @@
 #' # Use binary outcomes in analysis
 #' gates <- curate(nodes = db_nodes, edges = db_edges)
 #'
-#' @seealso [db_nodes] [db_edges] [db_outcomes_prob] [db_outcomes_rates]
+#' @seealso [db_nodes] [db_edges] [db_probs] [db_outcomes_rates]
 "db_outcomes_binary"

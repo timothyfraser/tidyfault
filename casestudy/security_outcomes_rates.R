@@ -35,5 +35,5 @@
 #' t <- 30
 #' security_outcomes_rates$prob_at_t <- 1 - exp(-security_outcomes_rates$lambda * t)
 #'
-#' @seealso [security_nodes] [security_edges] [security_outcomes_prob] [security_outcomes_binary]
+#' @seealso [security_nodes] [security_edges] [security_probs] [security_outcomes_binary]
 "security_outcomes_rates"

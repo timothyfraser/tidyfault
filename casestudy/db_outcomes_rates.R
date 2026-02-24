@@ -36,5 +36,5 @@
 #' t <- 100
 #' db_outcomes_rates$prob_at_t <- 1 - exp(-db_outcomes_rates$lambda * t)
 #'
-#' @seealso [db_nodes] [db_edges] [db_outcomes_prob] [db_outcomes_binary]
+#' @seealso [db_nodes] [db_edges] [db_probs] [db_outcomes_binary]
 "db_outcomes_rates"

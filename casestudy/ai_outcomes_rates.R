@@ -32,5 +32,5 @@
 #' t <- 5000
 #' ai_outcomes_rates$prob_at_t <- 1 - exp(-ai_outcomes_rates$lambda * t / 1000)
 #'
-#' @seealso [ai_nodes] [ai_edges] [ai_outcomes_prob] [ai_outcomes_binary]
+#' @seealso [ai_nodes] [ai_edges] [ai_probs] [ai_outcomes_binary]
 "ai_outcomes_rates"

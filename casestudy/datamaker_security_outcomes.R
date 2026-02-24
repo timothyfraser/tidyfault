@@ -6,7 +6,7 @@ library(tidyverse)
 # Security Breach - Outcome Datasets
 
 # 1. Probability outcomes
-security_outcomes_prob = tribble(
+security_probs = tribble(
   ~event, ~probability,
   "VE",   0.25,   # Vulnerability exists
   "ES",   0.12,   # Exploit successful
@@ -41,6 +41,6 @@ security_outcomes_rates = tribble(
   "N2F",  0.0045,  "days")   # No 2FA: 0.0045 failures/day
 
 # Save to data directory
-use_data(security_outcomes_prob, overwrite = TRUE)
+use_data(security_probs, overwrite = TRUE)
 use_data(security_outcomes_binary, overwrite = TRUE)
 use_data(security_outcomes_rates, overwrite = TRUE)

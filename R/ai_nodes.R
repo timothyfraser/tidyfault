@@ -29,5 +29,5 @@
 #' library(tidyfault)
 #' curate(nodes = ai_nodes, edges = ai_edges)
 #'
-#' @seealso [ai_edges] for the corresponding edges dataset
+#' @seealso \code{\link[tidyfault]{ai_edges}} for the corresponding edges dataset
 "ai_nodes"

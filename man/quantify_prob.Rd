@@ -4,18 +4,19 @@
 \alias{quantify_prob}
 \title{quantify_prob() Function}
 \usage{
-quantify_prob(f, probs, truth_table = NULL)
+quantify_prob(f, newdata, truth_table = NULL)
 }
 \arguments{
 \item{f}{(Required) Function outputted by \code{formulate()}, with one argument per
 basic event. Used to identify event names and, if \code{truth_table} is not
 supplied, to generate the truth table via \code{calculate(f)}.}
 
-\item{probs}{(Required) Failure probabilities for each basic event. Can be a
-single vector or list (one scenario), or a data frame or matrix with one
-row per scenario and columns for each basic event (names must match
-\code{formalArgs(f)}). Unnamed vectors are interpreted in
-\code{formalArgs(f)} order. Values should be in \code{[0, 1]}.}
+\item{newdata}{(Required) Failure probabilities (0 to 1) for each basic event.
+Can be a single vector or list (one scenario), or a data frame or matrix with
+one row per scenario and columns for each basic event (names must match
+\code{formalArgs(f)}). Unnamed vectors are interpreted in \code{formalArgs(f)}
+order. Values should be in \code{[0, 1]}, where each value represents the
+probability that the corresponding basic event occurs.}
 
 \item{truth_table}{(Optional) Data frame with one column per basic event (0/1)
 and an \code{outcome} column (1 = system failure, 0 = no failure). If
@@ -23,9 +24,11 @@ provided, the truth table is not recomputed (useful when \code{calculate()}
 was already run).}
 }
 \value{
-A single numeric value, or if \code{probs} has multiple rows (one per
-scenario), a numeric vector of top-event failure probabilities (one per
-scenario, same order as rows of \code{probs}).
+A numeric vector of top-event failure probabilities. If \code{newdata} is
+a single scenario (vector/list or single-row data frame), returns a single
+numeric value. If \code{newdata} has multiple rows (one per scenario), returns
+a numeric vector with one probability per scenario (same order as rows of
+\code{newdata}). Similar to R's \code{predict()} function style.
 }
 \description{
 Computes the top event failure probability from a fault tree when given
@@ -35,12 +38,12 @@ the full truth table to sum probabilities over all failure combinations.
 \details{
 The top event probability is computed exactly via the complete truth
 table: for each of the 2^n combinations of basic event states, the
-probability of that combination is the product of \code{probs[e]} for events
-that occur (1) and \code{1 - probs[e]} for events that do not (0). The
+probability of that combination is the product of \code{newdata[e]} for events
+that occur (1) and \code{1 - newdata[e]} for events that do not (0). The
 function sums these probabilities over all combinations where
 \code{outcome == 1}. This is exact for independent basic events but has
 complexity O(2^n); for trees with many basic events, consider using minimal
-cut set approximations elsewhere. When \code{probs} has multiple rows, the
+cut set approximations elsewhere. When \code{newdata} has multiple rows, the
 truth table is computed once and all scenarios are evaluated in one pass.
 }
 \examples{

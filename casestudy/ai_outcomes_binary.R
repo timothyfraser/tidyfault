@@ -28,5 +28,5 @@
 #' # Use binary outcomes in analysis
 #' gates <- curate(nodes = ai_nodes, edges = ai_edges)
 #'
-#' @seealso [ai_nodes] [ai_edges] [ai_outcomes_prob] [ai_outcomes_rates]
+#' @seealso [ai_nodes] [ai_edges] [ai_probs] [ai_outcomes_rates]
 "ai_outcomes_binary"

@@ -6,7 +6,7 @@ library(tidyverse)
 # Database System Failure - Outcome Datasets
 
 # 1. Probability outcomes
-db_outcomes_prob = tribble(
+db_probs = tribble(
   ~event, ~probability,
   "DC",   0.05,   # Data corruption
   "AF",   0.10,   # Access failure
@@ -44,6 +44,6 @@ db_outcomes_rates = tribble(
   "MF",   0.0004,  "hours")   # Monitoring failure: 0.0004 failures/hour
 
 # Save to data directory
-use_data(db_outcomes_prob, overwrite = TRUE)
+use_data(db_probs, overwrite = TRUE)
 use_data(db_outcomes_binary, overwrite = TRUE)
 use_data(db_outcomes_rates, overwrite = TRUE)

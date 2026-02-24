@@ -31,5 +31,5 @@
 #' # Use binary outcomes in analysis
 #' gates <- curate(nodes = security_nodes, edges = security_edges)
 #'
-#' @seealso [security_nodes] [security_edges] [security_outcomes_prob] [security_outcomes_rates]
+#' @seealso [security_nodes] [security_edges] [security_probs] [security_outcomes_rates]
 "security_outcomes_binary"

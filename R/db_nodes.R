@@ -30,5 +30,5 @@
 #' library(tidyfault)
 #' curate(nodes = db_nodes, edges = db_edges)
 #'
-#' @seealso [db_edges] for the corresponding edges dataset
+#' @seealso \code{\link[tidyfault]{db_edges}} for the corresponding edges dataset
 "db_nodes"

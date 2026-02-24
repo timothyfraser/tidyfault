@@ -6,7 +6,7 @@ library(tidyverse)
 # AI Agent Failure - Outcome Datasets
 
 # 1. Probability outcomes
-ai_outcomes_prob = tribble(
+ai_probs = tribble(
   ~event, ~probability,
   "AF",   0.15,   # API failure
   "TO",   0.20,   # Timeout
@@ -32,6 +32,6 @@ ai_outcomes_rates = tribble(
   "CWE",  0.28,    "per_1000_requests")   # Context window exceeded: 0.28 failures/1000 requests
 
 # Save to data directory
-use_data(ai_outcomes_prob, overwrite = TRUE)
+use_data(ai_probs, overwrite = TRUE)
 use_data(ai_outcomes_binary, overwrite = TRUE)
 use_data(ai_outcomes_rates, overwrite = TRUE)
