@@ -4,7 +4,7 @@
 \alias{tabulate}
 \title{tabulate() Function}
 \usage{
-tabulate(data, formula, method = "mocus")
+tabulate(data, formula, method = "mocus", query = FALSE)
 }
 \arguments{
 \item{data}{(Required) Output from \code{concentrate()} function. For \code{method = "mocus"}, expects a character vector of minimum cutset expressions (e.g., \code{"A * B"}). For \code{method = "CCubes"}, expects a QCA solution object from \code{concentrate()} with \code{method = "CCubes"}.}
@@ -12,12 +12,14 @@ tabulate(data, formula, method = "mocus")
 \item{formula}{(Required) Function output from \code{formulate()}. Used to generate the truth table for calculating coverage statistics when \code{method = "mocus"}. Not used when \code{method = "CCubes"}.}
 
 \item{method}{(Optional) Character string specifying the method used. Default is \code{"mocus"}, which works with character vector output from \code{concentrate(method = "mocus")}. Alternatively, \code{"CCubes"} works with QCA solution objects from \code{concentrate(method = "CCubes")}.}
+
+\item{query}{(Optional) Logical - Whether to include the query column in the output. Default is \code{FALSE}.}
 }
 \value{
 A \code{data.frame} (tibble) with one row per minimum cutset, containing:
 \itemize{
 \item \code{mincut}: Character string representing the minimum cutset as a boolean expression (e.g., \code{"A * B"} for events A AND B)
-\item \code{query}: Character string containing a filter expression that can be used to identify truth table rows matching this cutset (e.g., \code{"filter(A == 1, B == 1, outcome == 1)"})
+\item \code{query}: Character string containing a filter expression that can be used to identify truth table rows matching this cutset (e.g., \code{"filter(A == 1, B == 1, outcome == 1)"}) (only included if \code{query = TRUE})
 \item \code{cutsets}: Integer count of truth table rows (cutsets) that match this minimum cutset and result in system failure
 \item \code{failures}: Integer count of total truth table rows that result in system failure (same for all rows)
 \item \code{coverage}: Numeric value (0 to 1) representing the proportion of failure cases covered by this minimum cutset. Calculated as \code{cutsets / failures}. Higher coverage indicates a more critical failure path.

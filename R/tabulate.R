@@ -5,11 +5,12 @@
 #' @param data (Required) Output from `concentrate()` function. For `method = "mocus"`, expects a character vector of minimum cutset expressions (e.g., `"A * B"`). For `method = "CCubes"`, expects a QCA solution object from `concentrate()` with `method = "CCubes"`.
 #' @param formula (Required) Function output from `formulate()`. Used to generate the truth table for calculating coverage statistics when `method = "mocus"`. Not used when `method = "CCubes"`.
 #' @param method (Optional) Character string specifying the method used. Default is `"mocus"`, which works with character vector output from `concentrate(method = "mocus")`. Alternatively, `"CCubes"` works with QCA solution objects from `concentrate(method = "CCubes")`.
+#' @param query (Optional) Logical - Whether to include the query column in the output. Default is `FALSE`.
 #' 
 #' @return A `data.frame` (tibble) with one row per minimum cutset, containing:
 #'   \itemize{
 #'     \item `mincut`: Character string representing the minimum cutset as a boolean expression (e.g., `"A * B"` for events A AND B)
-#'     \item `query`: Character string containing a filter expression that can be used to identify truth table rows matching this cutset (e.g., `"filter(A == 1, B == 1, outcome == 1)"`)
+#'     \item `query`: Character string containing a filter expression that can be used to identify truth table rows matching this cutset (e.g., `"filter(A == 1, B == 1, outcome == 1)"`) (only included if `query = TRUE`)
 #'     \item `cutsets`: Integer count of truth table rows (cutsets) that match this minimum cutset and result in system failure
 #'     \item `failures`: Integer count of total truth table rows that result in system failure (same for all rows)
 #'     \item `coverage`: Numeric value (0 to 1) representing the proportion of failure cases covered by this minimum cutset. Calculated as `cutsets / failures`. Higher coverage indicates a more critical failure path.
@@ -64,7 +65,12 @@
 #'    concentrate(method = "CCubes") %>% 
 #'    tabulate(formula = formula, method = "CCubes")
 
-tabulate = function(data, formula, method = "mocus"){
+tabulate = function(data, formula, method = "mocus", query = FALSE){
+  # Testing values
+  # formula = myfunction
+  # data = mymin
+  # method = "mocus"
+  # query = FALSE
   
   if(method == "mocus"){
     # Extract the truth table from our formula
@@ -82,16 +88,17 @@ tabulate = function(data, formula, method = "mocus"){
       with(essential)
   }
   
+
   # Extract the solution set as a tibble(),
   # where each column shows one solution, 
   # including however many minimum cutsets there are
   # in that vector named for the solution 
   # (eg. solution M1 gets its own column)
-  data %>%
+  output = data %>%
     tibble(mincut = .) %>%
     # For each minimum cutset,
     group_by(mincut) %>%
-    summarize(
+    reframe(
       # please extract each of the values in that cutset, one per row
       event = mincut %>% str_split(pattern = "[*]", simplify = TRUE) %>% as.vector(),
       # then classify cutset values as positive (no tilde = 1) or negative (tilde = 0)
@@ -119,6 +126,21 @@ tabulate = function(data, formula, method = "mocus"){
       # In other words, the explanatory power of our cutsets for system failure
       coverage = cutsets / failures,
       query = query %>% str_remove(pattern = paste( deparse(quote(tab)), " %>% ", sep = "") )) %>%
-    ungroup() %>%
-    return()
+    ungroup()
+
+  # Technically 
+  # For each minimal cutset, please count up the number of rows in the truth table that match the cutset.
+  # data %>% 
+  #    stringr::str_split(pattern = "[*]", simplify = FALSE) %>%
+  #    purrr::map_dfr(
+  #     .f = ~tab %>% select(all_of(.x)) %>% filter_all(all_vars(. == 1)) %>% nrow() %>% as_tibble(),
+  #     .id = "cutset"
+  #    )
+    if(query == FALSE){
+      output = output %>% select(-query)
+    }
+
+    return(output)
+
+    
 }

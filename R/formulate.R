@@ -26,7 +26,7 @@
 #' 
 #' @keywords fault tree formula boolean equation
 #' @importFrom dplyr %>%
-#' @importFrom stringr str_split str_trim
+#' @importFrom stringr str_split str_trim str_detect
 #' @importFrom dplyr na_if
 #' @export
 #' @examples
@@ -59,7 +59,8 @@ formulate = function(formula){
   # Can I now remove ANYTHING that is not a (, ), +, or *?
   values = formula %>% 
     # Split into separate values anytime you see an operator
-    str_split(pattern = "[(]|[)]|[+]|[*]", simplify = TRUE) %>% 
+    # Use character class to match any of: ( ) * +
+    str_split(pattern = "[()*+]", simplify = TRUE) %>% 
     # Convert matrix to vector
     as.vector() %>%
     # Trim any spaces
@@ -68,6 +69,9 @@ formulate = function(formula){
     dplyr::na_if("") %>%
     # Drop NAs
     .[!is.na(.)] %>%
+    # Filter out any values that aren't valid R identifiers
+    # (e.g., operators like | that might slip through)
+    .[str_detect(., pattern = "^[a-zA-Z][a-zA-Z0-9_.]*$")] %>%
     # Return just the unique list of inputs
     unique() %>%
     # Sort the unique inputs

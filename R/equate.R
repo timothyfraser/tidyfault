@@ -27,7 +27,7 @@
 #' 
 #' @keywords fault tree equation
 #' @importFrom dplyr %>%
-#' @importFrom stringr str_detect str_replace
+#' @importFrom stringr str_detect str_replace str_replace_all
 #' @export
 #' @examples
 #' 
@@ -96,6 +96,11 @@ equate = function(data){
   
   # The set for the FIRST gate will be the Boolean expression for the entire fault tree
   equation = data$set[1]
+  
+  # Defensive cleanup: replace any remaining | characters with + (OR operator)
+  # This ensures the equation always uses + for OR operations, even if curate() missed some cases
+  equation = equation %>%
+    str_replace_all(pattern = "[|]", replacement = " + ")
   
   # print("fault tree equation found")
   
