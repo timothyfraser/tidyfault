@@ -140,6 +140,54 @@ db_edges = tribble(
   5,   12,   # G4 -> Hardware failure
   5,   13)   # G4 -> Monitoring failure
 
+# IT security (data exfiltration) fault tree
+# Top event: DataExfiltration (sensitive data leaves the organization)
+# Three ways a breach can happen (OR): outsider gets in, known flaw exploited, insider sends data out
+# Outsider path (AND): log-ins stolen or misused, no second login step, admin access misconfigured
+# Known-flaw path (AND): system has known hole, updates not applied, web filter missing or bypassed
+# Insider path (AND): employee acts badly or account taken over, no copy-out controls, too much access
+# Log-ins stolen/misused (OR): obtained via fake email/link, or leaked/reused elsewhere
+
+it_security_nodes = tribble(
+  ~id, ~event, ~type,
+  1,   "DE",   "top",   # Data exfiltration: Sensitive data leaves the organization (top).
+  2,   "BP",   "or",    # Breach pathways: Ways a breach can happen (OR of three paths).
+  3,   "EA",   "and",   # External privilege access: Outsider gets high-level access.
+  4,   "UE",   "and",   # Unpatched exploit: Attacker uses a known flaw that was not fixed.
+  5,   "IE",   "and",   # Insider exfiltration: Someone inside sends data out.
+  6,   "CC",   "or",    # Credentials compromised: Log-in details stolen or misused.
+  7,   "PC",   "not",   # Phishing credentials: Passwords obtained via fake email or link (phishing).
+  8,   "LR",   "not",   # Leaked or reused credentials: Passwords exposed in a breach or reused elsewhere.
+  9,   "MN",   "not",   # MFA not enforced: No second login step (e.g. code on phone) required.
+  10,  "PM",   "not",   # Privilege access misconfiguration: Admin-level access set up incorrectly.
+  11,  "VS",   "not",   # Vulnerable service: System has a known security hole.
+  12,  "PO",   "not",   # Patch overdue: Security updates not applied on time.
+  13,  "WB",   "not",   # WAF missing or bypassed: Web traffic filter missing or attacker got around it.
+  14,  "IM",   "not",   # Insider malicious or compromised: Employee did it on purpose or account was taken over.
+  15,  "DA",   "not",   # DLP absent: No controls to stop data from being copied or sent out.
+  16,  "EP",   "not"    # Excessive privileges: User had more access than needed for their job.
+) %>%
+  mutate(type = factor(type, levels = c("top", "and", "or", "not")))
+
+it_security_edges = tribble(
+  ~from, ~to,
+  1,    2,
+  2,    3,
+  2,    4,
+  2,    5,
+  3,    6,
+  3,    9,
+  3,    10,
+  4,    11,
+  4,    12,
+  4,    13,
+  5,    14,
+  5,    15,
+  5,    16,
+  6,    7,
+  6,    8
+)
+
 # AI Agent Failure - Outcome Datasets
 
 # 1. Probability outcomes
@@ -245,6 +293,50 @@ security_outcomes_rates = tribble(
   "WP",   0.006,   "days",   # Weak password: 0.006 failures/day
   "N2F",  0.0045,  "days")   # No 2FA: 0.0045 failures/day
 
+# IT security (data exfiltration) - Outcome datasets
+
+# 1. Probability outcomes: one row, one column per basic event for quantify(..., prob = TRUE)
+it_security_probs = tibble(
+  DA = 0.22,   # No controls to stop data from being copied or sent out
+  EP = 0.18,   # User had more access than needed for their job
+  IM = 0.08,   # Employee did it on purpose or account was taken over
+  LR = 0.12,   # Passwords exposed in a breach or reused elsewhere
+  MN = 0.25,   # No second login step (e.g. code on phone) required
+  PO = 0.15,   # Security updates not applied on time
+  PC = 0.20,   # Passwords obtained via fake email or link (phishing)
+  PM = 0.14,   # Admin-level access set up incorrectly
+  VS = 0.10,   # System has a known security hole
+  WB = 0.16    # Web traffic filter missing or attacker got around it
+)
+
+# 2. Binary scenario data for quantify(): 3 rows, 10 basic-event columns only
+it_security_data = tibble(
+  DA = c(0, 0, 0),      # No controls to stop data from being copied or sent out
+  EP = c(0, 0, 0),      # User had more access than needed for their job
+  IM = c(0, 0, 0),      # Employee did it on purpose or account was taken over
+  LR = c(0, 1, 0),      # Passwords exposed in a breach or reused elsewhere
+  MN = c(1, 0, 0),      # No second login step (e.g. code on phone) required
+  PO = c(0, 0, 1),      # Security updates not applied on time
+  PC = c(1, 0, 0),      # Passwords obtained via fake email or link (phishing)
+  PM = c(1, 1, 0),      # Admin-level access set up incorrectly
+  VS = c(0, 0, 1),      # System has a known security hole
+  WB = c(0, 0, 1)       # Web traffic filter missing or attacker got around it
+)
+
+# 3. Exponential failure rates (lambda per year)
+it_security_outcomes_rates = tribble(
+  ~event, ~lambda, ~time_unit,
+  "DA",   0.25,  "years",   # No controls to stop data from being copied or sent out: 0.25 failures/year
+  "EP",   0.20,  "years",   # User had more access than needed for their job: 0.20 failures/year
+  "IM",   0.09,  "years",   # Employee did it on purpose or account was taken over: 0.09 failures/year
+  "LR",   0.13,  "years",   # Passwords exposed in a breach or reused elsewhere: 0.13 failures/year
+  "MN",   0.29,  "years",   # No second login step (e.g. code on phone) required: 0.29 failures/year
+  "PO",   0.16,  "years",   # Security updates not applied on time: 0.16 failures/year
+  "PC",   0.22,  "years",   # Passwords obtained via fake email or link (phishing): 0.22 failures/year
+  "PM",   0.15,  "years",   # Admin-level access set up incorrectly: 0.15 failures/year
+  "VS",   0.11,  "years",   # System has a known security hole: 0.11 failures/year
+  "WB",   0.17,  "years")   # Web traffic filter missing or attacker got around it: 0.17 failures/year
+
 # Make a data directory if it doesn't already exist
 dir.create("data", showWarnings = FALSE)
 # Save fake data to file
@@ -268,3 +360,9 @@ use_data(db_edges, overwrite = TRUE)
 use_data(db_probs, overwrite = TRUE)
 use_data(db_outcomes_binary, overwrite = TRUE)
 use_data(db_outcomes_rates, overwrite = TRUE)
+# Save IT security (data exfiltration) datasets
+use_data(it_security_nodes, overwrite = TRUE)
+use_data(it_security_edges, overwrite = TRUE)
+use_data(it_security_probs, overwrite = TRUE)
+use_data(it_security_data, overwrite = TRUE)
+use_data(it_security_outcomes_rates, overwrite = TRUE)

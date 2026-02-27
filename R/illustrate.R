@@ -106,7 +106,7 @@ illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), n
       # Alternatively, if you select "all"
       # then return every version of the data
       list(gnodes, gedges, ggates, gpairs) %>% 
-        purrr::set_names(nm = c("nodes", "edges", "pairwise", "gates")) %>%
+        purrr::set_names(nm = c("nodes", "edges", "gates", "pairwise")) %>%
         return()
     }
   }

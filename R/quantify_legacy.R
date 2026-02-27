@@ -1,6 +1,6 @@
-#' quantify() Function
+#' quantify_legacy() — legacy quantification
 #'
-#' Unified quantification: when \code{prob = FALSE}, evaluates whether the top
+#' Legacy unified quantification: when \code{prob = FALSE}, evaluates whether the top
 #' event occurs given binary (0/1) basic event states; when \code{prob = TRUE},
 #' computes the top event failure probability given basic event failure
 #' probabilities.
@@ -22,13 +22,13 @@
 #'   provided, the truth table is not recomputed.
 #'
 #' @return When \code{prob = FALSE}: if \code{scenarios} is a data frame, a
-#'   tibble with the same columns plus \code{outcome} (logical); otherwise a
-#'   single logical. When \code{prob = TRUE}: a single numeric or a numeric
-#'   vector (one per scenario row if \code{scenarios} is a multi-row data frame
-#'   or matrix).
+#'   logical vector of outcomes (one per row); otherwise a single logical.
+#'   When \code{prob = TRUE}: a single numeric or a numeric vector (one per
+#'   scenario row if \code{scenarios} is a multi-row data frame or matrix).
 #'
-#' @seealso \code{\link{formulate}} for creating the fault tree function,
-#'   \code{\link{calculate}} for the full truth table.
+#' @seealso \code{\link{quantify}} for the current API, \code{\link{formulate}}
+#'   for creating the fault tree function, \code{\link{calculate}} for the full
+#'   truth table.
 #'
 #' @keywords fault tree quantification binary probability
 #' @importFrom dplyr %>% mutate
@@ -47,7 +47,7 @@
 #'   formulate()
 #'
 #' # Binary (prob = FALSE): single scenario
-#' f %>% quantify(c(TRUE, FALSE, TRUE, FALSE))
+#' f %>% quantify_legacy(c(TRUE, FALSE, TRUE, FALSE))
 #'
 #' # Binary: tibble of scenarios
 #' scenarios_tbl <- tibble(
@@ -56,16 +56,16 @@
 #'   C = c(1L, 0L, 0L),
 #'   D = c(0L, 1L, 1L)
 #' )
-#' f %>% quantify(scenarios_tbl)
+#' f %>% quantify_legacy(scenarios_tbl)
 #'
 #' # Probability (prob = TRUE): single scenario
-#' f %>% quantify(c(0.1, 0.2, 0.05, 0.15), prob = TRUE)
+#' f %>% quantify_legacy(c(0.1, 0.2, 0.05, 0.15), prob = TRUE)
 #'
 #' # Probability: reuse truth table
 #' tt <- calculate(f)
 #' probs <- setNames(c(0.1, 0.2, 0.05, 0.15), formalArgs(f))
-#' f %>% quantify(probs, prob = TRUE, truth_table = tt)
-quantify = function(f, scenarios, prob = FALSE, truth_table = NULL) {
+#' f %>% quantify_legacy(probs, prob = TRUE, truth_table = tt)
+quantify_legacy = function(f, scenarios, prob = FALSE, truth_table = NULL) {
 
   fargs = formalArgs(f)
 
@@ -80,9 +80,7 @@ quantify = function(f, scenarios, prob = FALSE, truth_table = NULL) {
       args = lapply(fargs, function(a) as.integer(as.logical(scenarios[[a]])))
       names(args) = fargs
       res = do.call(f, args)
-      scenarios %>%
-        tibble::as_tibble() %>%
-        mutate(outcome = as.logical(res >= 1))
+      return(as.logical(res >= 1))
     } else {
       nms = names(scenarios)
       if (is.null(nms) || all(nms == "", na.rm = TRUE) || !all(fargs %in% nms)) {
