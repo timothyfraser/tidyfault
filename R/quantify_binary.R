@@ -1,0 +1,104 @@
+#' quantify_binary() Function
+#'
+#' Evaluates whether the top event occurs (system fails) when given whether each
+#' basic event occurs or not. Inputs are binary: each event is 0 (did not occur)
+#' or 1 (occurred). No probabilities—deterministic evaluation only.
+#'
+#' @param f (Required) Function from \code{formulate()}, with one argument per
+#'   basic event. Used to identify event names and to evaluate the fault tree.
+#' @param newdata (Required) Binary event states (0/1 or TRUE/FALSE) for each basic
+#'   event. Either a tibble/data frame with one column per basic event (names from
+#'   \code{formalArgs(f)}), or a single vector/list. A single scenario can be an
+#'   unnamed vector in \code{formalArgs(f)} order (e.g. \code{c(T, T, T, F)} or
+#'   \code{c(1, 1, 0, 1)}), or a named vector/list. Values are logical (TRUE/FALSE)
+#'   or numeric (0/1), where 0/TRUE means the event occurred and 0/FALSE means it did not.
+#'
+#' @return A logical vector of outcomes (TRUE = system failure, FALSE = no failure).
+#'   If \code{newdata} is a data frame with multiple rows, returns a vector with one
+#'   outcome per row. If \code{newdata} is a single scenario (vector/list), returns
+#'   a single logical value.
+#'
+#' @details No probabilities are used; the function evaluates the fault tree
+#'   on the given event states. Outcome is TRUE when \code{f(...) >= 1} (system
+#'   failure). Logical and 0/1 inputs are coerced to 0/1 internally to match
+#'   \code{calculate()} behavior. When \code{newdata} is a data frame,
+#'   evaluation is vectorized: \code{f} is called once with vector columns
+#'   (one element per row), so many scenarios are handled efficiently. Returns
+#'   only the outcome vector, similar to R's \code{predict()} function style.
+#'
+#' @seealso \code{\link{formulate}} for creating the function, \code{\link{calculate}}
+#'   for the full truth table, \code{\link{quantify_prob}} for top event failure
+#'   probability given basic event probabilities, \code{\link{quantify}} for the
+#'   unified wrapper function.
+#'
+#' @keywords fault tree binary evaluation internal
+#' @importFrom dplyr %>% mutate
+#' @importFrom methods formalArgs
+#' @importFrom tibble as_tibble
+#' @export
+#' @examples
+#' library(tidyverse)
+#' library(tidyfault)
+#' library(QCA)
+#' data("fakenodes")
+#' data("fakeedges")
+#'
+#' # Pipe-friendly: single scenario in event order (e.g. A, B, C, D)
+#' curate(nodes = fakenodes, edges = fakeedges) %>%
+#'   equate() %>%
+#'   formulate() %>%
+#'   quantify_binary(c(T, T, T, F))
+#'
+#' f <- curate(nodes = fakenodes, edges = fakeedges) %>%
+#'   equate() %>%
+#'   formulate()
+#'
+#' # Single scenario: unnamed vector in event order
+#' f %>% quantify_binary(c(TRUE, FALSE, TRUE, FALSE))
+#'
+#' # Single scenario: named vector (logical or 0/1)
+#' one_scenario <- setNames(c(TRUE, FALSE, TRUE, FALSE), formalArgs(f))
+#' f %>% quantify_binary(one_scenario)
+#'
+#' # Tibble of scenarios: returns vector of outcomes (vectorized, one call to f for all rows)
+#' scenarios_tbl <- tibble(
+#'   A = c(1L, 0L, 1L),
+#'   B = c(0L, 1L, 1L),
+#'   C = c(1L, 0L, 0L),
+#'   D = c(0L, 1L, 1L)
+#' )
+#' f %>% quantify_binary(scenarios_tbl)  # Returns logical vector
+quantify_binary = function(f, newdata) {
+
+  fargs = formalArgs(f)
+
+  if (is.data.frame(newdata)) {
+    # Data frame path: require columns for all basic events; vectorized (one call to f)
+    missing_events = setdiff(fargs, colnames(newdata))
+    if (length(missing_events) > 0L)
+      stop("newdata must contain columns for all basic events. Missing: ",
+           paste(missing_events, collapse = ", "))
+
+    args = lapply(fargs, function(a) as.integer(as.logical(newdata[[a]])))
+    names(args) = fargs
+    res = do.call(f, args)
+    # Return just the outcome vector
+    as.logical(res >= 1)
+  } else {
+    # Single scenario: vector or list (unnamed = positional, or named)
+    nms = names(newdata)
+    if (is.null(nms) || all(nms == "", na.rm = TRUE) || !all(fargs %in% nms)) {
+      newdata = as.list(newdata)
+      if (length(newdata) != length(fargs))
+        stop("newdata length must match number of basic events (", length(fargs), ").")
+      names(newdata) = fargs
+    }
+    missing_events = setdiff(fargs, names(newdata))
+    if (length(missing_events) > 0L)
+      stop("newdata must contain values for all basic events. Missing: ",
+           paste(missing_events, collapse = ", "))
+
+    args = lapply(newdata[fargs], function(x) as.integer(as.logical(x)))
+    as.logical(do.call(f, args) >= 1)
+  }
+}

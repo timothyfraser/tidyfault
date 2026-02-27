@@ -153,8 +153,8 @@ quantify = function(f, newdata, prob = FALSE) {
   }
   
   if (prob) {
-    # Probabilistic evaluation: call quantify_prob()
-    quantify_prob(f, newdata = newdata, truth_table = NULL)
+    # Probabilistic evaluation: use legacy path (handles 1-row tibbles correctly)
+    quantify_legacy(f, scenarios = newdata, prob = TRUE, truth_table = NULL)
   } else {
     # Binary evaluation: call quantify_binary()
     quantify_binary(f, newdata = newdata)

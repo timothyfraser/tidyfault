@@ -2,7 +2,9 @@ library(usethis)
 library(devtools)
 library(roxygen2)
 library(tidyverse)
-setwd("/cloud/project")
+# setwd("/cloud/project")  # RStudio Cloud (Tim)
+# Jingyao (Mac): set package root so use_data() and data/ exist
+if (dir.exists("tidyfault")) setwd("tidyfault") else if (basename(getwd()) != "tidyfault") setwd("/Users/jingyaotong/Documents/GitHub/tidyfault_paper/tidyfault")
 getwd()
 
 # Let's make a data.frame of nodes!
@@ -295,7 +297,7 @@ security_outcomes_rates = tribble(
 
 # IT security (data exfiltration) - Outcome datasets
 
-# 1. Probability outcomes: one row, one column per basic event for quantify(..., prob = TRUE)
+# 1. Probability outcomes: wide format (one row, one column per basic event) for quantify(..., prob = TRUE)
 it_security_probs = tibble(
   DA = 0.22,   # No controls to stop data from being copied or sent out
   EP = 0.18,   # User had more access than needed for their job
@@ -308,6 +310,7 @@ it_security_probs = tibble(
   VS = 0.10,   # System has a known security hole
   WB = 0.16    # Web traffic filter missing or attacker got around it
 )
+it_security_probs = it_security_probs %>% select(DA, EP, IM, LR, MN, PO, PC, PM, VS, WB)
 
 # 2. Binary scenario data for quantify(): 3 rows, 10 basic-event columns only
 it_security_data = tibble(
