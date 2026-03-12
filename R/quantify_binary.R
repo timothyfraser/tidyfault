@@ -35,7 +35,6 @@
 #' @importFrom dplyr %>% mutate
 #' @importFrom methods formalArgs
 #' @importFrom tibble as_tibble
-#' @export
 #' @examples
 #' library(tidyverse)
 #' library(tidyfault)

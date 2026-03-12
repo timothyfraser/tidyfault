@@ -1,5 +1,7 @@
 # tidyfault
 
+<img src="tidyfault/man/figures/logo.png" align="right" height="140" />
+
 ## R Package for tidy *Fault Tree Analysis* (FTA)! 
 
 Uses `tidyverse`, `tidygraph`, and `QCA` packages, among others, to visualize fault trees, identify minimal cutsets, and other quantities of interest. 
@@ -51,7 +53,7 @@ myequation = mygates %>% equate()
 myfunction = myequation %>% formulate()
 ```
 
-4. `calculate()` all the truth table of all possible combinations of events and the `outcome` each leads to.
+4. `calculate()` the full truth table of all possible combinations of events and the `outcome` each leads to.
 
 ```r
 mycombos = myfunction %>% calculate()
@@ -63,10 +65,10 @@ mycombos = myfunction %>% calculate()
 mymin = mycombos %>% concentrate()
 ```
 
-6. `tabulate()` up our minimum cutsets and how coverage they have over the total paths to failure found with `calculate()`.
+6. `tabulate()` the minimum cutsets and how much coverage they have over the total paths to failure found with `calculate()`. `tabulate()` needs both the minimum cutsets and the formula (function from step 3).
 
 ```r
-mytable = mymin %>% tabulate()
+mytable = tabulate(mymin, formula = myfunction)
 ```
 
 ### Workflow (All at Once!)
@@ -76,16 +78,18 @@ Or, we can do this all in one fell swoop!
 Let's extract the minimum cutsets from our fault tree data!
 
 ```r
-# Start by curating the gates...
-mytable = curate(
-  nodes = fakenodes, 
-  edges = fakeedges) %>%
-  # Now apply our next functions
+# Build the formula once (needed for tabulate)
+myfunction = curate(nodes = fakenodes, edges = fakeedges) %>%
+  equate() %>%
+  formulate()
+
+# Run the full pipeline; tabulate() needs the formula for coverage stats
+mytable = curate(nodes = fakenodes, edges = fakeedges) %>%
   equate() %>%
   formulate() %>%
   calculate() %>%
-  concentrate() %>% 
-  tabulate()
+  concentrate() %>%
+  tabulate(formula = myfunction)
 ```
 
 

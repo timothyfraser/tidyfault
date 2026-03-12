@@ -1,13 +1,14 @@
 #' illustrate() Function
 #'
-#' This function takes a dataset of nodes and edges dataset from a fault tree, calculate a **tree** layout using `tidygraph` and `ggraph`, and then outputs ggplot-friendly data.frames of nodes and edges. 
+#' This function takes nodes and edges from a fault tree, computes a **tree** layout using `tidygraph` and `ggraph`, and returns ggplot-friendly data.frames of nodes, edges, and gate polygons. 
 #' 
 #' @param nodes (Required) dataset of nodes, including an `id` field (or whatever is written in `node_key`)
 #' @param edges (Required) dataset of edges, including `from` and `to` fields corresponding to the `id` of each node
 #' @param type (Optional) Character string specifying output format. Default is `"both"`, which returns a list with `"nodes"`, `"edges"`, and `"gates"`. Other options: `"nodes"` returns only node coordinates, `"edges"` returns only edge coordinates, `"all"` returns nodes, edges, gates, and pairwise edge data.
 #' @param node_key (Optional) Character string naming the column in `nodes` that contains unique node identifiers. Default is `"id"`.
 #' @param layout (Optional) Character string specifying the graph layout algorithm. Default is `"tree"`. `"dendrogram"` also works well. See `ggraph::create_layout()` for more layout options (e.g., `"fr"`, `"kk"`, `"nicely"`).
-#' @param size (Optional) Numeric value passed to `gate()` function for constructing polygons. Controls the diameter of gate shapes. Defaults to `0.25`.
+#' @param size (Optional) Numeric value passed to `gate()` function for constructing polygons. Controls the diameter of gate shapes. Defaults to `0.25`. When \code{scale_size = TRUE}, this is scaled by the layout extent.
+#' @param scale_size (Optional) Logical. If \code{TRUE}, scale gate size to the layout extent. Default is \code{FALSE}; set to \code{TRUE} to try consistent proportions across very different trees.
 #' @param res (Optional) Numeric value passed to `gate()` function for constructing polygons. Controls the number of line segments used to draw curved gate shapes. Defaults to `50`.
 #' 
 #' @return The return type depends on the `type` parameter:
@@ -43,7 +44,7 @@
 #' @importFrom rlang sym
 #' @export
 
-illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), node_key = "id", layout = "tree", size = 0.25, res = 50){
+illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), node_key = "id", layout = "tree", size = 0.25, scale_size = FALSE, res = 50){
   
   # Match type argument
   type = match.arg(type)
@@ -63,7 +64,15 @@ illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), n
   if(type == "nodes"){
     return(gnodes)
   }else{
-    
+    # Scale gate size to layout extent so proportions look consistent across trees
+    if (scale_size) {
+      xr <- diff(range(gnodes$x, na.rm = TRUE))
+      yr <- diff(range(gnodes$y, na.rm = TRUE))
+      extent <- min(xr, yr)
+      if (extent < 1e-6) extent <- 1
+      size <- size * extent / 4
+    }
+
     gpairs = edges %>%
       # Join in coordinates for from id
       left_join(by = c("from" = node_key), 

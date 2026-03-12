@@ -6,8 +6,8 @@ library(tictoc) # for timing
 library(purrr) # for iteration
 library(readr)
 # Define the range of gates and basic events to simulate
-n_gates = c(1,5,10,20,30,50)
-n_basic = c(1,5,10,20,30,50)
+n_gates = c(1,5,10,20)
+n_basic = c(1,5,10,20)
 
 # Iterate over the range of gates and basic events
 result = purrr::map2_dfr(
@@ -30,4 +30,7 @@ result = purrr::map2_dfr(
   .id = "id"
  )
 # Write result to file
-write_csv(result, path = "C:/Users/tmf77/tidyfault_paper/tidyfault/dev/benchmark_results.csv")
+# Tim
+# write_csv(result, path = "C:/Users/tmf77/tidyfault_paper/tidyfault/dev/benchmark_results.csv")
+# Jingyao
+write_csv(result, path = "dev/benchmark_results.csv")

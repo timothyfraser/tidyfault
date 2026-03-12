@@ -16,6 +16,7 @@ Depends:
 Imports:
     admisc,
     dplyr,
+    ggplot2,
     ggraph,
     methods,
     purrr,

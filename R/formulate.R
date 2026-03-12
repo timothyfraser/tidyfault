@@ -1,6 +1,6 @@
 #' formulate() Function
 #'
-#' This function *formulates* a `function` that can compute probabilities of system failure. To do so, it converts a character string describing the boolean equation of a fault tree into a `function` that can compute probabilities of system failure into that function. Handles AND and OR operations.
+#' This function *formulates* a character string (the boolean equation of a fault tree) into an R \code{function} that evaluates system failure. Handles AND and OR operations.
 #' 
 #' @param formula (Required) A character string containing the boolean logic equation of a fault tree. Should use `*` for AND operations, `+` for OR operations, and parentheses for grouping. The equation should contain only basic event names (no gate references). Typically output from `equate()`.
 #' 
