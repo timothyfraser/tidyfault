@@ -268,14 +268,46 @@ plot <- function(x,
         ggplot2::aes(x = .data$x, y = .data$y, label = .data$event),
         inherit.aes = FALSE,
         size = 2.5,
-        colour = "white"
+        colour = "black"
       )
   }
 
+  # Stable legend ordering/labels for the gate fill categories
+  fill_levels <- unique(c(as.character(gates$gate), basic_nodes$display_type))
+  desired_breaks <- c("top", "and", "or", "basic event")
+  plot_breaks <- desired_breaks[desired_breaks %in% fill_levels]
+  label_map <- c(
+    "top" = "Top Event",
+    "and" = "And Gate",
+    "or" = "Or Gate",
+    "basic event" = "Basic Event"
+  )
+  plot_labels <- unname(label_map[plot_breaks])
+
   if (is.null(gate_fill)) {
-    p <- p + ggplot2::scale_fill_viridis_d(option = "D", na.value = "gray70")
+    if (length(plot_breaks) > 0) {
+      p <- p + ggplot2::scale_fill_viridis_d(
+        option = "D",
+        name = "Gate",
+        na.value = "gray70",
+        breaks = plot_breaks,
+        labels = plot_labels
+      )
+    } else {
+      p <- p + ggplot2::scale_fill_viridis_d(option = "D", name = "Gate", na.value = "gray70")
+    }
   } else {
-    p <- p + ggplot2::scale_fill_manual(values = gate_fill, na.value = "gray70")
+    if (length(plot_breaks) > 0) {
+      p <- p + ggplot2::scale_fill_manual(
+        values = gate_fill,
+        name = "Gate",
+        na.value = "gray70",
+        breaks = plot_breaks,
+        labels = plot_labels
+      )
+    } else {
+      p <- p + ggplot2::scale_fill_manual(values = gate_fill, name = "Gate", na.value = "gray70")
+    }
   }
 
   all_x <- c(nodes$x, gates$x)
@@ -302,5 +334,6 @@ plot <- function(x,
     p <- p + ggplot2::theme_void()
   }
 
+  p <- p + ggplot2::theme(legend.position = "bottom")
   return(p)
 }
