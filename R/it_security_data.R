@@ -21,13 +21,9 @@
 #' }
 #'
 #' @examples
-#' data("it_security_nodes")
-#' data("it_security_edges")
 #' data("it_security_data")
-#' library(tidyfault)
-#' gates <- curate(nodes = it_security_nodes, edges = it_security_edges)
-#' f <- equate(gates) %>% formulate()
-#' quantify(f, newdata = it_security_data)
+#' head(it_security_data)
+#' dim(it_security_data)
 #'
 #' @seealso \code{\link[tidyfault]{it_security_nodes}}, \code{\link[tidyfault]{quantify}}
 "it_security_data"

@@ -57,8 +57,7 @@
 #'    equate() %>%
 #'    formulate()
 #' curate(nodes = fakenodes, edges = fakeedges) %>% 
-#'    concentrate(method = "mocus") %>% 
-#'    tabulate(formula = formula, method = "mocus")
+#'    concentrate(method = "mocus")
 
 concentrate = function(data, method = "mocus"){
 

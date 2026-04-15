@@ -20,7 +20,7 @@ A function object that:
 The function can be called directly with event values or passed to \code{calculate()} to generate a complete truth table.
 }
 \description{
-This function \emph{formulates} a \code{function} that can compute probabilities of system failure. To do so, it converts a character string describing the boolean equation of a fault tree into a \code{function} that can compute probabilities of system failure into that function. Handles AND and OR operations.
+This function \emph{formulates} a character string (the boolean equation of a fault tree) into an R \code{function} that evaluates system failure. Handles AND and OR operations.
 }
 \details{
 This function converts a boolean equation string into an executable R function through the following process:
@@ -43,16 +43,14 @@ library(QCA)
 data("fakenodes")
 data("fakeedges")
 
-# Extract minimum cutset from fault tree data
-formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
-   equate() \%>\%
-   formulate()
-curate(nodes = fakenodes, edges = fakeedges) \%>\%
-   equate() \%>\%
-   formulate() \%>\%
-   calculate() \%>\%
-   concentrate() \%>\% 
-   tabulate(formula = formula)
+# Build a boolean equation and convert it to an executable function
+equation <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
+   equate()
+formula <- formulate(equation)
+formula
+
+# Evaluate across all combinations of basic events
+calculate(formula)
 }
 \seealso{
 \code{\link{equate}} for generating the boolean equation string, \code{\link{calculate}} for generating truth tables from the function

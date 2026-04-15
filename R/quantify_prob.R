@@ -73,6 +73,7 @@
 #' probs_df <- as.data.frame(replicate(4, runif(1000), simplify = FALSE))
 #' names(probs_df) <- formalArgs(f)
 #' f %>% quantify_prob(probs_df, truth_table = tt)  # length-1000 vector
+#' @export
 quantify_prob = function(f, newdata, truth_table = NULL) {
 
   fargs = formalArgs(f)

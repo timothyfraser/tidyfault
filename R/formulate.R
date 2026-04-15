@@ -40,16 +40,14 @@
 #' data("fakenodes")
 #' data("fakeedges")
 #' 
-#' # Extract minimum cutset from fault tree data
-#' formula <- curate(nodes = fakenodes, edges = fakeedges) %>%
-#'    equate() %>%
-#'    formulate()
-#' curate(nodes = fakenodes, edges = fakeedges) %>%
-#'    equate() %>%
-#'    formulate() %>%
-#'    calculate() %>%
-#'    concentrate() %>% 
-#'    tabulate(formula = formula)
+#' # Build a boolean equation and convert it to an executable function
+#' equation <- curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    equate()
+#' formula <- formulate(equation)
+#' formula
+#'
+#' # Evaluate across all combinations of basic events
+#' calculate(formula)
 
 formulate = function(formula){
   # As our next step we need to format that equation

@@ -59,15 +59,14 @@ formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
    equate() \%>\%
    formulate()
 curate(nodes = fakenodes, edges = fakeedges) \%>\% 
-   concentrate(method = "mocus") \%>\% 
-   tabulate(formula = formula, method = "mocus")
+   concentrate(method = "mocus")
 }
 \seealso{
 \code{\link{curate}} for preparing gate data for MOCUS method, \code{\link{calculate}} for generating truth tables for CCubes method, \code{\link{mocus}} for the MOCUS algorithm implementation, \code{\link{tabulate}} for analyzing and summarizing minimum cutsets
 }
 \keyword{cutset}
 \keyword{fault}
-\keyword{minimalization}
+\keyword{minimization}
 \keyword{minimum}
 \keyword{qca}
 \keyword{tree}

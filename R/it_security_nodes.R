@@ -32,9 +32,8 @@
 #'
 #' @examples
 #' data("it_security_nodes")
-#' data("it_security_edges")
-#' library(tidyfault)
-#' curate(nodes = it_security_nodes, edges = it_security_edges)
+#' head(it_security_nodes)
+#' dim(it_security_nodes)
 #'
 #' @seealso \code{\link[tidyfault]{it_security_edges}} for the corresponding edges dataset
 "it_security_nodes"

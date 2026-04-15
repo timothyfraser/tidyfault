@@ -20,6 +20,12 @@ security_edges
 \description{
 An example dataset of edges (connections) in a security breach fault tree.
 }
+\examples{
+data("security_edges")
+head(security_edges)
+dim(security_edges)
+
+}
 \seealso{
 \code{\link[tidyfault]{security_nodes}} for the corresponding nodes dataset
 }

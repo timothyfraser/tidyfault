@@ -1,0 +1,47 @@
+template:
+  bootswatch: flatly
+
+navbar:
+  structure:
+    left: [reference]
+    right: [search]
+
+reference:
+  - title: Core workflow
+    contents:
+      - curate
+      - equate
+      - formulate
+      - calculate
+      - concentrate
+      - tabulate
+      - mocus
+      - populate
+      - simulate
+  - title: Quantification
+    contents:
+      - quantify
+      - quantify_binary
+      - quantify_prob
+  - title: Data
+    contents:
+      - fakenodes
+      - fakeedges
+      - db_nodes
+      - db_edges
+      - ai_nodes
+      - ai_edges
+      - security_nodes
+      - security_edges
+      - it_security_nodes
+      - it_security_edges
+      - it_security_data
+  - title: Visualization
+    contents:
+      - illustrate
+      - plot
+      - gate
+      - gate_and
+      - gate_or
+      - gate_top
+      - get_gate

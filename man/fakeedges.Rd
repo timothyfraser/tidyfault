@@ -21,4 +21,9 @@ fakeedges
 \description{
 An example dataset of edges (connections) in a demonstration fault tree.
 }
+\examples{
+data("fakeedges")
+head(fakeedges)
+dim(fakeedges)
+}
 \keyword{datasets}

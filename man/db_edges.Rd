@@ -20,6 +20,12 @@ db_edges
 \description{
 An example dataset of edges (connections) in a database system failure fault tree.
 }
+\examples{
+data("db_edges")
+head(db_edges)
+dim(db_edges)
+
+}
 \seealso{
 \code{\link[tidyfault]{db_nodes}} for the corresponding nodes dataset
 }

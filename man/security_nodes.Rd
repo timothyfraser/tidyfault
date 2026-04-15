@@ -37,9 +37,8 @@ The fault tree structure:
 }
 \examples{
 data("security_nodes")
-data("security_edges")
-library(tidyfault)
-curate(nodes = security_nodes, edges = security_edges)
+head(security_nodes)
+dim(security_nodes)
 
 }
 \seealso{

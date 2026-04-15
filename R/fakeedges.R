@@ -9,4 +9,9 @@
 #'   \item{to}{unique `id` of the destination/`to` node that edge connects to.}
 #'   ...
 #' }
+#'
+#' @examples
+#' data("fakeedges")
+#' head(fakeedges)
+#' dim(fakeedges)
 "fakeedges"

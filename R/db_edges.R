@@ -9,5 +9,10 @@
 #'   \item{to}{Unique `id` of the destination/`to` node that edge connects to.}
 #' }
 #'
+#' @examples
+#' data("db_edges")
+#' head(db_edges)
+#' dim(db_edges)
+#'
 #' @seealso \code{\link[tidyfault]{db_nodes}} for the corresponding nodes dataset
 "db_edges"

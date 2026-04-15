@@ -10,5 +10,10 @@
 #'   \item{to}{Destination node \code{id}.}
 #' }
 #'
+#' @examples
+#' data("it_security_edges")
+#' head(it_security_edges)
+#' dim(it_security_edges)
+#'
 #' @seealso \code{\link[tidyfault]{it_security_nodes}} for the corresponding nodes dataset
 "it_security_edges"
