@@ -22,7 +22,7 @@
 #' @seealso \code{\link{get_gate}} for generating individual gate polygons, \code{\link{gate_and}} for AND gate shapes, \code{\link{gate_or}} for OR gate shapes, \code{\link{gate_top}} for top event shapes
 #' 
 #' @keywords fault tree gate polygon maker
-#' @importFrom dplyr %>% rename filter group_by summarize
+#' @importFrom dplyr %>% rename filter group_by reframe
 #' @importFrom rlang sym
 #' @export
 
@@ -31,5 +31,5 @@ gate = function(data, group = "id", gate = "type", size = 1, res = 50){
     rename(group = !!sym(group), gate = !!sym(gate)) %>%
     filter(gate %in% c("and", "or", "top")) %>%
     group_by(group, gate) %>%
-    summarize(get_gate(x,y, gate = gate, size = size, res = res))
+    reframe(get_gate(x, y, gate = gate, size = size, res = res))
 }

@@ -44,16 +44,14 @@ library(QCA)
 data("fakenodes")
 data("fakeedges")
 
-# Extract minimum cutset from fault tree data
-formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
-   equate() \%>\%
-   formulate()
-curate(nodes = fakenodes, edges = fakeedges) \%>\%
-   equate() \%>\%
-   formulate() \%>\%
-   calculate() \%>\%
-   concentrate() \%>\% 
-   tabulate(formula = formula)
+# Build gate-level representation and expand to a full boolean equation
+gates <- curate(nodes = fakenodes, edges = fakeedges)
+equation <- equate(gates)
+equation
+
+# Example downstream use of equate() output
+formula <- formulate(equation)
+calculate(formula)
 }
 \seealso{
 \code{\link{curate}} for creating the gates data.frame, \code{\link{formulate}} for converting the equation string into an executable function

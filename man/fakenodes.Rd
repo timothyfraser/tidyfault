@@ -22,4 +22,9 @@ fakenodes
 \description{
 An example dataset of nodes in a demonstration fault tree.
 }
+\examples{
+data("fakenodes")
+head(fakenodes)
+dim(fakenodes)
+}
 \keyword{datasets}

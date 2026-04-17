@@ -1,0 +1,135 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit README.Rmd. -->
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+# tidyfault
+
+<img src="man/figures/logo.png" align="right" width="120" style="float: right; margin-left: 1rem;" alt="tidyfault logo" />
+
+## R Package for tidy *Fault Tree Analysis* (FTA)!
+
+Uses `tidyverse`, `tidygraph`, and related tools to visualize fault trees, identify minimal cutsets, and evaluate failure outcomes.
+
+## Basic Usage
+
+How do we use `tidyfault` to analyze fault trees?
+
+### Load Packages and Data
+
+Let's start by loading our dependencies!
+
+```{r load}
+# Load dependencies
+library(tidyfault)
+library(tidyverse)
+```
+
+Next, let's get some fake data to work with, including **nodes** and **edges** in our fault tree.
+
+```{r data}
+#Load example data into our environment
+data("fakenodes")
+data("fakeedges")
+```
+
+### Workflow (Step-by-Step)
+
+Finally, let's demonstrate the basic workflow for `tidyfault`!
+
+First, we...
+
+1. `curate()` a list of **gates** in the fault tree;
+
+```{r curate}
+mygates = curate(nodes = fakenodes, edges = fakeedges)
+mygates
+```
+
+2. use `equate()` to find the boolean equation for the fault tree;
+
+```{r equate}
+myequation = mygates %>% equate()
+myequation
+```
+
+3. `formulate()` that equation into an `R` function we can use;
+
+```{r formulate}
+myfunction = myequation %>% formulate()
+myfunction
+```
+
+4. `calculate()` the full truth table of all possible combinations of events and the `outcome` each leads to.
+
+```{r calculate}
+mycombos = myfunction %>% calculate()
+head(mycombos)
+```
+
+5. `concentrate()` our gate structure into the minimum cutsets, the smallest sets of events necessary to cause system failure. This function uses boolean minimalization to find the minimum cutsets.
+
+```{r concentrate}
+mymin = mygates %>% concentrate()
+mymin
+```
+
+6. `tabulate()` the minimum cutsets and how much coverage they have over the total paths to failure found with `calculate()`. `tabulate()` needs both the minimum cutsets and the formula (function from step 3).
+
+```{r tabulate}
+mytable = tabulate(mymin, formula = myfunction)
+mytable
+```
+
+7. `illustrate()` + `plot()` to visualize the fault tree structure.
+
+```{r visualize, fig.height = 4, fig.width = 6}
+myviz = illustrate(nodes = fakenodes, edges = fakeedges, type = "both")
+myplot = plot(myviz)
+myplot
+```
+
+8. `quantify()` to evaluate specific scenarios (binary) or top-event probabilities.
+
+```{r quantify}
+# Binary scenario evaluation
+quantify(myfunction, c(TRUE, FALSE, TRUE, FALSE))
+
+# Probabilistic evaluation
+quantify(myfunction, c(0.10, 0.20, 0.05, 0.15), prob = TRUE)
+```
+
+### Workflow (All at Once!)
+
+Or, we can do this all in one fell swoop!
+
+Let's extract the minimum cutsets from our fault tree data!
+
+```{r all-at-once}
+# Build gates and formula once (needed for tabulate)
+mygates = curate(nodes = fakenodes, edges = fakeedges)
+myfunction = mygates %>%
+  equate() %>%
+  formulate()
+
+# Run the full pipeline; tabulate() needs the formula for coverage stats
+mytable = mygates %>%
+  concentrate() %>%
+  tabulate(formula = myfunction)
+```
+
+## Questions?
+
+Contact: Timothy Fraser, PhD (timothy.fraser.1@gmail.com)

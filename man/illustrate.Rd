@@ -11,6 +11,7 @@ illustrate(
   node_key = "id",
   layout = "tree",
   size = 0.25,
+  scale_size = FALSE,
   res = 50
 )
 }
@@ -25,7 +26,9 @@ illustrate(
 
 \item{layout}{(Optional) Character string specifying the graph layout algorithm. Default is \code{"tree"}. \code{"dendrogram"} also works well. See \code{ggraph::create_layout()} for more layout options (e.g., \code{"fr"}, \code{"kk"}, \code{"nicely"}).}
 
-\item{size}{(Optional) Numeric value passed to \code{gate()} function for constructing polygons. Controls the diameter of gate shapes. Defaults to \code{0.25}.}
+\item{size}{(Optional) Numeric value passed to \code{gate()} function for constructing polygons. Controls the diameter of gate shapes. Defaults to \code{0.25}. When \code{scale_size = TRUE}, this is scaled by the layout extent.}
+
+\item{scale_size}{(Optional) Logical. If \code{TRUE}, scale gate size to the layout extent. Default is \code{FALSE}; set to \code{TRUE} to try consistent proportions across very different trees.}
 
 \item{res}{(Optional) Numeric value passed to \code{gate()} function for constructing polygons. Controls the number of line segments used to draw curved gate shapes. Defaults to \code{50}.}
 }
@@ -44,7 +47,7 @@ The return type depends on the \code{type} parameter:
 }
 }
 \description{
-This function takes a dataset of nodes and edges dataset from a fault tree, calculate a \strong{tree} layout using \code{tidygraph} and \code{ggraph}, and then outputs ggplot-friendly data.frames of nodes and edges.
+This function takes nodes and edges from a fault tree, computes a \strong{tree} layout using \code{tidygraph} and \code{ggraph}, and returns ggplot-friendly data.frames of nodes, edges, and gate polygons.
 }
 \details{
 This function prepares fault tree data for visualization with ggplot2 by:

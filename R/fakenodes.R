@@ -10,4 +10,9 @@
 #'   \item{type}{`factor` classification as "top", "and", "or", or "not" (meaning "not" a gate).}
 #'   ...
 #' }
+#'
+#' @examples
+#' data("fakenodes")
+#' head(fakenodes)
+#' dim(fakenodes)
 "fakenodes"

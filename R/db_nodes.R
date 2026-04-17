@@ -26,9 +26,8 @@
 #'
 #' @examples
 #' data("db_nodes")
-#' data("db_edges")
-#' library(tidyfault)
-#' curate(nodes = db_nodes, edges = db_edges)
+#' head(db_nodes)
+#' dim(db_nodes)
 #'
 #' @seealso \code{\link[tidyfault]{db_edges}} for the corresponding edges dataset
 "db_nodes"

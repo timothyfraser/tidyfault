@@ -20,6 +20,12 @@ ai_edges
 \description{
 An example dataset of edges (connections) in an AI agent failure fault tree.
 }
+\examples{
+data("ai_edges")
+head(ai_edges)
+dim(ai_edges)
+
+}
 \seealso{
 \code{\link[tidyfault]{ai_nodes}} for the corresponding nodes dataset
 }

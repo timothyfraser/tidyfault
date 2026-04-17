@@ -15,7 +15,7 @@ event. Either a tibble/data frame with one column per basic event (names from
 \code{formalArgs(f)}), or a single vector/list. A single scenario can be an
 unnamed vector in \code{formalArgs(f)} order (e.g. \code{c(T, T, T, F)} or
 \code{c(1, 1, 0, 1)}), or a named vector/list. Values are logical (TRUE/FALSE)
-or numeric (0/1), where 0/TRUE means the event occurred and 0/FALSE means it did not.}
+or numeric (0/1), where 1/TRUE means the event occurred and 0/FALSE means it did not.}
 }
 \value{
 A logical vector of outcomes (TRUE = system failure, FALSE = no failure).

@@ -50,7 +50,7 @@
 #'    equate() %>%
 #'    formulate()
 #' curate(nodes = fakenodes, edges = fakeedges) %>%
-#'    concentrate(method = "mocus") %>% 
+#'    concentrate(method = "mocus") %>%
 #'    tabulate(formula = formula, method = "mocus")
 #' 
 #' # Method 2: CCubes (calculate() required)
@@ -71,7 +71,17 @@ tabulate = function(data, formula, method = "mocus", query = FALSE){
   # data = mymin
   # method = "mocus"
   # query = FALSE
-  
+
+  # MOCUS / equate strings often wrap cutsets in parentheses, e.g. "(A * B)".
+  # Splitting on * would otherwise yield "(A" as the first token and break filter()/parse().
+  strip_outer_parens <- function(s) {
+    s <- trimws(s)
+    while (nzchar(s) && substr(s, 1L, 1L) == "(" && substr(s, nchar(s), nchar(s)) == ")") {
+      s <- trimws(substr(s, 2L, nchar(s) - 1L))
+    }
+    s
+  }
+
   if(method == "mocus"){
     # Extract the truth table from our formula
     tab = formula %>%
@@ -100,7 +110,10 @@ tabulate = function(data, formula, method = "mocus", query = FALSE){
     group_by(mincut) %>%
     reframe(
       # please extract each of the values in that cutset, one per row
-      event = mincut %>% str_split(pattern = "[*]", simplify = TRUE) %>% as.vector(),
+      event = strip_outer_parens(unique(mincut)[[1L]]) %>%
+        str_split(pattern = "\\s*\\*\\s*", simplify = TRUE) %>%
+        as.vector() %>%
+        trimws(),
       # then classify cutset values as positive (no tilde = 1) or negative (tilde = 0)
       value = if_else(str_detect(event, "[~]"), 0, 1),
       # then construct a label

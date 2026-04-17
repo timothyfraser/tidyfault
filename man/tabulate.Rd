@@ -56,7 +56,7 @@ formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
    equate() \%>\%
    formulate()
 curate(nodes = fakenodes, edges = fakeedges) \%>\%
-   concentrate(method = "mocus") \%>\% 
+   concentrate(method = "mocus") \%>\%
    tabulate(formula = formula, method = "mocus")
 
 # Method 2: CCubes (calculate() required)

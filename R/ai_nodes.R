@@ -25,9 +25,8 @@
 #'
 #' @examples
 #' data("ai_nodes")
-#' data("ai_edges")
-#' library(tidyfault)
-#' curate(nodes = ai_nodes, edges = ai_edges)
+#' head(ai_nodes)
+#' dim(ai_nodes)
 #'
 #' @seealso \code{\link[tidyfault]{ai_edges}} for the corresponding edges dataset
 "ai_nodes"

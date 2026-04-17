@@ -41,16 +41,16 @@ library(QCA)
 data("fakenodes")
 data("fakeedges")
 
-# Extract minimum cutset from fault tree data
+# Build fault tree function and generate full truth table
 formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
    equate() \%>\%
    formulate()
-curate(nodes = fakenodes, edges = fakeedges) \%>\%
-   equate() \%>\%
-   formulate() \%>\%
-   calculate() \%>\%
-   concentrate() \%>\% 
-   tabulate(formula = formula)
+truth_table <- calculate(formula)
+truth_table
+
+# Optional downstream use with CCubes minimization
+truth_table \%>\%
+   concentrate(method = "CCubes")
 }
 \seealso{
 \code{\link{formulate}} for creating the function from a boolean equation, \code{\link{concentrate}} for finding minimum cutsets from the truth table

@@ -11,7 +11,7 @@
 #'   \code{formalArgs(f)}), or a single vector/list. A single scenario can be an
 #'   unnamed vector in \code{formalArgs(f)} order (e.g. \code{c(T, T, T, F)} or
 #'   \code{c(1, 1, 0, 1)}), or a named vector/list. Values are logical (TRUE/FALSE)
-#'   or numeric (0/1), where 0/TRUE means the event occurred and 0/FALSE means it did not.
+#'   or numeric (0/1), where 1/TRUE means the event occurred and 0/FALSE means it did not.
 #'
 #' @return A logical vector of outcomes (TRUE = system failure, FALSE = no failure).
 #'   If \code{newdata} is a data frame with multiple rows, returns a vector with one
@@ -67,6 +67,7 @@
 #'   D = c(0L, 1L, 1L)
 #' )
 #' f %>% quantify_binary(scenarios_tbl)  # Returns logical vector
+#' @export
 quantify_binary = function(f, newdata) {
 
   fargs = formalArgs(f)
