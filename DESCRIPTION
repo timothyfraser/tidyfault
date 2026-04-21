@@ -6,7 +6,7 @@ Authors@R:
              comment = c(ORCID = "0000-0002-4509-0244")),
       person("Jingyao", "Tong", , "jingyaotong6@gmail.com", role = c("aut"),
              comment = c(ORCID = "0009-0009-6147-756X")))
-Description: R Package for tidy fault tree analysis! Uses tidygraph, tidyverse, and QCA packages, among others, to visualize fault trees, identify minimal cutsets, and other quantities of interest.
+Description: R Package for tidy fault tree analysis! Uses tidygraph and tidyverse packages, among others, to visualize fault trees, identify minimal cutsets, and other quantities of interest.
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -20,11 +20,13 @@ Imports:
     ggraph,
     methods,
     purrr,
-    QCA,
+    Rcpp,
     rlang,
     scales,
     stringr,
     tibble,
     tidyr,
     tidygraph
+LinkingTo:
+    Rcpp
 LazyData: true

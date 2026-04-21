@@ -115,7 +115,6 @@ for the full truth table, <code><a href="quantify_binary.html">quantify_binary</
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">tidyfault</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/dusadrian/QCA" class="external-link">QCA</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"fakenodes"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"fakeedges"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -147,26 +146,23 @@ for the full truth table, <code><a href="quantify_binary.html">quantify_binary</
 <span class="r-in"><span><span class="va">probs_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, simplify <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">probs_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/methods/methodUtilities.html" class="external-link">formalArgs</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">f</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">quantify</span><span class="op">(</span><span class="va">probs_df</span>, prob <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1] 0.1527016386 0.1436908643 0.5535809416 0.7079718355 0.2258129857</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [6] 0.0009267594 0.9228120521 0.2737974765 0.4898073640 0.5839483688</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [11] 0.1436216431 0.3094646792 0.5981508609 0.4613765095 0.0667059901</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [16] 0.2362477997 0.0023907294 0.8295544351 0.0949569669 0.3894358901</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [21] 0.2242705755 0.6467784590 0.0990675295 0.9130109446 0.0216963536</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [26] 0.1528241006 0.5786687017 0.7342424503 0.0463530199 0.4729156601</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [31] 0.5732480993 0.3598350690 0.2304298695 0.2640345086 0.6531556547</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [36] 0.1545301799 0.0268038413 0.0435579385 0.3857820359 0.0917166324</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [41] 0.0329812258 0.0337610794 0.5594191364 0.2066847901 0.7236116168</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [46] 0.1487626290 0.8606964847 0.1562966782 0.3707744549 0.4628223027</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [51] 0.0731787315 0.7625023828 0.5068039807 0.0552638433 0.1104500125</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [56] 0.0680321854 0.6430493548 0.4823614348 0.1806826801 0.2041852062</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [61] 0.9272872943 0.0843619173 0.6623516054 0.2789669296 0.0403577483</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [66] 0.4385018631 0.3770071025 0.0355929881 0.3926161484 0.2503471489</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [71] 0.3136150968 0.6083893556 0.5046089848 0.4632678602 0.0137280158</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [76] 0.2727917924 0.2132113829 0.8683554380 0.4076699962 0.5897120163</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [81] 0.4959556160 0.4401476847 0.1298459580 0.4801502408 0.3234820978</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [86] 0.4596351846 0.1031291478 0.0918072660 0.7893350946 0.1935440688</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [91] 0.0027760521 0.5686416395 0.1525362996 0.0806159599 0.6109028905</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [96] 0.1606390817 0.7424955788 0.3280813424 0.2716912059 0.0900898898</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [1] 0.309464679 0.598150861 0.461376509 0.066705990 0.236247800 0.002390729</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [7] 0.829554435 0.094956967 0.389435890 0.224270576 0.646778459 0.099067529</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [13] 0.913010945 0.021696354 0.152824101 0.578668702 0.734242450 0.046353020</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [19] 0.472915660 0.573248099 0.359835069 0.230429870 0.264034509 0.653155655</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [25] 0.154530180 0.026803841 0.043557939 0.385782036 0.091716632 0.032981226</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [31] 0.033761079 0.559419136 0.206684790 0.723611617 0.148762629 0.860696485</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [37] 0.156296678 0.370774455 0.462822303 0.073178731 0.762502383 0.506803981</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [43] 0.055263843 0.110450013 0.068032185 0.643049355 0.482361435 0.180682680</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [49] 0.204185206 0.927287294 0.084361917 0.662351605 0.278966930 0.040357748</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [55] 0.438501863 0.377007103 0.035592988 0.392616148 0.250347149 0.313615097</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [61] 0.608389356 0.504608985 0.463267860 0.013728016 0.272791792 0.213211383</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [67] 0.868355438 0.407669996 0.589712016 0.495955616 0.440147685 0.129845958</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [73] 0.480150241 0.323482098 0.459635185 0.103129148 0.091807266 0.789335095</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [79] 0.193544069 0.002776052 0.568641640 0.152536300 0.080615960 0.610902890</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [85] 0.160639082 0.742495579 0.328081342 0.271691206 0.090089890 0.378799957</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [91] 0.130114130 0.627155107 0.663129410 0.151456526 0.086191280 0.833854018</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [97] 0.385753454 0.295293912 0.765847166 0.049679954</span>
 </code></pre></div>
     </div>
   </div>

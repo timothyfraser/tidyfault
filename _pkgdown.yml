@@ -16,13 +16,17 @@ reference:
       - concentrate
       - tabulate
       - mocus
+      - mocus_r
+      - mocus_rcpp
       - populate
       - simulate
   - title: Quantification
     contents:
       - quantify
       - quantify_binary
+      - quantify_binary_fast
       - quantify_prob
+      - quantify_prob_fast
   - title: Data
     contents:
       - fakenodes

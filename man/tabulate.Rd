@@ -4,14 +4,19 @@
 \alias{tabulate}
 \title{tabulate() Function}
 \usage{
-tabulate(data, formula, method = "mocus", query = FALSE)
+tabulate(
+  data,
+  formula,
+  method = c("mocus_rcpp", "mocus_r", "mocus_original"),
+  query = FALSE
+)
 }
 \arguments{
-\item{data}{(Required) Output from \code{concentrate()} function. For \code{method = "mocus"}, expects a character vector of minimum cutset expressions (e.g., \code{"A * B"}). For \code{method = "CCubes"}, expects a QCA solution object from \code{concentrate()} with \code{method = "CCubes"}.}
+\item{data}{(Required) Output from \code{concentrate()} function. Expects a character vector of minimum cutset expressions (e.g., \code{"A * B"}).}
 
-\item{formula}{(Required) Function output from \code{formulate()}. Used to generate the truth table for calculating coverage statistics when \code{method = "mocus"}. Not used when \code{method = "CCubes"}.}
+\item{formula}{(Required) Function output from \code{formulate()}. Used to generate the truth table for calculating coverage statistics.}
 
-\item{method}{(Optional) Character string specifying the method used. Default is \code{"mocus"}, which works with character vector output from \code{concentrate(method = "mocus")}. Alternatively, \code{"CCubes"} works with QCA solution objects from \code{concentrate(method = "CCubes")}.}
+\item{method}{(Optional) Character string specifying the method used in \code{concentrate()}. Default is \code{"mocus_rcpp"}. Supported values are \code{"mocus_rcpp"}, \code{"mocus_r"}, and \code{"mocus_original"}.}
 
 \item{query}{(Optional) Logical - Whether to include the query column in the output. Default is \code{FALSE}.}
 }
@@ -22,9 +27,8 @@ A \code{data.frame} (tibble) with one row per minimum cutset, containing:
 \item \code{query}: Character string containing a filter expression that can be used to identify truth table rows matching this cutset (e.g., \code{"filter(A == 1, B == 1, outcome == 1)"}) (only included if \code{query = TRUE})
 \item \code{cutsets}: Integer count of truth table rows (cutsets) that match this minimum cutset and result in system failure
 \item \code{failures}: Integer count of total truth table rows that result in system failure (same for all rows)
-\item \code{coverage}: Numeric value (0 to 1) representing the proportion of failure cases covered by this minimum cutset. Calculated as \code{cutsets / failures}. Higher coverage indicates a more critical failure path.
+\item \code{coverage}: Numeric value (0 to 1) representing the proportion of failure cases covered by this minimum cutset. Calculated as \code{cutsets / failures}.
 }
-Rows are grouped by \code{mincut}, allowing easy identification of the most critical failure paths based on coverage.
 }
 \description{
 This function \emph{tabulates} a \code{data.frame} of \code{N} minimum cutsets in your fault tree, describing each \code{mincut} set, a \code{query} used to filter a table of all sets, the number of \code{cutsets} that include that \code{mincut}, the total number of cutsets leading to \code{failure}, and the \code{coverage} (percentage of \code{cutsets} covered out of total failures) for that \code{mincut}.
@@ -32,44 +36,27 @@ This function \emph{tabulates} a \code{data.frame} of \code{N} minimum cutsets i
 \details{
 This function analyzes minimum cutsets to quantify their importance in system failure:
 \itemize{
-\item \strong{Truth Table Generation}: For \code{method = "mocus"}, uses \code{formula} to generate a complete truth table via \code{calculate()}. For \code{method = "CCubes"}, extracts the truth table from the QCA solution object.
-\item \strong{Cutset Parsing}: Splits each minimum cutset expression into individual events and determines their required states (1 for occurrence, 0 for non-occurrence, indicated by tilde \code{~} in QCA format)
+\item \strong{Truth Table Generation}: Uses \code{formula} to generate a complete truth table via \code{calculate()}.
+\item \strong{Cutset Parsing}: Splits each minimum cutset expression into individual events and determines their required states (1 for occurrence, 0 for non-occurrence)
 \item \strong{Query Construction}: Creates filter expressions that identify truth table rows matching each cutset's event combination
 \item \strong{Coverage Calculation}: Counts how many failure cases (rows with \code{outcome == 1}) are covered by each minimum cutset, then calculates coverage as a proportion
 }
-Coverage represents the explanatory power of each minimum cutset: a cutset with coverage = 0.5 means it explains 50\% of all system failure cases. This metric helps prioritize which failure paths are most critical for risk mitigation. The \code{query} column provides reusable filter expressions for further analysis.
 }
 \examples{
-
 # Load dependencies
 library(tidyverse)
 library(tidyfault)
-library(QCA)
 
 # Load example data into our environment
 data("fakenodes")
 data("fakeedges")
 
-# Extract minimum cutset from fault tree data
-# Method 1: MOCUS (no calculate() needed)
 formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
    equate() \%>\%
    formulate()
 curate(nodes = fakenodes, edges = fakeedges) \%>\%
-   concentrate(method = "mocus") \%>\%
-   tabulate(formula = formula, method = "mocus")
-
-# Method 2: CCubes (calculate() required)
-formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
-   equate() \%>\%
-   formulate()
-truth_table <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
-   equate() \%>\%
-   formulate() \%>\%
-   calculate()
-truth_table \%>\%
-   concentrate(method = "CCubes") \%>\% 
-   tabulate(formula = formula, method = "CCubes")
+   concentrate(method = "mocus_rcpp") \%>\%
+   tabulate(formula = formula, method = "mocus_rcpp")
 }
 \seealso{
 \code{\link{concentrate}} for generating minimum cutsets, \code{\link{formulate}} for creating the function used in truth table generation, \code{\link{calculate}} for generating truth tables

@@ -42,7 +42,6 @@ The output serves as the foundation for subsequent steps: \code{equate()} uses t
 # Load dependencies
 library(tidyverse)
 library(tidyfault)
-library(QCA)
 
 # Load example data into our environment
 data("fakenodes")
@@ -57,8 +56,8 @@ formula <- gates \%>\%
    equate() \%>\%
    formulate()
 gates \%>\%
-   concentrate(method = "mocus") \%>\%
-   tabulate(formula = formula, method = "mocus")
+   concentrate(method = "mocus_rcpp") \%>\%
+   tabulate(formula = formula, method = "mocus_rcpp")
 }
 \seealso{
 \code{\link{equate}} for building the complete boolean equation from curated gates, \code{\link{illustrate}} for visualizing the fault tree structure

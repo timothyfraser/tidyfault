@@ -35,7 +35,6 @@ The function is designed to work with boolean functions created by \code{formula
 # Load dependencies
 library(tidyverse)
 library(tidyfault)
-library(QCA)
 
 # Load example data into our environment
 data("fakenodes")
@@ -48,12 +47,12 @@ formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
 truth_table <- calculate(formula)
 truth_table
 
-# Optional downstream use with CCubes minimization
-truth_table \%>\%
-   concentrate(method = "CCubes")
+# Optional downstream use with MOCUS minimization
+curate(nodes = fakenodes, edges = fakeedges) \%>\%
+   concentrate(method = "mocus_rcpp")
 }
 \seealso{
-\code{\link{formulate}} for creating the function from a boolean equation, \code{\link{concentrate}} for finding minimum cutsets from the truth table
+\code{\link{formulate}} for creating the function from a boolean equation
 }
 \keyword{boolean}
 \keyword{equation}

@@ -38,7 +38,6 @@ The algorithm processes gates in order and handles nested gate structures by rep
 # Load dependencies
 library(tidyverse)
 library(tidyfault)
-library(QCA)
 
 # Load example data into our environment
 data("fakenodes")

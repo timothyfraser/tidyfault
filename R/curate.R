@@ -38,7 +38,6 @@
 #' # Load dependencies
 #' library(tidyverse)
 #' library(tidyfault)
-#' library(QCA)
 #' 
 #' # Load example data into our environment
 #' data("fakenodes")
@@ -53,8 +52,8 @@
 #'    equate() %>%
 #'    formulate()
 #' gates %>%
-#'    concentrate(method = "mocus") %>%
-#'    tabulate(formula = formula, method = "mocus")
+#'    concentrate(method = "mocus_rcpp") %>%
+#'    tabulate(formula = formula, method = "mocus_rcpp")
 
 curate = function(nodes, edges){
   

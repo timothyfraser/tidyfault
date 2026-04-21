@@ -40,7 +40,6 @@ only the outcome vector, similar to R's \code{predict()} function style.
 \examples{
 library(tidyverse)
 library(tidyfault)
-library(QCA)
 data("fakenodes")
 data("fakeedges")
 

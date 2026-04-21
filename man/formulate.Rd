@@ -37,7 +37,6 @@ The function uses R's arithmetic operators where multiplication (\code{*}) repre
 # Load dependencies
 library(tidyverse)
 library(tidyfault)
-library(QCA)
 
 # Load example data into our environment
 data("fakenodes")

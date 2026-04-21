@@ -65,11 +65,6 @@ This document lists all functions from external packages used in the tidyfault p
 
 - `simplify` - Used in: concentrate
 
-## QCA Functions
-
-- `minimize` - Used in: concentrate
-- `truthTable` - Used in: concentrate
-
 ## Base R Functions (for reference)
 
 These are standard R functions that don't require external packages:
@@ -101,8 +96,6 @@ These are standard R functions that don't require external packages:
 8. **tidygraph**: 1 function
 9. **ggraph**: 1 function
 10. **admisc**: 1 function
-11. **QCA**: 2 functions
-
 ## Potential Reduction Opportunities
 
 1. **dplyr functions** - Many could potentially be replaced with base R equivalents:
@@ -145,5 +138,5 @@ These are standard R functions that don't require external packages:
 9. **admisc** - Only used for `simplify()` in `concentrate()`:
    - Could implement boolean simplification manually or use alternative
 
-10. **QCA** - Only used in `concentrate()` with `method = "CCubes"`:
-    - Could make this method optional or remove if not critical
+10. **Additional optimization**:
+    - Focus on frequently used data manipulation paths in `dplyr` and `stringr`

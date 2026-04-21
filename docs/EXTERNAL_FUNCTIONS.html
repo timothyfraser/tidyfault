@@ -137,45 +137,23 @@
 <code>simplify</code> - Used in: concentrate</li>
 </ul></div>
 <div class="section level2">
-<h2 id="qca-functions">QCA Functions<a class="anchor" aria-label="anchor" href="#qca-functions"></a></h2>
-<ul><li>
-<code>minimize</code> - Used in: concentrate</li>
-<li>
-<code>truthTable</code> - Used in: concentrate</li>
-</ul></div>
-<div class="section level2">
 <h2 id="base-r-functions-for-reference">Base R Functions (for reference)<a class="anchor" aria-label="anchor" href="#base-r-functions-for-reference"></a></h2>
 <p>These are standard R functions that don’t require external packages: - <code>as.matrix</code>, <code>as.numeric</code>, <code>as.vector</code> - <code>c</code>, <code>cbind</code> - <code>deparse</code>, <code>eval</code> - <code>factor</code> - <code>length</code>, <code>list</code> - <code>matrix</code>, <code>max</code>, <code>mapply</code> - <code>na.rm</code> (parameter) - <code>nrow</code> - <code>parse</code>, <code>paste</code> - <code>quote</code> - <code>rep</code> - <code>seq</code>, <code>seq_len</code>, <code>sort</code>, <code>split</code>, <code>sqrt</code>, <code>sum</code> - <code>system.time</code> - <code>unique</code>, <code>unlist</code>, <code>unname</code> - <code>with</code></p>
 </div>
 <div class="section level2">
 <h2 id="summary-by-package">Summary by Package<a class="anchor" aria-label="anchor" href="#summary-by-package"></a></h2>
-<ol style="list-style-type: decimal"><li>
-<strong>dplyr</strong>: 18 functions (most heavily used)</li>
+<ol style="list-style-type: decimal"><li><p><strong>dplyr</strong>: 18 functions (most heavily used)</p></li>
+<li><p><strong>stringr</strong>: 6 functions</p></li>
+<li><p><strong>tibble</strong>: 2 functions</p></li>
+<li><p><strong>tidyr</strong>: 1 function</p></li>
+<li><p><strong>purrr</strong>: 2 functions</p></li>
+<li><p><strong>rlang</strong>: 1 function</p></li>
+<li><p><strong>scales</strong>: 1 function</p></li>
+<li><p><strong>tidygraph</strong>: 1 function</p></li>
+<li><p><strong>ggraph</strong>: 1 function</p></li>
+<li><p><strong>admisc</strong>: 1 function ## Potential Reduction Opportunities</p></li>
 <li>
-<strong>stringr</strong>: 6 functions</li>
-<li>
-<strong>tibble</strong>: 2 functions</li>
-<li>
-<strong>tidyr</strong>: 1 function</li>
-<li>
-<strong>purrr</strong>: 2 functions</li>
-<li>
-<strong>rlang</strong>: 1 function</li>
-<li>
-<strong>scales</strong>: 1 function</li>
-<li>
-<strong>tidygraph</strong>: 1 function</li>
-<li>
-<strong>ggraph</strong>: 1 function</li>
-<li>
-<strong>admisc</strong>: 1 function</li>
-<li>
-<strong>QCA</strong>: 2 functions</li>
-</ol></div>
-<div class="section level2">
-<h2 id="potential-reduction-opportunities">Potential Reduction Opportunities<a class="anchor" aria-label="anchor" href="#potential-reduction-opportunities"></a></h2>
-<ol style="list-style-type: decimal"><li>
-<strong>dplyr functions</strong> - Many could potentially be replaced with base R equivalents:
+<p><strong>dplyr functions</strong> - Many could potentially be replaced with base R equivalents:</p>
 <ul><li>
 <code>mutate</code> → direct assignment</li>
 <li>
@@ -193,7 +171,7 @@
 </li>
 </ul></li>
 <li>
-<strong>stringr functions</strong> - Could be replaced with base R:
+<p><strong>stringr functions</strong> - Could be replaced with base R:</p>
 <ul><li>
 <code>str_split</code> → <code><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit()</a></code>
 </li>
@@ -210,7 +188,7 @@
 <code>str_remove</code> → <code><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub()</a></code> with empty replacement</li>
 </ul></li>
 <li>
-<strong>tibble functions</strong> - Could use base R <code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code>:
+<p><strong>tibble functions</strong> - Could use base R <code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code>:</p>
 <ul><li>
 <code>tibble</code> → <code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code>
 </li>
@@ -218,13 +196,13 @@
 <code>tribble</code> → <code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code> with manual construction</li>
 </ul></li>
 <li>
-<strong>tidyr functions</strong> - Could use base R:
+<p><strong>tidyr functions</strong> - Could use base R:</p>
 <ul><li>
 <code>expand_grid</code> → <code><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid()</a></code>
 </li>
 </ul></li>
 <li>
-<strong>purrr functions</strong> - Could use base R:
+<p><strong>purrr functions</strong> - Could use base R:</p>
 <ul><li>
 <code>map</code> → <code><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply()</a></code>
 </li>
@@ -233,18 +211,18 @@
 </li>
 </ul></li>
 <li>
-<strong>rlang functions</strong> - Could use base R:
+<p><strong>rlang functions</strong> - Could use base R:</p>
 <ul><li>
 <code>sym</code> → <code><a href="https://rdrr.io/r/base/name.html" class="external-link">as.symbol()</a></code> or <code><a href="https://rdrr.io/r/base/name.html" class="external-link">as.name()</a></code>
 </li>
 </ul></li>
 <li>
-<strong>scales functions</strong> - Could implement manually:
+<p><strong>scales functions</strong> - Could implement manually:</p>
 <ul><li>
 <code>rescale</code> → simple linear transformation</li>
 </ul></li>
 <li>
-<strong>Visualization packages</strong> (tidygraph, ggraph) - Only used in <code><a href="reference/illustrate.html">illustrate()</a></code>:
+<p><strong>Visualization packages</strong> (tidygraph, ggraph) - Only used in <code><a href="reference/illustrate.html">illustrate()</a></code>:</p>
 <ul><li>Could make visualization optional or move to a separate package</li>
 <li>
 <code>tbl_graph</code> → could use <code>igraph</code> directly</li>
@@ -252,12 +230,13 @@
 <code>create_layout</code> → could use <code>igraph</code> layout functions</li>
 </ul></li>
 <li>
-<strong>admisc</strong> - Only used for <code>simplify()</code> in <code><a href="reference/concentrate.html">concentrate()</a></code>:
+<p><strong>admisc</strong> - Only used for <code>simplify()</code> in <code><a href="reference/concentrate.html">concentrate()</a></code>:</p>
 <ul><li>Could implement boolean simplification manually or use alternative</li>
 </ul></li>
 <li>
-<strong>QCA</strong> - Only used in <code><a href="reference/concentrate.html">concentrate()</a></code> with <code>method = "CCubes"</code>:
-<ul><li>Could make this method optional or remove if not critical</li>
+<p><strong>Additional optimization</strong>:</p>
+<ul><li>Focus on frequently used data manipulation paths in <code>dplyr</code> and <code>stringr</code>
+</li>
 </ul></li>
 </ol></div>
 </div>

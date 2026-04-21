@@ -20,7 +20,7 @@ result = purrr::map2_dfr(
   gates = curate(nodes = sim$nodes, edges = sim$edges)
   # Benchmark the MOCUS algorithm
   tic() # start timer
-  time = system.time({concentrate(gates, method = "mocus") })  # MOCUS
+  time = system.time({concentrate(gates, method = "mocus_original") })  # MOCUS
   time = toc(quiet = TRUE) # end timer
   # Return results
   output = data.frame(time = time$toc - time$tic, n_gates = .x, n_basic = .y)

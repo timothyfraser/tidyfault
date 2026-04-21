@@ -49,7 +49,6 @@ truth table is computed once and all scenarios are evaluated in one pass.
 \examples{
 library(tidyverse)
 library(tidyfault)
-library(QCA)
 data("fakenodes")
 data("fakeedges")
 

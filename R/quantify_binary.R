@@ -38,7 +38,6 @@
 #' @examples
 #' library(tidyverse)
 #' library(tidyfault)
-#' library(QCA)
 #' data("fakenodes")
 #' data("fakeedges")
 #'

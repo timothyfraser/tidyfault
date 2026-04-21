@@ -19,7 +19,7 @@
 #'     \item \strong{Convergence}: Continues until no gates remain in any cutset (only basic events)
 #'     \item \strong{Deduplication}: Removes duplicate events within each cutset
 #'   }
-#'   The algorithm handles nested gate structures by repeatedly expanding gates until all references are resolved. AND gates represent events that must all occur together, while OR gates represent alternative failure paths. The result includes all possible cutsets, which can then be minimized using boolean algebra (e.g., via `concentrate()` with `method = "mocus"`).
+#'   The algorithm handles nested gate structures by repeatedly expanding gates until all references are resolved. AND gates represent events that must all occur together, while OR gates represent alternative failure paths. The result includes all possible cutsets, which can then be minimized using boolean algebra (e.g., via `concentrate()` with `method = "mocus_original"`).
 #' 
 #' @seealso \code{\link{curate}} for preparing the gates data.frame, \code{\link{concentrate}} for finding minimum cutsets from the generated cutsets
 #' 

@@ -4,7 +4,7 @@
 \alias{quantify}
 \title{quantify() Function}
 \usage{
-quantify(f, newdata, prob = FALSE)
+quantify(f, newdata, prob = FALSE, fast = TRUE)
 }
 \arguments{
 \item{f}{(Required) Function from \code{formulate()}, with one argument per
@@ -17,8 +17,12 @@ basic event. Can be a tibble/data frame with one column per basic event, a
 single vector/list, or (for \code{prob = TRUE}) a matrix. See details below.}
 
 \item{prob}{(Optional) Logical. If \code{FALSE} (default), performs binary
-evaluation using \code{quantify_binary()}. If \code{TRUE}, computes failure
-probability using \code{quantify_prob()}.}
+evaluation. If \code{TRUE}, computes failure probability.}
+
+\item{fast}{(Optional) Logical. If \code{TRUE} (default), dispatches to
+optimized implementations (\code{quantify_binary_fast()} or
+\code{quantify_prob_fast()}). If \code{FALSE}, uses the legacy R
+implementations (\code{quantify_binary()} or \code{quantify_prob()}).}
 }
 \value{
 A vector of outcomes. The type depends on \code{prob}:
@@ -43,13 +47,14 @@ event occurs (binary evaluation) or computes top event failure probability
 This function provides a unified interface for both binary and
 probabilistic fault tree evaluation:
 \itemize{
-\item \strong{Binary evaluation} (\code{prob = FALSE}): Uses \code{quantify_binary()}
-to evaluate whether the top event occurs given binary event states. Each
-event is 0 (did not occur) or 1 (occurred). No probabilities are used.
-\item \strong{Probabilistic evaluation} (\code{prob = TRUE}): Uses \code{quantify_prob()}
-to compute the top event failure probability from basic event failure
-probabilities. Assumes independent basic events and uses the complete
-truth table for exact computation (O(2^n) complexity).
+\item \strong{Binary evaluation} (\code{prob = FALSE}): evaluates whether
+the top event occurs given binary event states.
+\item \strong{Probabilistic evaluation} (\code{prob = TRUE}): computes the
+top event failure probability from basic event failure probabilities.
+\item \strong{Fast mode} (\code{fast = TRUE}): uses optimized paths for
+larger scenario batches while preserving output semantics.
+\item \strong{Legacy mode} (\code{fast = FALSE}): uses the original
+pure-R implementations.
 }
 When \code{prob = FALSE}, \code{newdata} can be:
 \itemize{
@@ -68,7 +73,6 @@ basic event (names must match \code{formalArgs(f)})
 \examples{
 library(tidyverse)
 library(tidyfault)
-library(QCA)
 data("fakenodes")
 data("fakeedges")
 
@@ -92,6 +96,9 @@ f \%>\% quantify(scenarios_tbl)
 # Probabilistic evaluation: single scenario
 f \%>\% quantify(c(0.1, 0.2, 0.05, 0.15), prob = TRUE)
 
+# Legacy mode
+f \%>\% quantify(c(0.1, 0.2, 0.05, 0.15), prob = TRUE, fast = FALSE)
+
 # Probabilistic evaluation: multiple scenarios
 probs_df <- as.data.frame(replicate(4, runif(100), simplify = FALSE))
 names(probs_df) <- formalArgs(f)
@@ -99,8 +106,9 @@ f \%>\% quantify(probs_df, prob = TRUE)
 }
 \seealso{
 \code{\link{formulate}} for creating the function, \code{\link{calculate}}
-for the full truth table, \code{\link{quantify_binary}} for binary evaluation,
-\code{\link{quantify_prob}} for probabilistic evaluation
+for the full truth table, \code{\link{quantify_binary}},
+\code{\link{quantify_binary_fast}}, \code{\link{quantify_prob}},
+and \code{\link{quantify_prob_fast}}
 }
 \keyword{evaluation}
 \keyword{fault}

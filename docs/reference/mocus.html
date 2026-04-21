@@ -69,7 +69,7 @@
 </ul></li>
 <li><p><strong>Convergence</strong>: Continues until no gates remain in any cutset (only basic events)</p></li>
 <li><p><strong>Deduplication</strong>: Removes duplicate events within each cutset</p></li>
-</ul><p>The algorithm handles nested gate structures by repeatedly expanding gates until all references are resolved. AND gates represent events that must all occur together, while OR gates represent alternative failure paths. The result includes all possible cutsets, which can then be minimized using boolean algebra (e.g., via <code><a href="concentrate.html">concentrate()</a></code> with <code>method = "mocus"</code>).</p>
+</ul><p>The algorithm handles nested gate structures by repeatedly expanding gates until all references are resolved. AND gates represent events that must all occur together, while OR gates represent alternative failure paths. The result includes all possible cutsets, which can then be minimized using boolean algebra (e.g., via <code><a href="concentrate.html">concentrate()</a></code> with <code>method = "mocus_original"</code>).</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>

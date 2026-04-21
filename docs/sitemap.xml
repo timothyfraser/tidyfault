@@ -1,9 +1,9 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>/404.html</loc></url>
-<url><loc>/EXTERNAL_FUNCTIONS.html</loc></url>
-<url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/authors.html</loc></url>
+<url><loc>/EXTERNAL_FUNCTIONS.html</loc></url>
 <url><loc>/index.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/reference/ai_edges.html</loc></url>
 <url><loc>/reference/ai_nodes.html</loc></url>
 <url><loc>/reference/calculate.html</loc></url>
@@ -26,6 +26,8 @@
 <url><loc>/reference/it_security_edges.html</loc></url>
 <url><loc>/reference/it_security_nodes.html</loc></url>
 <url><loc>/reference/mocus.html</loc></url>
+<url><loc>/reference/mocus_r.html</loc></url>
+<url><loc>/reference/mocus_rcpp.html</loc></url>
 <url><loc>/reference/plot.html</loc></url>
 <url><loc>/reference/populate.html</loc></url>
 <url><loc>/reference/quantify.html</loc></url>
@@ -35,5 +37,6 @@
 <url><loc>/reference/security_nodes.html</loc></url>
 <url><loc>/reference/simulate.html</loc></url>
 <url><loc>/reference/tabulate.html</loc></url>
+<url><loc>/reference/tidyfault-package.html</loc></url>
 </urlset>
 

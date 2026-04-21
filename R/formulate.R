@@ -34,7 +34,6 @@
 #' # Load dependencies
 #' library(tidyverse)
 #' library(tidyfault)
-#' library(QCA)
 #' 
 #' # Load example data into our environment
 #' data("fakenodes")

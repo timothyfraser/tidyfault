@@ -20,7 +20,7 @@
 #'   }
 #'   The function is designed to work with boolean functions created by `formulate()` that represent fault tree logic. The outcome threshold (>= 1) allows for functions that may return counts or probabilities rather than strict boolean values.
 #' 
-#' @seealso \code{\link{formulate}} for creating the function from a boolean equation, \code{\link{concentrate}} for finding minimum cutsets from the truth table
+#' @seealso \code{\link{formulate}} for creating the function from a boolean equation
 #' 
 #' @keywords boolean logic fault tree equation
 #' @importFrom dplyr %>% mutate arrange desc
@@ -32,7 +32,6 @@
 #' # Load dependencies
 #' library(tidyverse)
 #' library(tidyfault)
-#' library(QCA)
 #' 
 #' # Load example data into our environment
 #' data("fakenodes")
@@ -45,9 +44,9 @@
 #' truth_table <- calculate(formula)
 #' truth_table
 #'
-#' # Optional downstream use with CCubes minimization
-#' truth_table %>%
-#'    concentrate(method = "CCubes")
+#' # Optional downstream use with MOCUS minimization
+#' curate(nodes = fakenodes, edges = fakeedges) %>%
+#'    concentrate(method = "mocus_rcpp")
 
 
 calculate = function(f){

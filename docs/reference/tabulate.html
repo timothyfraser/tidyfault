@@ -44,7 +44,12 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">tabulate</span><span class="op">(</span><span class="va">data</span>, <span class="va">formula</span>, method <span class="op">=</span> <span class="st">"mocus"</span>, query <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">tabulate</span><span class="op">(</span></span>
+<span>  <span class="va">data</span>,</span>
+<span>  <span class="va">formula</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mocus_rcpp"</span>, <span class="st">"mocus_r"</span>, <span class="st">"mocus_original"</span><span class="op">)</span>,</span>
+<span>  query <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -52,15 +57,15 @@
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>(Required) Output from <code><a href="concentrate.html">concentrate()</a></code> function. For <code>method = "mocus"</code>, expects a character vector of minimum cutset expressions (e.g., <code>"A * B"</code>). For <code>method = "CCubes"</code>, expects a QCA solution object from <code><a href="concentrate.html">concentrate()</a></code> with <code>method = "CCubes"</code>.</p></dd>
+<dd><p>(Required) Output from <code><a href="concentrate.html">concentrate()</a></code> function. Expects a character vector of minimum cutset expressions (e.g., <code>"A * B"</code>).</p></dd>
 
 
 <dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
-<dd><p>(Required) Function output from <code><a href="formulate.html">formulate()</a></code>. Used to generate the truth table for calculating coverage statistics when <code>method = "mocus"</code>. Not used when <code>method = "CCubes"</code>.</p></dd>
+<dd><p>(Required) Function output from <code><a href="formulate.html">formulate()</a></code>. Used to generate the truth table for calculating coverage statistics.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>(Optional) Character string specifying the method used. Default is <code>"mocus"</code>, which works with character vector output from <code>concentrate(method = "mocus")</code>. Alternatively, <code>"CCubes"</code> works with QCA solution objects from <code>concentrate(method = "CCubes")</code>.</p></dd>
+<dd><p>(Optional) Character string specifying the method used in <code><a href="concentrate.html">concentrate()</a></code>. Default is <code>"mocus_rcpp"</code>. Supported values are <code>"mocus_rcpp"</code>, <code>"mocus_r"</code>, and <code>"mocus_original"</code>.</p></dd>
 
 
 <dt id="arg-query">query<a class="anchor" aria-label="anchor" href="#arg-query"></a></dt>
@@ -73,17 +78,15 @@
 <li><p><code>query</code>: Character string containing a filter expression that can be used to identify truth table rows matching this cutset (e.g., <code>"filter(A == 1, B == 1, outcome == 1)"</code>) (only included if <code>query = TRUE</code>)</p></li>
 <li><p><code>cutsets</code>: Integer count of truth table rows (cutsets) that match this minimum cutset and result in system failure</p></li>
 <li><p><code>failures</code>: Integer count of total truth table rows that result in system failure (same for all rows)</p></li>
-<li><p><code>coverage</code>: Numeric value (0 to 1) representing the proportion of failure cases covered by this minimum cutset. Calculated as <code>cutsets / failures</code>. Higher coverage indicates a more critical failure path.</p></li>
-</ul><p>Rows are grouped by <code>mincut</code>, allowing easy identification of the most critical failure paths based on coverage.</p>
-    </div>
+<li><p><code>coverage</code>: Numeric value (0 to 1) representing the proportion of failure cases covered by this minimum cutset. Calculated as <code>cutsets / failures</code>.</p></li>
+</ul></div>
     <div id="details">
     <h2>Details</h2>
-    <p>This function analyzes minimum cutsets to quantify their importance in system failure:</p><ul><li><p><strong>Truth Table Generation</strong>: For <code>method = "mocus"</code>, uses <code>formula</code> to generate a complete truth table via <code><a href="calculate.html">calculate()</a></code>. For <code>method = "CCubes"</code>, extracts the truth table from the QCA solution object.</p></li>
-<li><p><strong>Cutset Parsing</strong>: Splits each minimum cutset expression into individual events and determines their required states (1 for occurrence, 0 for non-occurrence, indicated by tilde <code>~</code> in QCA format)</p></li>
+    <p>This function analyzes minimum cutsets to quantify their importance in system failure:</p><ul><li><p><strong>Truth Table Generation</strong>: Uses <code>formula</code> to generate a complete truth table via <code><a href="calculate.html">calculate()</a></code>.</p></li>
+<li><p><strong>Cutset Parsing</strong>: Splits each minimum cutset expression into individual events and determines their required states (1 for occurrence, 0 for non-occurrence)</p></li>
 <li><p><strong>Query Construction</strong>: Creates filter expressions that identify truth table rows matching each cutset's event combination</p></li>
 <li><p><strong>Coverage Calculation</strong>: Counts how many failure cases (rows with <code>outcome == 1</code>) are covered by each minimum cutset, then calculates coverage as a proportion</p></li>
-</ul><p>Coverage represents the explanatory power of each minimum cutset: a cutset with coverage = 0.5 means it explains 50% of all system failure cases. This metric helps prioritize which failure paths are most critical for risk mitigation. The <code>query</code> column provides reusable filter expressions for further analysis.</p>
-    </div>
+</ul></div>
     <div id="see-also">
     <h2>See also</h2>
     <div class="dont-index"><p><code><a href="concentrate.html">concentrate</a></code> for generating minimum cutsets, <code><a href="formulate.html">formulate</a></code> for creating the function used in truth table generation, <code><a href="calculate.html">calculate</a></code> for generating truth tables</p></div>
@@ -91,41 +94,20 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Load dependencies</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Load dependencies</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">tidyfault</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/dusadrian/QCA" class="external-link">QCA</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Load example data into our environment</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"fakenodes"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"fakeedges"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Extract minimum cutset from fault tree data</span></span></span>
-<span class="r-in"><span><span class="co"># Method 1: MOCUS (no calculate() needed)</span></span></span>
 <span class="r-in"><span><span class="va">formula</span> <span class="op">&lt;-</span> <span class="fu"><a href="curate.html">curate</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="va">fakenodes</span>, edges <span class="op">=</span> <span class="va">fakeedges</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
 <span class="r-in"><span>   <span class="fu"><a href="equate.html">equate</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
 <span class="r-in"><span>   <span class="fu"><a href="formulate.html">formulate</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="curate.html">curate</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="va">fakenodes</span>, edges <span class="op">=</span> <span class="va">fakeedges</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>   <span class="fu"><a href="concentrate.html">concentrate</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"mocus"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>   <span class="fu">tabulate</span><span class="op">(</span>formula <span class="op">=</span> <span class="va">formula</span>, method <span class="op">=</span> <span class="st">"mocus"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 4</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   mincut cutsets failures coverage</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> A*B*D        2        5      0.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> B*C          4        5      0.8</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Method 2: CCubes (calculate() required)</span></span></span>
-<span class="r-in"><span><span class="va">formula</span> <span class="op">&lt;-</span> <span class="fu"><a href="curate.html">curate</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="va">fakenodes</span>, edges <span class="op">=</span> <span class="va">fakeedges</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>   <span class="fu"><a href="equate.html">equate</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>   <span class="fu"><a href="formulate.html">formulate</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">truth_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="curate.html">curate</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="va">fakenodes</span>, edges <span class="op">=</span> <span class="va">fakeedges</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>   <span class="fu"><a href="equate.html">equate</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>   <span class="fu"><a href="formulate.html">formulate</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>   <span class="fu"><a href="calculate.html">calculate</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">truth_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>   <span class="fu"><a href="concentrate.html">concentrate</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"CCubes"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span></span>
-<span class="r-in"><span>   <span class="fu">tabulate</span><span class="op">(</span>formula <span class="op">=</span> <span class="va">formula</span>, method <span class="op">=</span> <span class="st">"CCubes"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>   <span class="fu"><a href="concentrate.html">concentrate</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"mocus_rcpp"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>   <span class="fu">tabulate</span><span class="op">(</span>formula <span class="op">=</span> <span class="va">formula</span>, method <span class="op">=</span> <span class="st">"mocus_rcpp"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   mincut cutsets failures coverage</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

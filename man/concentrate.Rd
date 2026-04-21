@@ -4,51 +4,46 @@
 \alias{concentrate}
 \title{concentrate() Function}
 \usage{
-concentrate(data, method = "mocus")
+concentrate(data, method = c("mocus_rcpp", "mocus_r", "mocus_original"))
 }
 \arguments{
-\item{data}{(Required) data.frame containing output from \code{curate()} function for the \code{"mocus"} algorithm, or output from \code{calculate()} for the \code{"CCubes"} algorithm. For \code{method = "mocus"}, expects the gates data.frame with columns \code{gate}, \code{type}, \code{set}, and \code{items}. For \code{method = "CCubes"}, expects a truth table data.frame with event columns and an \code{outcome} column.}
+\item{data}{(Required) data.frame containing output from \code{curate()}. Expects the gates data.frame with columns \code{gate}, \code{type}, \code{set}, and \code{items}.}
 
-\item{method}{(Optional) Character string specifying the minimization algorithm. Default is \code{"mocus"}, which runs the MOCUS algorithm on output from \code{curate()} and simplifies to minimum cutsets using boolean algebra. Alternatively, \code{"CCubes"} runs the QCA package's CCubes algorithm on output from \code{calculate()} (recommended for smaller datasets due to computational complexity).}
+\item{method}{(Optional) Character string specifying the minimization algorithm. Default is \code{"mocus_rcpp"}. Supported values are \code{"mocus_rcpp"}, \code{"mocus_r"}, and \code{"mocus_original"}.}
 }
 \value{
-The return type depends on the \code{method}:
-\itemize{
-\item For \code{method = "mocus"}: A character vector where each element is a minimum cutset represented as a boolean expression (e.g., \code{"A * B"} for events A AND B). Each cutset represents a minimal set of events whose simultaneous occurrence causes system failure.
-\item For \code{method = "CCubes"}: A QCA solution object (list) containing the boolean minimization results, including prime implicants and solution details. This object can be used with QCA package functions or passed to \code{tabulate()} for further analysis.
-}
+A character vector where each element is a minimum cutset represented as a boolean expression (e.g., \code{"A * B"} for events A AND B). Each cutset represents a minimal set of events whose simultaneous occurrence causes system failure.
 }
 \description{
-This function \emph{concentrates} the boolean equation of a fault tree to find the minimum cutsets in the fault tree. Takes a data.frame outputted by the \code{curate()} function and applies the \code{mocus()} algorithm, or takes a data.frame outputted by the \code{calculate()} function and applies the QCA package's \code{"CCubes"} algorithm to perform boolean minimization.
+This function \emph{concentrates} the boolean equation of a fault tree to find the minimum cutsets in the fault tree. It takes a data.frame outputted by the \code{curate()} function and applies one of the available MOCUS implementations to perform boolean minimization.
 }
 \details{
-This function performs boolean minimization to identify the minimum cutsets (minimal failure paths) in a fault tree. Two algorithms are available:
+This function performs boolean minimization to identify the minimum cutsets (minimal failure paths) in a fault tree using the MOCUS algorithm:
 \itemize{
-\item \strong{MOCUS method} (\code{method = "mocus"}):
+\item \strong{Rcpp MOCUS} (\code{method = "mocus_rcpp"}):
 \itemize{
-\item Uses the MOCUS (Method of Obtaining Cutsets) algorithm implemented in \code{mocus()} to generate all cutsets
+\item Uses the Rcpp-backed MOCUS implementation (\code{mocus_rcpp()})
+\item Recommended default for speed on larger trees
+}
+\item \strong{Pure-R fast MOCUS} (\code{method = "mocus_r"}):
+\itemize{
+\item Uses the optimized pure-R implementation (\code{mocus_r()})
+\item Useful when compiled code is unavailable
+}
+\item \strong{Original MOCUS} (\code{method = "mocus_original"}):
+\itemize{
+\item Uses the original MOCUS implementation (\code{mocus()}) to generate all cutsets
 \item Converts cutsets to a boolean equation format
 \item Applies boolean simplification using \code{admisc::simplify()} to find minimum cutsets
 \item Returns simplified cutsets as character strings
-\item Recommended for most use cases, especially larger fault trees
-}
-\item \strong{CCubes method} (\code{method = "CCubes"}):
-\itemize{
-\item Uses the QCA (Qualitative Comparative Analysis) package's truth table and minimization functions
-\item Converts the truth table to QCA format
-\item Applies the CCubes algorithm for boolean minimization
-\item Returns a QCA solution object with detailed minimization results
-\item Best for smaller datasets due to exponential complexity of truth tables (2^n rows)
 }
 }
-Minimum cutsets represent the smallest combinations of basic events that can cause the top event (system failure) to occur. These are critical for understanding system vulnerabilities and prioritizing risk mitigation efforts.
+Minimum cutsets represent the smallest combinations of basic events that can cause the top event (system failure) to occur.
 }
 \examples{
-
 # Load dependencies
 library(tidyverse)
 library(tidyfault)
-library(QCA)
 
 # Load example data into our environment
 data("fakenodes")
@@ -58,15 +53,15 @@ data("fakeedges")
 formula <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
    equate() \%>\%
    formulate()
-curate(nodes = fakenodes, edges = fakeedges) \%>\% 
-   concentrate(method = "mocus")
+curate(nodes = fakenodes, edges = fakeedges) \%>\%
+   concentrate(method = "mocus_rcpp") \%>\%
+   tabulate(formula = formula, method = "mocus_rcpp")
 }
 \seealso{
-\code{\link{curate}} for preparing gate data for MOCUS method, \code{\link{calculate}} for generating truth tables for CCubes method, \code{\link{mocus}} for the MOCUS algorithm implementation, \code{\link{tabulate}} for analyzing and summarizing minimum cutsets
+\code{\link{curate}} for preparing gate data for MOCUS method, \code{\link{mocus_rcpp}}, \code{\link{mocus_r}}, and \code{\link{mocus}} for MOCUS implementations, \code{\link{tabulate}} for analyzing and summarizing minimum cutsets
 }
 \keyword{cutset}
 \keyword{fault}
 \keyword{minimization}
 \keyword{minimum}
-\keyword{qca}
 \keyword{tree}
