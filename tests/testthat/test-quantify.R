@@ -50,6 +50,27 @@ test_that("quantify_prob_fast matches quantify_prob", {
   )
 })
 
+test_that("quantify minimal OR tree: binary and probability", {
+  tr <- minimal_or_top_tree()
+  f <- curate(tr$nodes, tr$edges) |>
+    equate() |>
+    formulate()
+
+  pa <- 0.2
+  pb <- 0.3
+  expected_p <- pa + pb - pa * pb
+
+  expect_equal(
+    quantify(f, c(pa, pb), prob = TRUE),
+    expected_p,
+    tolerance = 1e-12
+  )
+
+  row1 <- tibble::tibble(A = 1L, B = 0L)
+  expect_equal(quantify(f, row1), quantify(f, c(A = 1L, B = 0L)))
+  expect_true(quantify(f, c(1L, 0L)))
+})
+
 test_that("quantify fast flag dispatches consistently", {
   data("it_security_nodes", package = "tidyfault")
   data("it_security_edges", package = "tidyfault")
