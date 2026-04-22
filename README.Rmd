@@ -30,6 +30,8 @@ if (requireNamespace("pkgload", quietly = TRUE) && file.exists("R/plot.R")) {
 
 Fault tree methods are used in aerospace, energy, safety, and security contexts. The package keeps trees in rectangular **nodes** and **edges** tables so you can combine FTA with familiar data manipulation and plotting tools in R.
 
+---
+
 ## Applications
 
 <div class="tf-mood-grid">
@@ -47,6 +49,8 @@ Fault tree methods are used in aerospace, energy, safety, and security contexts.
   </details>
 
 </div>
+
+---
 
 ## Key capabilities
 

@@ -7,13 +7,44 @@
 
 ## R Package for tidy *Fault Tree Analysis* (FTA)!
 
-Uses `tidyverse`, `tidygraph`, and related tools to visualize fault
-trees, identify minimal cutsets, and evaluate failure outcomes.
+**`tidyfault`** uses `tidyverse`, `tidygraph`, and related tools to
+visualize fault trees, identify minimal cutsets, and evaluate failure
+outcomes.
 
 Fault tree methods are used in aerospace, energy, safety, and security
 contexts. The package keeps trees in rectangular **nodes** and **edges**
 tables so you can combine FTA with familiar data manipulation and
 plotting tools in R.
+
+------------------------------------------------------------------------
+
+## Applications
+
+<div class="tf-mood-grid">
+
+<img src="https://images.unsplash.com/photo-1517976487492-5750f3195933?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="View from an aircraft window over clouds"/>
+
+<img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Satellite view of night lights on Earth"/>
+
+<img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Wind turbines in a rural landscape"/>
+
+<img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Close-up of a printed circuit board"/>
+
+<details>
+
+<summary>
+
+Image Sources
+</summary>
+
+All photographs are served from the [Unsplash](https://unsplash.com/)
+CDN and are subject to the [Unsplash
+License](https://unsplash.com/license).
+</details>
+
+</div>
+
+------------------------------------------------------------------------
 
 ## Key capabilities
 
@@ -26,37 +57,7 @@ plotting tools in R.
 | Quantification | [`quantify()`](https://tidyfault.netlify.app/reference/quantify.html) for binary scenarios or top-event probabilities over many rows at once. |
 | Documentation | [Articles](https://tidyfault.netlify.app/articles/index.html) on workflows, plotting, `quantify()`, and simulation. |
 
-## Illustrative domains
-
-Representative stock imagery (unrelated to specific case studies in the
-package) suggests application areas where fault trees are common. All
-four photographs below are served from the
-[Unsplash](https://unsplash.com/) CDN and are subject to the [Unsplash
-License](https://unsplash.com/license).
-
-<div class="tf-mood-grid">
-
-<img src="https://images.unsplash.com/photo-1517976487492-5750f3195933?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="View from an aircraft window over clouds"/>
-
-<img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Satellite view of night lights on Earth"/>
-
-<img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Wind turbines in a rural landscape"/>
-
-<img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Close-up of a printed circuit board"/>
-
-</div>
-
-## Credits and license
-
-- **Software:** [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) (see
-  the `LICENSE` file in the repository). The documentation site is built
-  with [pkgdown](https://pkgdown.r-lib.org/).
-- **Images above:** Unsplash-hosted stock photos; see the [Unsplash
-  License](https://unsplash.com/license). When redistributing or
-  cropping, follow Unsplash attribution guidance.
-- **Favicons:** Generated with
-  [RealFaviconGenerator](https://realfavicongenerator.net/) from the
-  package logo.
+------------------------------------------------------------------------
 
 ## Basic Usage
 
@@ -118,7 +119,7 @@ myfunction = myequation %>% formulate()
 myfunction
 #> function (A, B, C, D) 
 #> (((B * (C + D)) * (A + (B * C))))
-#> <environment: 0x00000235bf9b83f8>
+#> <environment: 0x000002d1cfb479a8>
 ```
 
 4.  `calculate()` the full truth table of all possible combinations of
@@ -204,6 +205,22 @@ mytable = mygates %>%
   concentrate() %>%
   tabulate(formula = myfunction)
 ```
+
+------------------------------------------------------------------------
+
+## Credits and license
+
+- **Software:** [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) (see
+  the `LICENSE` file in the repository). The documentation site is built
+  with [pkgdown](https://pkgdown.r-lib.org/).
+- **Images above:** Unsplash-hosted stock photos; see the [Unsplash
+  License](https://unsplash.com/license). When redistributing or
+  cropping, follow Unsplash attribution guidance.
+- **Favicons:** Generated with
+  [RealFaviconGenerator](https://realfavicongenerator.net/) from the
+  package logo.
+
+------------------------------------------------------------------------
 
 ## Questions?
 
