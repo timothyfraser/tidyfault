@@ -1,0 +1,77 @@
+---
+title: "Visualizing fault trees"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Visualizing fault trees}
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 7,
+  fig.height = 4.5,
+  fig.align = "center"
+)
+```
+
+**tidyfault** builds fault-tree plots on top of **ggplot2** and **ggraph**. The workhorse is [`illustrate()`](../reference/illustrate.html), which lays out nodes and edges; the [`plot()`](../reference/plot.html) method returns a ggplot object you can extend.
+
+## Database example
+
+Use `type = "all"` to draw gates and basic events together:
+
+```{r}
+library(tidyfault)
+library(ggplot2)
+
+data("db_nodes")
+data("db_edges")
+
+gg_db <- illustrate(nodes = db_nodes, edges = db_edges, type = "all")
+plot(gg_db)
+```
+
+### What `illustrate()` returns
+
+`illustrate()` returns a list with components used by `plot()` (node positions, edge paths, gate polygons). You can inspect `gg_db$nodes` or add ggplot layers on top of `plot(gg_db)`.
+
+---
+
+## IT security example (larger tree)
+
+The bundled IT security tree ([`it_security_nodes`](../reference/it_security_nodes.html), [`it_security_edges`](../reference/it_security_edges.html)) uses `type = "both"` to emphasize gate structure and basic events:
+
+```{r}
+data("it_security_nodes")
+data("it_security_edges")
+
+gg_sec <- illustrate(
+  nodes = it_security_nodes,
+  edges = it_security_edges,
+  type = "both"
+)
+plot(gg_sec)
+```
+
+---
+
+## Workflow tip
+
+Typical order:
+
+1. Curate and analyze with the [core workflow](core-workflow.html) vignette.
+2. Use **`illustrate()` → `plot()`** whenever you need to communicate structure to collaborators.
+
+---
+
+## Related reference
+
+| Topic | Function |
+|-------|----------|
+| Layout and geometry | [`illustrate()`](../reference/illustrate.html) |
+| ggplot wrapper | [`plot()`](../reference/plot.html) |
+| Gate drawing primitives | [`gate_and()`](../reference/gate_and.html), [`gate_or()`](../reference/gate_or.html), [`gate_top()`](../reference/gate_top.html), [`get_gate()`](../reference/get_gate.html) |

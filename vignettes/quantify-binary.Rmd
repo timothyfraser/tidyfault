@@ -1,0 +1,106 @@
+---
+title: "quantify()-ing binary outcomes"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{quantify()-ing binary outcomes}
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(comment = "#>", message = FALSE, warning = FALSE)
+```
+
+[`quantify()`](../reference/quantify.html) evaluates whether the **top event** occurs under each scenario. With the default `prob = FALSE`, inputs are **binary** (failed / not failed) for each basic event.
+
+This vignette covers:
+
+- Calling the boolean function from [`formulate()`](../reference/formulate.html) directly.
+- Passing many scenarios as a data frame.
+- Generating random binary scenarios from event probabilities (IT security tree).
+
+## Setup: formulate the top event
+
+```{r}
+library(tidyfault)
+library(dplyr)
+library(purrr)
+library(tibble)
+
+data("db_nodes")
+data("db_edges")
+
+f <- curate(db_nodes, db_edges) |>
+  equate() |>
+  formulate()
+sort(names(formals(f)))
+```
+
+---
+
+## Single scenario: direct function call
+
+Any scenario can be passed as named arguments matching `formals(f)`:
+
+```{r}
+f(DC = 1, AF = 1, SF = 0, BF = 0, NF = 0, AUF = 0, HF = 0, MF = 0)
+```
+
+---
+
+## Many scenarios: `quantify()` on a data frame
+
+Bundled [`db_outcomes_binary`](../reference/db_outcomes_binary.html) holds several rows of 0/1 inputs:
+
+```{r}
+data("db_outcomes_binary")
+head(db_outcomes_binary)
+```
+
+[`quantify()`](../reference/quantify.html) returns one logical top-event outcome per row:
+
+```{r}
+mybinary <- quantify(f, newdata = db_outcomes_binary)
+mybinary
+```
+
+---
+
+## Batch evaluation: IT security tree
+
+For larger batches, build a tibble of draws (one column per basic event), then call `quantify()` once. The example below uses [`it_security_probs`](../reference/it_security_probs.html) as Bernoulli parameters and fixes the seed for reproducibility.
+
+```{r}
+data("it_security_nodes")
+data("it_security_edges")
+data("it_security_probs")
+
+f_sec <- formulate(equate(curate(it_security_nodes, it_security_edges)))
+
+set.seed(123)
+n_binary <- 5000
+batch_binary <- it_security_probs |>
+  map(~ rbinom(n_binary, size = 1, prob = .x)) |>
+  as_tibble()
+
+outcomes_batch <- quantify(f_sec, newdata = batch_binary)
+table(outcomes_batch)
+mean(outcomes_batch)
+```
+
+### Why vectorize?
+
+- One call evaluates every row using the fast path when `fast = TRUE` (default).
+- Column names must match `names(formals(f_sec))`.
+
+---
+
+## Summary
+
+| Input | `quantify()` usage |
+|-------|--------------------|
+| One scenario | Named vector, list, or one-row data frame |
+| Many scenarios | Data frame / tibble with one column per basic event |
+| Top event type | Logical vector (`TRUE` = top event occurred) |
+
+For probabilities instead of 0/1 inputs, see [quantify()-ing probabilities](quantify-probabilities.html).

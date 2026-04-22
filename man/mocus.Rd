@@ -4,19 +4,35 @@
 \alias{mocus}
 \title{mocus() Function}
 \usage{
-mocus(data)
+mocus(data, method = c("mocus_rcpp", "mocus_r", "mocus_original"))
 }
 \arguments{
-\item{data}{(Required) data.frame containing gates and their sets, outputted by \code{curate()}. Must contain columns \code{gate}, \code{type}, \code{class}, and \code{items} (list column of event vectors). The data.frame should have at least one row with \code{class == "top"} representing the top event.}
+\item{data}{(Required) data.frame containing gates and their sets, outputted
+by \code{curate()}. Must contain columns \code{gate}, \code{type}, \code{class}, and \code{items}
+(list column of event vectors). The data.frame should have at least one
+row with \code{class == "top"} representing the top event.}
+
+\item{method}{(Optional) Character string specifying which implementation to
+run. Default is \code{"mocus_rcpp"}. Supported values are \code{"mocus_rcpp"},
+\code{"mocus_r"}, and \code{"mocus_original"} (same labels as \code{concentrate()} and
+\code{tabulate()}).}
 }
 \value{
-A list where each element is a character vector representing a cutset (a set of basic events that can cause system failure). Each cutset vector contains the names of basic events. The list includes all cutsets found in the fault tree, not just minimum cutsets. Duplicate events within each cutset are removed (each event appears only once per cutset).
+A list where each element is a character vector representing a cutset
+(a set of basic events that can cause system failure). Each cutset vector
+contains the names of basic events. The list includes all cutsets found in
+the fault tree, not just minimum cutsets. Duplicate events within each
+cutset are removed (each event appears only once per cutset).
 }
 \description{
-This function \emph{simplifies} a \code{data.frame} of gates and their sets identified by \code{curate()}, generating each cutset in the fault tree using a simple implementation of the MOCUS (Method of Obtaining Cutsets) algorithm.
+This function \emph{simplifies} a \code{data.frame} of gates and their sets identified
+by \code{curate()}, generating each cutset in the fault tree using the MOCUS
+(Method of Obtaining Cutsets) algorithm.
 }
 \details{
-This function implements the MOCUS (Method of Obtaining Cutsets) algorithm, which systematically expands gates in a fault tree to identify all cutsets. The algorithm works as follows:
+This function implements the MOCUS (Method of Obtaining Cutsets)
+algorithm, which systematically expands gates in a fault tree to identify
+all cutsets. The algorithm works as follows:
 \itemize{
 \item \strong{Initialization}: Starts with the top event as the first cutset
 \item \strong{Iterative Expansion}: For each cutset containing gate references:
@@ -29,10 +45,20 @@ This function implements the MOCUS (Method of Obtaining Cutsets) algorithm, whic
 \item \strong{Convergence}: Continues until no gates remain in any cutset (only basic events)
 \item \strong{Deduplication}: Removes duplicate events within each cutset
 }
-The algorithm handles nested gate structures by repeatedly expanding gates until all references are resolved. AND gates represent events that must all occur together, while OR gates represent alternative failure paths. The result includes all possible cutsets, which can then be minimized using boolean algebra (e.g., via \code{concentrate()} with \code{method = "mocus_original"}).
+The algorithm handles nested gate structures by repeatedly expanding gates
+until all references are resolved. AND gates represent events that must all
+occur together, while OR gates represent alternative failure paths. The
+result includes all possible cutsets, which can then be minimized using
+boolean algebra (e.g., via \code{concentrate()} with \code{method = "mocus_original"}).
+
+The default method (\code{"mocus_rcpp"}) uses the compiled implementation for
+speed. Use \code{"mocus_r"} for a pure-R queue-based variant, or \code{"mocus_original"}
+for the historical R loop used in early versions of the package.
 }
 \seealso{
-\code{\link{curate}} for preparing the gates data.frame, \code{\link{concentrate}} for finding minimum cutsets from the generated cutsets
+\code{\link[=curate]{curate()}} for preparing the gates data.frame, \code{\link[=concentrate]{concentrate()}} for
+finding minimum cutsets from the generated cutsets, \code{\link[=mocus_rcpp]{mocus_rcpp()}},
+\code{\link[=mocus_r]{mocus_r()}}
 }
 \keyword{boolean}
 \keyword{cutset}

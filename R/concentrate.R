@@ -21,7 +21,7 @@
 #'       }
 #'     \item \strong{Original MOCUS} (`method = "mocus_original"`):
 #'       \itemize{
-#'         \item Uses the original MOCUS implementation (`mocus()`) to generate all cutsets
+#'         \item Uses the original MOCUS implementation (`mocus()` with `method = "mocus_original"`) to generate all cutsets
 #'         \item Converts cutsets to a boolean equation format
 #'         \item Applies boolean simplification using `admisc::simplify()` to find minimum cutsets
 #'         \item Returns simplified cutsets as character strings
@@ -60,7 +60,7 @@ concentrate = function(data, method = c("mocus_rcpp", "mocus_r", "mocus_original
     method,
     mocus_rcpp = data %>% mocus_rcpp(),
     mocus_r = data %>% mocus_r(),
-    mocus_original = data %>% mocus()
+    mocus_original = mocus(data, method = "mocus_original")
   )
 
   combos = output %>%

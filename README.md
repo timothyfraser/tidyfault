@@ -10,6 +10,54 @@
 Uses `tidyverse`, `tidygraph`, and related tools to visualize fault
 trees, identify minimal cutsets, and evaluate failure outcomes.
 
+Fault tree methods are used in aerospace, energy, safety, and security
+contexts. The package keeps trees in rectangular **nodes** and **edges**
+tables so you can combine FTA with familiar data manipulation and
+plotting tools in R.
+
+## Key capabilities
+
+| Capability | What tidyfault provides |
+|----|----|
+| Tidy inputs | Fault trees as [`nodes` / `edges`](https://tidyfault.netlify.app/reference/curate.html) tables (one row per gate or basic event, one row per directed link). |
+| Core pipeline | [`curate()`](https://tidyfault.netlify.app/reference/curate.html) → [`equate()`](https://tidyfault.netlify.app/reference/equate.html) → [`formulate()`](https://tidyfault.netlify.app/reference/formulate.html) → [`calculate()`](https://tidyfault.netlify.app/reference/calculate.html) → [`concentrate()`](https://tidyfault.netlify.app/reference/concentrate.html) → [`tabulate()`](https://tidyfault.netlify.app/reference/tabulate.html). |
+| Minimal cutsets | MOCUS-style expansion ([`mocus()`](https://tidyfault.netlify.app/reference/mocus.html), Rcpp-backed by default) plus boolean reduction in [`concentrate()`](https://tidyfault.netlify.app/reference/concentrate.html). |
+| Visualization | [`illustrate()`](https://tidyfault.netlify.app/reference/illustrate.html) and [`plot()`](https://tidyfault.netlify.app/reference/plot.html) for **ggplot2** / **ggraph** fault tree layouts. |
+| Quantification | [`quantify()`](https://tidyfault.netlify.app/reference/quantify.html) for binary scenarios or top-event probabilities over many rows at once. |
+| Documentation | [Articles](https://tidyfault.netlify.app/articles/index.html) on workflows, plotting, `quantify()`, and simulation. |
+
+## Illustrative domains
+
+Representative stock imagery (unrelated to specific case studies in the
+package) suggests application areas where fault trees are common. All
+four photographs below are served from the
+[Unsplash](https://unsplash.com/) CDN and are subject to the [Unsplash
+License](https://unsplash.com/license).
+
+<div class="tf-mood-grid">
+
+<img src="https://images.unsplash.com/photo-1517976487492-5750f3195933?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="View from an aircraft window over clouds"/>
+
+<img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Satellite view of night lights on Earth"/>
+
+<img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Wind turbines in a rural landscape"/>
+
+<img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Close-up of a printed circuit board"/>
+
+</div>
+
+## Credits and license
+
+- **Software:** [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) (see
+  the `LICENSE` file in the repository). The documentation site is built
+  with [pkgdown](https://pkgdown.r-lib.org/).
+- **Images above:** Unsplash-hosted stock photos; see the [Unsplash
+  License](https://unsplash.com/license). When redistributing or
+  cropping, follow Unsplash attribution guidance.
+- **Favicons:** Generated with
+  [RealFaviconGenerator](https://realfavicongenerator.net/) from the
+  package logo.
+
 ## Basic Usage
 
 How do we use `tidyfault` to analyze fault trees?
@@ -70,7 +118,7 @@ myfunction = myequation %>% formulate()
 myfunction
 #> function (A, B, C, D) 
 #> (((B * (C + D)) * (A + (B * C))))
-#> <environment: 0x10e4e6240>
+#> <environment: 0x00000235bf9b83f8>
 ```
 
 4.  `calculate()` the full truth table of all possible combinations of
@@ -118,12 +166,12 @@ mytable
 7.  `illustrate()` + `plot()` to visualize the fault tree structure.
 
 ``` r
-myviz = illustrate(nodes = fakenodes, edges = fakeedges, type = "both")
-myplot = plot(myviz)
+myviz <- illustrate(nodes = fakenodes, edges = fakeedges, type = "both")
+myplot <- plot(myviz)
 myplot
 ```
 
-<img src="man/figures/README-visualize-1.png" width="100%" />
+<img src="man/figures/README-visualize-1.png" alt="Fault tree diagram for the fakenodes and fakeedges example: gates and basic events laid out as a directed graph." width="100%" />
 
 8.  `quantify()` to evaluate specific scenarios (binary) or top-event
     probabilities.

@@ -13,6 +13,11 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE
 )
+# When knitting from the package source tree, load in-development code so
+# README matches the current repository (not necessarily the installed build).
+if (requireNamespace("pkgload", quietly = TRUE) && file.exists("R/plot.R")) {
+  pkgload::load_all(quiet = TRUE)
+}
 ```
 
 # tidyfault
@@ -21,7 +26,41 @@ knitr::opts_chunk$set(
 
 ## R Package for tidy *Fault Tree Analysis* (FTA)!
 
-Uses `tidyverse`, `tidygraph`, and related tools to visualize fault trees, identify minimal cutsets, and evaluate failure outcomes.
+**`tidyfault`** uses `tidyverse`, `tidygraph`, and related tools to visualize fault trees, identify minimal cutsets, and evaluate failure outcomes.
+
+Fault tree methods are used in aerospace, energy, safety, and security contexts. The package keeps trees in rectangular **nodes** and **edges** tables so you can combine FTA with familiar data manipulation and plotting tools in R.
+
+## Applications
+
+<div class="tf-mood-grid">
+
+<img src="https://images.unsplash.com/photo-1517976487492-5750f3195933?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="View from an aircraft window over clouds"/>
+
+<img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Satellite view of night lights on Earth"/>
+
+<img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Wind turbines in a rural landscape"/>
+
+<img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Close-up of a printed circuit board"/>
+
+  <details><summary>Image Sources</summary>
+  All photographs are served from the [Unsplash](https://unsplash.com/) CDN and are subject to the [Unsplash License](https://unsplash.com/license).
+  </details>
+
+</div>
+
+## Key capabilities
+
+| Capability | What tidyfault provides |
+|------------|-------------------------|
+| Tidy inputs | Fault trees as [`nodes` / `edges`](https://tidyfault.netlify.app/reference/curate.html) tables (one row per gate or basic event, one row per directed link). |
+| Core pipeline | [`curate()`](https://tidyfault.netlify.app/reference/curate.html) → [`equate()`](https://tidyfault.netlify.app/reference/equate.html) → [`formulate()`](https://tidyfault.netlify.app/reference/formulate.html) → [`calculate()`](https://tidyfault.netlify.app/reference/calculate.html) → [`concentrate()`](https://tidyfault.netlify.app/reference/concentrate.html) → [`tabulate()`](https://tidyfault.netlify.app/reference/tabulate.html). |
+| Minimal cutsets | MOCUS-style expansion ([`mocus()`](https://tidyfault.netlify.app/reference/mocus.html), Rcpp-backed by default) plus boolean reduction in [`concentrate()`](https://tidyfault.netlify.app/reference/concentrate.html). |
+| Visualization | [`illustrate()`](https://tidyfault.netlify.app/reference/illustrate.html) and [`plot()`](https://tidyfault.netlify.app/reference/plot.html) for **ggplot2** / **ggraph** fault tree layouts. |
+| Quantification | [`quantify()`](https://tidyfault.netlify.app/reference/quantify.html) for binary scenarios or top-event probabilities over many rows at once. |
+| Documentation | [Articles](https://tidyfault.netlify.app/articles/index.html) on workflows, plotting, `quantify()`, and simulation. |
+
+
+---
 
 ## Basic Usage
 
@@ -95,9 +134,9 @@ mytable
 
 7. `illustrate()` + `plot()` to visualize the fault tree structure.
 
-```{r visualize, fig.height = 4, fig.width = 6}
-myviz = illustrate(nodes = fakenodes, edges = fakeedges, type = "both")
-myplot = plot(myviz)
+```{r visualize, fig.height = 4, fig.width = 6, fig.alt = "Fault tree diagram for the fakenodes and fakeedges example: gates and basic events laid out as a directed graph."}
+myviz <- illustrate(nodes = fakenodes, edges = fakeedges, type = "both")
+myplot <- plot(myviz)
 myplot
 ```
 
@@ -129,6 +168,16 @@ mytable = mygates %>%
   concentrate() %>%
   tabulate(formula = myfunction)
 ```
+
+---
+
+## Credits and license
+
+- **Software:** [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) (see the `LICENSE` file in the repository). The documentation site is built with [pkgdown](https://pkgdown.r-lib.org/).
+- **Images above:** Unsplash-hosted stock photos; see the [Unsplash License](https://unsplash.com/license). When redistributing or cropping, follow Unsplash attribution guidance.
+- **Favicons:** Generated with [RealFaviconGenerator](https://realfavicongenerator.net/) from the package logo.
+
+---
 
 ## Questions?
 

@@ -7,6 +7,8 @@ Authors@R:
       person("Jingyao", "Tong", , "jingyaotong6@gmail.com", role = c("aut"),
              comment = c(ORCID = "0009-0009-6147-756X")))
 Description: R Package for tidy fault tree analysis! Uses tidygraph and tidyverse packages, among others, to visualize fault trees, identify minimal cutsets, and other quantities of interest.
+URL: https://tidyfault.netlify.app, https://github.com/timothyfraser/tidyfault
+BugReports: https://github.com/timothyfraser/tidyfault/issues
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -30,6 +32,10 @@ Imports:
 LinkingTo:
     Rcpp
 Suggests:
+    knitr,
+    pkgload,
+    rmarkdown,
     testthat (>= 3.0.0)
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 LazyData: true

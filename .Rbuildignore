@@ -3,3 +3,5 @@
 ^tidyfault\.Rcheck$
 ^tidyfault.*\.tar\.gz$
 ^tidyfault.*\.tgz$
+^doc$
+^Meta$

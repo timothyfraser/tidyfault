@@ -1,0 +1,53 @@
+/* Navbar: blue gradient aligned with package logo tones */
+.navbar {
+  background: linear-gradient(110deg, #0c3d66 0%, #1b5e8c 42%, #3d8fd4 100%) !important;
+  box-shadow: 0 2px 10px rgba(12, 61, 102, 0.22);
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .dropdown-toggle {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus,
+.navbar .dropdown-toggle:hover,
+.navbar .dropdown-toggle:focus {
+  color: #ffffff !important;
+  text-decoration: underline;
+}
+
+.navbar .dropdown-menu {
+  border: none;
+  box-shadow: 0 4px 16px rgba(12, 61, 102, 0.15);
+}
+
+/* README mood grid on home page */
+.tf-mood-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0 1.5rem;
+  max-width: 52rem;
+}
+
+.tf-mood-grid img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  object-fit: cover;
+  aspect-ratio: 16 / 10;
+}
+
+@media (max-width: 36rem) {
+  .tf-mood-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Slightly soften sidebar cards on home (Bootstrap 5) */
+#pkgdown-sidebar .card {
+  border-radius: 8px;
+  border-color: rgba(27, 94, 140, 0.12);
+}

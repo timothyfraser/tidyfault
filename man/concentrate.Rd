@@ -32,7 +32,7 @@ This function performs boolean minimization to identify the minimum cutsets (min
 }
 \item \strong{Original MOCUS} (\code{method = "mocus_original"}):
 \itemize{
-\item Uses the original MOCUS implementation (\code{mocus()}) to generate all cutsets
+\item Uses the original MOCUS implementation (\code{mocus()} with \code{method = "mocus_original"}) to generate all cutsets
 \item Converts cutsets to a boolean equation format
 \item Applies boolean simplification using \code{admisc::simplify()} to find minimum cutsets
 \item Returns simplified cutsets as character strings

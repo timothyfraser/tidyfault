@@ -1,10 +1,77 @@
+url: https://tidyfault.netlify.app
+
 template:
+  bootstrap: 5
   bootswatch: flatly
+  bslib:
+    primary: "#1b5e8c"
+    heading_font: { google: "Source Sans 3" }
+    base_font: { google: "Source Sans 3" }
+    code_font: { google: "IBM Plex Mono" }
+
+home:
+  title: Fault tree analysis with tidy data in R
+  description: >
+    Represent fault trees as tidy node and edge tables, derive minimal cutsets,
+    evaluate binary or probabilistic scenarios with quantify(), and draw
+    ggplot2-based diagrams.
+  links:
+    - text: Package Home
+      href: index.html
+    - text: Repository
+      href: https://github.com/timothyfraser/tidyfault
+    - text: Issue Tracker
+      href: https://github.com/timothyfraser/tidyfault/issues
+    - text: Article index
+      href: articles/index.html
+  sidebar:
+    structure: [links, license, community, citation, authors]
+    components:
+      community:
+        title: COMMUNITY
+        text: "[Report an issue](https://github.com/timothyfraser/tidyfault/issues)"
+      license:
+        title: LICENSE
+        text: >
+          [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) (see the
+          `LICENSE` file in the repository). The documentation site is built
+          with [pkgdown](https://pkgdown.r-lib.org/).
+      citation:
+        title: CITATION
+        text: "[Citing tidyfault](authors.html#citation)"
 
 navbar:
+  bg: primary
+  type: light
   structure:
-    left: [reference]
-    right: [search]
+    left: [intro, get_started, reference, articles]
+    right: [search, github]
+  components:
+    get_started:
+      text: Get Started
+      href: articles/core-workflow.html
+
+authors:
+  title: AUTHORS
+  sidebar:
+    roles: [aut, cre]
+    after: >
+      [More About Authors...](authors.html)
+  footer:
+    roles: [cre, aut]
+    text: "Developed by"
+
+articles:
+  - title: Articles
+    desc: >
+      Step-by-step examples for workflows, visualization, quantification, and
+      uncertainty.
+    contents:
+      - core-workflow
+      - visualizing-fault-trees
+      - quantify-binary
+      - quantify-probabilities
+      - simulating-uncertainty
 
 reference:
   - title: Core workflow

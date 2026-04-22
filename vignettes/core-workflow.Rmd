@@ -1,0 +1,127 @@
+---
+title: "Core workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Core workflow}
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(comment = "#>", message = FALSE, warning = FALSE)
+```
+
+This vignette walks through the standard **tidyfault** pipeline from tidy node and edge tables to minimal cutsets and a coverage summary, using the bundled database failure example.
+
+## Represent the fault tree
+
+**tidyfault** represents a fault tree as two tables:
+
+- **`nodes`**: one row per gate or basic event, with columns `id`, `event`, and `type` (`"top"`, `"and"`, `"or"`, or `"not"`).
+- **`edges`**: directed links between node `id` values (`from`, `to`), forming a DAG with a single top event.
+
+The objects [`db_nodes`](../reference/db_nodes.html) and [`db_edges`](../reference/db_edges.html) model a small database system whose top event is overall system failure. Load them and inspect the first few rows:
+
+```{r}
+library(tidyfault)
+library(dplyr)
+
+data("db_nodes")
+data("db_edges")
+
+knitr::kable(head(db_nodes, 6), caption = "Nodes (excerpt)")
+knitr::kable(head(db_edges, 6), caption = "Edges (excerpt)")
+```
+
+---
+
+## Pipeline overview
+
+From nodes and edges you typically:
+
+1. [**`curate()`**](../reference/curate.html) — build a gates table (one row per gate, boolean `set`, list-column `items`).
+2. [**`equate()`**](../reference/equate.html) — substitute gates recursively into one top-level boolean string.
+3. [**`formulate()`**](../reference/formulate.html) — turn that string into an R function with one argument per basic event.
+4. [**`calculate()`**](../reference/calculate.html) (optional) — enumerate the full truth table when the number of basic events is moderate.
+5. [**`concentrate()`**](../reference/concentrate.html) — minimal cutsets (default MOCUS backend: Rcpp).
+6. [**`tabulate()`**](../reference/tabulate.html) — coverage of each minimal cutset against failing scenarios in the truth table.
+
+The next sections run steps 1–3 and 5–6 on `db_*`; see the [quantify binary](quantify-binary.html) vignette for evaluation with [`quantify()`](../reference/quantify.html).
+
+---
+
+## Gates table: `curate()`
+
+```{r}
+gates <- curate(nodes = db_nodes, edges = db_edges)
+gates
+```
+
+Each row is a gate (including the top); `set` encodes children with `*` (AND) and `+` (OR).
+
+---
+
+## Boolean equation: `equate()`
+
+```{r}
+equation <- equate(gates)
+equation
+```
+
+---
+
+## Executable structure: `formulate()`
+
+```{r}
+f <- formulate(equation)
+sort(names(formals(f)))
+```
+
+`f()` evaluates the top event for one scenario when you pass named binary inputs (see the quantify vignettes).
+
+---
+
+## Optional: full truth table with `calculate()`
+
+When $2^n$ rows is acceptable, [`calculate()`](../reference/calculate.html) expands every combination of basic events:
+
+```{r}
+truth <- calculate(f)
+dim(truth)
+sum(truth$outcome) # failure scenarios
+```
+
+---
+
+## Minimal cutsets: `concentrate()` and `tabulate()`
+
+[`concentrate()`](../reference/concentrate.html) returns a character vector of minimal cutset expressions. The default method matches the Rcpp MOCUS expansion used by [`mocus()`](../reference/mocus.html).
+
+```{r}
+mymin <- concentrate(gates)
+mymin
+```
+
+[`tabulate()`](../reference/tabulate.html) joins these cutsets to the truth table implied by `f` and reports how many failing rows each cutset explains:
+
+```{r}
+mytab <- tabulate(mymin, formula = f)
+knitr::kable(mytab, digits = 4)
+```
+
+Each row is one minimal cutset; `coverage` is the share of all failure scenarios (`failures`) that the cutset matches.
+
+---
+
+## Summary
+
+| Step | Role |
+|------|------|
+| `curate` | Nodes/edges → gates data frame |
+| `equate` | Gates → single boolean string |
+| `formulate` | String → R function `f` |
+| `calculate` | `f` → full truth table (optional) |
+| `concentrate` | Gates → minimal cutset strings |
+| `tabulate` | Cutsets + `f` → coverage table |
+
+For visualization, see [Visualizing fault trees](visualizing-fault-trees.html).
