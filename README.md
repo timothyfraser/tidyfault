@@ -3,6 +3,12 @@
 
 # tidyfault
 
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/timothyfraser/tidyfault/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/timothyfraser/tidyfault/actions/workflows/R-CMD-check.yaml)
+[![python-tests](https://github.com/timothyfraser/tidyfault/actions/workflows/python-tests.yaml/badge.svg)](https://github.com/timothyfraser/tidyfault/actions/workflows/python-tests.yaml)
+<!-- badges: end -->
+
 <img src="man/figures/logo.png" align="right" width="120" style="float: right; margin-left: 1rem;" alt="tidyfault logo" />
 
 ## R Package for tidy *Fault Tree Analysis* (FTA)!
@@ -116,7 +122,7 @@ myfunction = myequation %>% formulate()
 myfunction
 #> function (A, B, C, D) 
 #> (((B * (C + D)) * (A + (B * C))))
-#> <environment: 0x55afafdfacb0>
+#> <environment: 0x558fc1cd8538>
 ```
 
 4.  `calculate()` the full truth table of all possible combinations of
