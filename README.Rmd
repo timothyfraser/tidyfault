@@ -9,6 +9,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
+  dpi = 300,
   out.width = "100%",
   message = FALSE,
   warning = FALSE
@@ -140,7 +141,10 @@ mytable
 
 ```{r visualize, fig.height = 4, fig.width = 6, fig.alt = "Fault tree diagram for the fakenodes and fakeedges example: gates and basic events laid out as a directed graph."}
 myviz <- illustrate(nodes = fakenodes, edges = fakeedges, type = "both")
-myplot <- plot(myviz)
+myplot <- plot(
+  myviz,
+  gate_fill = c(top = "#382a54", and = "#395d9c", or = "#3eb4ad", "basic event" = "#def5e5")
+)
 myplot
 ```
 
