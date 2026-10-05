@@ -233,6 +233,27 @@ try {
     await ctx.close();
   }
 
+  // ---- articles (WEB-03): every /articles/<name>.html renders; no figure under 1600 px wide ----
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const page = await ctx.newPage();
+    const idx = JSON.parse(readFileSync(new URL("../src/generated/articles/index.json", import.meta.url), "utf8"));
+    const names = (Array.isArray(idx) ? idx : idx.articles || []).map((a) => a.name || a.slug || a);
+    const bad = [];
+    let figs = 0;
+    for (const n of names) {
+      await page.goto(`${url}/articles/${n}.html`, { waitUntil: "networkidle" });
+      if (await page.$("[data-notfound]")) { bad.push(`${n}: not found`); continue; }
+      const widths = await page.$$eval("main img", (is) => is.map((i) => i.naturalWidth));
+      figs += widths.length;
+      widths.filter((w) => w < 1600).forEach((w) => bad.push(`${n}: figure ${w}px`));
+    }
+    if (!names.length) fail("articles: index.json lists no articles");
+    else if (bad.length) fail(`articles: ${bad.join(", ")}`);
+    else ok(`articles: ${names.length} pages render; ${figs} figures, all >= 1600 px wide`);
+    await ctx.close();
+  }
+
   // ---- the published deck (ADR in the private repo; public copy in public/slides/) ----
   {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
