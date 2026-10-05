@@ -70,11 +70,9 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
-      # error-on is "error" for now: the package still has check warnings.
-      # PKG-09 (R CMD check hygiene) will tighten this to '"warning"' so CI
-      # requires 0 errors and 0 warnings.
+      # 0 errors and 0 warnings required (PKG-09 cleared the warnings).
       - uses: r-lib/actions/check-r-package@v2
         with:
           args: 'c("--no-manual","--as-cran")'
-          error-on: '"error"'
+          error-on: '"warning"'
           upload-snapshots: true
