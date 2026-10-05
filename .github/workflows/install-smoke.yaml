@@ -17,6 +17,10 @@ jobs:
   R:
     runs-on: ubuntu-latest
     name: install_github (R)
+    env:
+      # Without it remotes falls back to a shared, rate-limited PAT and the
+      # GitHub API call for DESCRIPTION fails (first run, 2026-10-05).
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: r-lib/actions/setup-r@v2
         with:
