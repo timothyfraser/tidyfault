@@ -62,13 +62,18 @@ jobs:
           # and those binaries need system libraries: igraph -> GLPK, libxml2;
           # stringi -> ICU; systemfonts -> fontconfig, freetype (pkgdepends
           # sysreqs for ubuntu-24.04). pak's own sysreqs step ran a hidden
-          # `apt-get update` that failed (third run), so install them here,
-          # as root and with visible output, and switch pak's step off.
+          # `apt-get update` that failed (third run; the fourth showed why,
+          # below), so install them here, as root and with visible output,
+          # and switch pak's step off.
           docker run --rm --user root -e GITHUB_PAT -e PKG_SYSREQS=false \
             -v "$PWD":/github/workspace -v "$RUNNER_TEMP/build.R":/build.R \
             --workdir /github/workspace \
             ghcr.io/r-wasm/webr:v0.6.0 bash -c '
               set -e
+              # The image lists the rig apt repo with a signing key it lacks,
+              # so any apt-get update exits 100 (fourth run). Nothing needed
+              # here comes from it; drop that source only.
+              grep -rl "rig.r-pkg.org" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | xargs -r rm -f
               apt-get update
               DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
                 libglpk40 libxml2 libicu74 libfontconfig1 libfreetype6
