@@ -61,9 +61,6 @@ This document lists all functions from external packages used in the tidyfault p
 
 - `create_layout` - Used in: illustrate
 
-## admisc Functions
-
-- `simplify` - Used in: concentrate
 
 ## Base R Functions (for reference)
 
@@ -95,7 +92,6 @@ These are standard R functions that don't require external packages:
 7. **scales**: 1 function
 8. **tidygraph**: 1 function
 9. **ggraph**: 1 function
-10. **admisc**: 1 function
 ## Potential Reduction Opportunities
 
 1. **dplyr functions** - Many could potentially be replaced with base R equivalents:
@@ -134,9 +130,6 @@ These are standard R functions that don't require external packages:
    - Could make visualization optional or move to a separate package
    - `tbl_graph` → could use `igraph` directly
    - `create_layout` → could use `igraph` layout functions
-
-9. **admisc** - Only used for `simplify()` in `concentrate()`:
-   - Could implement boolean simplification manually or use alternative
 
 10. **Additional optimization**:
     - Focus on frequently used data manipulation paths in `dplyr` and `stringr`

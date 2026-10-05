@@ -33,11 +33,10 @@ This function performs boolean minimization to identify the minimum cutsets (min
 \item \strong{Original MOCUS} (\code{method = "mocus_original"}):
 \itemize{
 \item Uses the original MOCUS implementation (\code{mocus()} with \code{method = "mocus_original"}) to generate all cutsets
-\item Converts cutsets to a boolean equation format
-\item Applies boolean simplification using \code{admisc::simplify()} to find minimum cutsets
-\item Returns simplified cutsets as character strings
+\item Returns the cutsets as character strings
 }
 }
+Every method then minimises the MOCUS products by absorption: duplicate cutsets and any cutset containing another cutset are dropped. Cutsets are ordered fewest events first, then by the sorted position of their events.
 Minimum cutsets represent the smallest combinations of basic events that can cause the top event (system failure) to occur.
 }
 \examples{
