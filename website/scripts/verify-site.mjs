@@ -232,6 +232,25 @@ try {
     else ok(`${internalLinks.size} distinct internal links resolve`);
     await ctx.close();
   }
+
+  // ---- the published deck (ADR in the private repo; public copy in public/slides/) ----
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    const page = await ctx.newPage();
+    await page.goto(url + "/", { waitUntil: "load" });
+    const navHref = await page.$eval("header .nav-slides", (a) => a.getAttribute("href")).catch(() => null);
+    if (navHref !== "/slides/") fail(`nav Slides link missing or wrong (${navHref})`);
+    else ok("nav: Slides link at the top right points to /slides/");
+    await page.goto(url + "/slides/", { waitUntil: "load" });
+    const n = await page.$$eval("section.slide", (s) => s.length).catch(() => 0);
+    const frames = await page.$$eval("iframe.tf-live-frame", (f) => f.map((x) => x.getAttribute("src")));
+    if (n !== 14) fail(`/slides/: expected 14 slides, found ${n}`);
+    else if (!frames.length || frames.some((s) => s !== "/")) fail(`/slides/: live iframes not same-origin (${frames.join(", ")})`);
+    else ok(`/slides/: 14 slides; ${frames.length} live iframes point at the site itself`);
+    await page.screenshot({ path: join(shots, "slides-01.png") });
+    console.log(`shot ${join(shots, "slides-01.png")}`);
+    await ctx.close();
+  }
 } finally {
   await browser.close();
   if (preview) preview.kill();

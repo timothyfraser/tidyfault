@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>tidyfault · Conference on Complex Systems 2026</title>
+<link rel="stylesheet" href="assets/slides.css?v=1">
+</head>
+<body data-deck-title="tidyfault · CCS 2026" data-deck-kind="conference">
+<main class="deck">
+
+<section class="slide tf-dark" aria-label="1. Title">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px 48px 60px; background: #2e5c8a; color: #ffffff; font-family: 'Source Sans 3', system-ui, sans-serif; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 40px; position: relative; overflow: hidden">
+  <div style="display: flex; flex-direction: column; gap: 22px; min-width: 0">
+    <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase"><span style="width: 32px; height: 8px; border-radius: 4px; background: #53c9ad"></span>Conference on Complex Systems · Binghamton · October 12, 2026</div>
+    <h1 style="margin: 24px 0 0; font-size: 62px; line-height: 66px; font-weight: 700; letter-spacing: -0.01em">Better Fault Tree Analysis for Complex Systems with <span style="color: #53c9ad">tidyfault</span></h1>
+    <p style="margin: 0; font-size: 28px; line-height: 36px; font-weight: 400; opacity: 0.94; max-width: 820px">A tidyverse-friendly R coding framework for fault tree visualization and simulation</p>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 4px; font-size: 26px; line-height: 34px"><span><span style="font-weight: 600">Timothy Fraser</span> · Jingyao Tong</span><span style="font-size: 22px; opacity: 0.9">Cornell Systems Engineering · Aquila Hash, Inc.</span></div>
+  </div>
+  <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 24px">
+    <img src="assets/img/tidyfault-hex.png" alt="tidyfault hex logo" style="width: 240px; height: auto; filter: drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 14px rgba(83,201,173,0.55))">
+    <svg viewBox="0 0 320 260" width="280" height="228" aria-hidden="true">
+      <path d="M160 60 V84 M160 84 H80 V110 M160 84 H240 V110 M80 190 V206 M80 206 H40 V220 M80 206 H120 V220 M240 190 V220" stroke="#ffffff" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.8"/>
+      <rect x="100" y="12" width="120" height="48" rx="4" fill="#382a54" stroke="#ffffff" stroke-width="3"/>
+      <path d="M40 190 V140 A40 40 0 0 1 120 140 V190 Z" fill="#395d9c" stroke="#ffffff" stroke-width="3"/>
+      <path d="M200 190 Q240 170 280 190 Q280 150 240 110 Q200 150 200 190 Z" fill="#53c9ad" stroke="#ffffff" stroke-width="3"/>
+      <circle cx="40" cy="240" r="20" fill="#def5e5" stroke="#ffffff" stroke-width="3"/><circle cx="120" cy="240" r="20" fill="#def5e5" stroke="#ffffff" stroke-width="3"/><circle cx="240" cy="240" r="20" fill="#def5e5" stroke="#ffffff" stroke-width="3"/>
+    </svg>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background: #1a3a5c"></div>
+</div>
+</section>
+
+<section class="slide" aria-label="2. Authors and abstract">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 44px 48px 36px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: grid; grid-template-columns: 268px minmax(0, 1fr); gap: 44px">
+  <div style="display: flex; flex-direction: column; gap: 28px; align-items: center; padding-top: 8px">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+      <div style="width: 176px; height: 176px; border-radius: 50%; overflow: hidden; background: #e9edf0; border: 6px solid #53c9ad; box-sizing: border-box"><img src="assets/img/headshot-tim.png" alt="Timothy Fraser" style="display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%"></div>
+      <div style="font-size: 22px; line-height: 28px; font-weight: 700">Timothy Fraser</div>
+      <div style="font-size: 16px; line-height: 21px; color: #3b4650">Assistant Teaching Professor<br>Systems Engineering, Cornell</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+      <div style="width: 176px; height: 176px; border-radius: 50%; overflow: hidden; background: #e9edf0; border: 6px solid #53c9ad; box-sizing: border-box"><img src="assets/img/headshot-jingyao.jpg" alt="Jingyao Tong" style="display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%"></div>
+      <div style="font-size: 22px; line-height: 28px; font-weight: 700">Jingyao Tong</div>
+      <div style="font-size: 16px; line-height: 21px; color: #3b4650">Project Manager<br>Aquila Hash, Inc.</div>
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+    <h1 style="margin: 0; font-size: 34px; line-height: 40px; font-weight: 700">Better Fault Tree Analysis for Complex Systems with <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 500">tidyfault</span>: A tidyverse-friendly R Coding Framework for Fault Tree Visualization and Simulation</h1>
+    <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; line-height: 20px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #3b4650"><span style="width: 28px; height: 8px; border-radius: 4px; background: #53c9ad"></span>Abstract</div>
+    <div style="column-count: 2; column-gap: 36px; font-size: 15.5px; line-height: 22px; color: #0b0405">
+      <p style="margin: 0 0 10px">Fault tree analysis (FTA) is a systematic method for identifying combinations of component failures that lead to system-level failures, widely used in complex systems modeling for high-risk reliability engineering (e.g. rockets, nuclear power plants, etc.). While existing R packages provide FTA functionality, they lack integration with the broader tidyverse ecosystem, making it difficult to programmatically construct fault trees, visualize them using modern graphics tools, and integrate FTA workflows into reproducible data analysis pipelines.</p>
+      <p style="margin: 0 0 10px">This paper introduces tidyfault, an R package that provides a unified, pipe-friendly workflow for fault tree analysis, built on R’s ‘tidyverse’ principles. By representing complex system logic as "tidy" data frames of nodes and edges, the package allows researchers to leverage the full power of functional programming and visualization in R. The package implements a pipeline for processing fault trees from nodes and edges through boolean equation extraction, truth table generation, and minimal cutset identification using a custom R implementation of the Method of Obtaining Cut Sets (MOCUS) algorithm. Additional functions support binary scenario evaluation, probability computation, and ggplot2-compatible visualization, helping bring FTA fully into modern R data science workflows. Unlike traditional GUI-based FTA tools, tidyfault allows for the batch evaluation of thousands of failure scenarios, making it uniquely suited for the high-dimensional simulations typical of complex systems research.</p>
+      <p style="margin: 0">We demonstrate the package’s functionality through case studies involving security systems and database failures. These examples highlight how tidyfault can identify critical vulnerabilities and single points of failure within socio-technical systems. It is the authors’ hope that tidyfault’s reproducible, programmatic fault tree analysis framework will help a new generation of systems engineers scale up their FTA analyses to match the growing size and scope of modern complex systems.</p>
+    </div>
+    <div style="margin-top: auto; display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>2 / 14</span></div>
+  </div>
+</div>
+</section>
+
+<section class="slide" aria-label="3. Complex systems fail in combinations">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650"><span style="width: 28px; height: 8px; border-radius: 4px; background: #53c9ad"></span>Why complex systems</div>
+  <h2 style="margin: 0; font-size: 52px; line-height: 58px; font-weight: 700">Complex systems fail in combinations</h2>
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) 560px; gap: 48px; flex-grow: 1; align-items: start">
+    <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 22px; font-size: 32px; line-height: 40px">
+      <li style="display: flex; gap: 16px; align-items: baseline"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #395d9c; transform: translateY(-4px)"></span><span>Redundancy, cascades, common causes</span></li>
+      <li style="display: flex; gap: 16px; align-items: baseline"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #357ba3; transform: translateY(-4px)"></span><span>Rockets, reactors, networks, organizations</span></li>
+      <li style="display: flex; gap: 16px; align-items: baseline"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #3eb4ad; transform: translateY(-4px)"></span><span><em>n</em> on/off events → 2<sup>n</sup> possible worlds</span></li>
+      <li style="display: flex; gap: 16px; align-items: baseline"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #53c9ad; transform: translateY(-4px)"></span><span>Fault trees: the logic of how failures combine</span></li>
+      <li style="display: flex; gap: 16px; align-items: baseline; color: #3b4650"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #c5ccd3; transform: translateY(-4px)"></span><span>Usually a drawing in a GUI, solved by hand</span></li>
+    </ul>
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 28px; border: 1px solid #c5ccd3; border-radius: 14px; background: #f5f7f8">
+      <div style="font-size: 17px; line-height: 22px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650">Scenarios to check, 2<sup>n</sup></div>
+      <div style="display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 14px 16px; align-items: center">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">n = 10</span><div style="display: flex; align-items: center; gap: 12px"><div style="width: 25%; height: 34px; background: #395d9c; border-radius: 4px"></div><span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">1,024</span></div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">n = 20</span><div style="display: flex; align-items: center; gap: 12px"><div style="width: 50%; height: 34px; background: #357ba3; border-radius: 4px"></div><span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">~1 million</span></div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">n = 40</span><div style="display: flex; align-items: center; gap: 12px"><div style="width: 100%; height: 34px; background: #53c9ad; border-radius: 4px"></div></div>
+        <span></span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; text-align: right">~1.1 trillion</span>
+      </div>
+      <div style="font-size: 17px; line-height: 22px; color: #3b4650">bar length on a log scale</div>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>3 / 14</span></div>
+</div>
+</section>
+
+<section class="slide tf-tables" aria-label="4. A fault tree is a network">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650"><span style="width: 28px; height: 8px; border-radius: 4px; background: #53c9ad"></span>The data model</div>
+  <h2 style="margin: 0; font-size: 48px; line-height: 54px; font-weight: 700">A fault tree is a network: two tables</h2>
+  <div style="display: grid; grid-template-columns: 290px 220px minmax(0, 1fr); gap: 36px; flex-grow: 1; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500">nodes</div>
+      <table>
+        <thead><tr><th>id</th><th>event</th><th>type</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family: 'IBM Plex Mono', monospace">1</td><td>T</td><td>top</td></tr>
+          <tr><td style="font-family: 'IBM Plex Mono', monospace">2</td><td>G1</td><td>and</td></tr>
+          <tr><td style="font-family: 'IBM Plex Mono', monospace">3</td><td>G2</td><td>and</td></tr>
+          <tr><td style="font-family: 'IBM Plex Mono', monospace">4</td><td>G3</td><td>or</td></tr>
+          <tr><td style="font-family: 'IBM Plex Mono', monospace">5</td><td>A</td><td>not</td></tr>
+          <tr><td style="font-family: 'IBM Plex Mono', monospace">…</td><td>…</td><td>…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500">edges</div>
+      <table>
+        <thead><tr><th>from</th><th>to</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family: 'IBM Plex Mono', monospace">1</td><td style="font-family: 'IBM Plex Mono', monospace">2</td></tr>
+          <tr><td style="font-family: 'IBM Plex Mono', monospace">2</td><td style="font-family: 'IBM Plex Mono', monospace">3</td></tr>
+          <tr><td style="font-family: 'IBM Plex Mono', monospace">2</td><td style="font-family: 'IBM Plex Mono', monospace">4</td></tr>
+          <tr><td style="font-family: 'IBM Plex Mono', monospace">3</td><td style="font-family: 'IBM Plex Mono', monospace">5</td></tr>
+          <tr><td style="font-family: 'IBM Plex Mono', monospace">…</td><td style="font-family: 'IBM Plex Mono', monospace">…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 22px">
+      <div style="display: flex; gap: 20px; align-items: flex-end; padding: 20px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 14px">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: 90px"><svg viewBox="0 0 96 96" width="72" height="72" aria-hidden="true"><rect x="8" y="28" width="80" height="40" rx="4" fill="#382a54" stroke="#0b0405" stroke-width="2"/></svg><span style="font-size: 17px; font-weight: 600">Top</span></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: 90px"><svg viewBox="0 0 96 96" width="72" height="72" aria-hidden="true"><path d="M16 84 V44 A32 32 0 0 1 80 44 V84 Z" fill="#395d9c" stroke="#0b0405" stroke-width="2"/></svg><span style="font-size: 17px; font-weight: 600">AND</span></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: 90px"><svg viewBox="0 0 96 96" width="72" height="72" aria-hidden="true"><path d="M14 84 Q48 68 82 84 Q82 44 48 10 Q14 44 14 84 Z" fill="#3eb4ad" stroke="#0b0405" stroke-width="2"/></svg><span style="font-size: 17px; font-weight: 600">OR</span></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: 90px"><svg viewBox="0 0 96 96" width="72" height="72" aria-hidden="true"><circle cx="48" cy="48" r="34" fill="#def5e5" stroke="#0b0405" stroke-width="2"/></svg><span style="font-size: 17px; font-weight: 600">Basic event</span></div>
+      </div>
+      <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; font-size: 27px; line-height: 34px">
+        <li style="display: flex; gap: 14px; align-items: baseline"><span style="flex: none; width: 12px; height: 12px; border-radius: 3px; background: #53c9ad; transform: translateY(-3px)"></span><span>A directed acyclic graph</span></li>
+        <li style="display: flex; gap: 14px; align-items: baseline"><span style="flex: none; width: 12px; height: 12px; border-radius: 3px; background: #53c9ad; transform: translateY(-3px)"></span><span>Logic lives in the gates</span></li>
+        <li style="display: flex; gap: 14px; align-items: baseline"><span style="flex: none; width: 12px; height: 12px; border-radius: 3px; background: #53c9ad; transform: translateY(-3px)"></span><span>Top event → exactly one gate</span></li>
+        <li style="display: flex; gap: 14px; align-items: baseline"><span style="flex: none; width: 12px; height: 12px; border-radius: 3px; background: #53c9ad; transform: translateY(-3px)"></span><span>Same tables as tidygraph, igraph</span></li>
+      </ul>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>4 / 14</span></div>
+</div>
+</section>
+
+<section class="slide" aria-label="5. Six verbs, one pipe">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650"><span style="width: 28px; height: 8px; border-radius: 4px; background: #53c9ad"></span>The grammar</div>
+  <h2 style="margin: 0; font-size: 48px; line-height: 54px; font-weight: 700">Six verbs, one pipe</h2>
+  <div style="display: flex; align-items: stretch; gap: 0">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 16px 12px; border: 2px solid #0b0405; background: #53c9ad; border-radius: 8px; min-width: 0"><span style="font-size: 14px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #0b0405">1</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 500">curate()</span><span style="font-size: 17px; line-height: 22px; color: #0b0405">tables → gates</span></div>
+    <div style="display: flex; align-items: center; padding: 0 6px; color: #b7c1cb; font-size: 28px" aria-hidden="true">›</div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 16px 12px; border: 1px solid #c5ccd3; background: #f5f7f8; border-radius: 8px; min-width: 0"><span style="font-size: 14px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650">2</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 500">equate()</span><span style="font-size: 17px; line-height: 22px; color: #3b4650">boolean equation</span></div>
+    <div style="display: flex; align-items: center; padding: 0 6px; color: #b7c1cb; font-size: 28px" aria-hidden="true">›</div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 16px 12px; border: 1px solid #c5ccd3; background: #f5f7f8; border-radius: 8px; min-width: 0"><span style="font-size: 14px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650">3</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 500">formulate()</span><span style="font-size: 17px; line-height: 22px; color: #3b4650">a function</span></div>
+    <div style="display: flex; align-items: center; padding: 0 6px; color: #b7c1cb; font-size: 28px" aria-hidden="true">›</div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 16px 12px; border: 1px solid #c5ccd3; background: #f5f7f8; border-radius: 8px; min-width: 0"><span style="font-size: 14px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650">4</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 500">calculate()</span><span style="font-size: 17px; line-height: 22px; color: #3b4650">truth table</span></div>
+    <div style="display: flex; align-items: center; padding: 0 6px; color: #b7c1cb; font-size: 28px" aria-hidden="true">›</div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 16px 12px; border: 1px solid #c5ccd3; background: #f5f7f8; border-radius: 8px; min-width: 0"><span style="font-size: 14px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650">5</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 500">concentrate()</span><span style="font-size: 17px; line-height: 22px; color: #3b4650">minimal cut sets</span></div>
+    <div style="display: flex; align-items: center; padding: 0 6px; color: #b7c1cb; font-size: 28px" aria-hidden="true">›</div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 16px 12px; border: 1px solid #c5ccd3; background: #f5f7f8; border-radius: 8px; min-width: 0"><span style="font-size: 14px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650">6</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 500">tabulate()</span><span style="font-size: 17px; line-height: 22px; color: #3b4650">coverage</span></div>
+  </div>
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 32px; flex-grow: 1; align-items: start">
+    <pre style="margin: 0; padding: 28px 32px; background: #15101c; color: #e9edf0; border-radius: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 26px; line-height: 38px; overflow: hidden"><span style="color: #a9e1bd"># two tables in, cut sets out</span>
+gates &lt;- <span style="color: #60ceac">curate</span>(nodes, edges)
+f     &lt;- gates |&gt; <span style="color: #60ceac">equate</span>() |&gt; <span style="color: #60ceac">formulate</span>()
+<span style="color: #60ceac">calculate</span>(f)
+<span style="color: #60ceac">concentrate</span>(gates) <span style="color: #a9e1bd"># "B*C"  "A*B*D"</span></pre>
+    <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; font-size: 26px; line-height: 34px">
+      <li>Every step returns data</li>
+      <li>No hidden objects</li>
+      <li style="color: #3b4650">Branches: <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">quantify()</span>, <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">simulate()</span>, <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">plot()</span></li>
+    </ul>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>5 / 14</span></div>
+</div>
+</section>
+
+<section class="slide" aria-label="6. Live · R">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; align-items: baseline; justify-content: space-between">
+    <h2 style="margin: 0; font-size: 40px; line-height: 46px; font-weight: 600">Run it in the browser: R, via webR</h2>
+    <span style="font-size: 16px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #0b0405; background: #3eb4ad; border-radius: 999px; padding: 6px 14px">[LIVE EMBED · tidyfault.netlify.app]</span>
+  </div>
+  <div class="tf-live">
+  <div style="flex-grow: 1; display: flex; flex-direction: column; border: 1px solid #c5ccd3; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(11,4,5,0.06), 0 6px 20px rgba(11,4,5,0.08)">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: #e9edf0; border-bottom: 1px solid #c5ccd3">
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: #c5ccd3"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c5ccd3"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c5ccd3"></span>
+      <span style="margin-left: 12px; flex-grow: 1; padding: 6px 14px; background: #ffffff; border: 1px solid #c5ccd3; border-radius: 999px; font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: #3b4650">https://tidyfault.netlify.app</span>
+    </div>
+    <div style="flex-grow: 1; display: grid; grid-template-columns: 220px minmax(0, 1fr); background: #ffffff">
+      <div style="padding: 24px 20px; border-right: 1px solid #c5ccd3; display: flex; flex-direction: column; gap: 10px; font-size: 18px; line-height: 24px">
+        <a href="#home" style="font-weight: 600; color: #395d9c">Get started</a><span style="color: #3b4650">Core workflow</span><span style="color: #3b4650">Visualizing</span><span style="color: #3b4650">quantify()</span><span style="color: #3b4650">Reference · R</span><span style="color: #3b4650">Reference · Python</span>
+      </div>
+      <div style="padding: 24px 28px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="display: inline-flex; border: 1px solid #c5ccd3; border-radius: 999px; overflow: hidden"><span style="font-size: 15px; font-weight: 600; padding: 5px 14px; background: #2e5c8a; color: #ffffff">R</span><span style="font-size: 15px; font-weight: 600; padding: 5px 14px; color: #3b4650">Python</span></div>
+          <span style="margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3eb4ad"></span> webR live</span>
+          <button type="button" style="font: 600 16px/20px 'Source Sans 3', sans-serif; padding: 8px 18px; border: 0; border-radius: 999px; background: #3eb4ad; color: #0b0405">▶ Run</button>
+        </div>
+        <pre style="margin: 0; padding: 20px 24px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 20px; line-height: 30px; overflow: hidden"><span style="color: #60ceac">library</span>(tidyfault)
+gates &lt;- <span style="color: #60ceac">curate</span>(nodes = fakenodes, edges = fakeedges)
+<span style="color: #60ceac">concentrate</span>(gates)
+<span style="color: #60ceac">quantify</span>(<span style="color: #60ceac">formulate</span>(<span style="color: #60ceac">equate</span>(gates)),
+         c(0.10, 0.20, 0.05, 0.15), prob = TRUE)</pre>
+        <div style="padding: 12px 24px; background: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 18px; line-height: 28px; white-space: pre"><span style="color: #3b4650">#&gt;</span> [1] "B*C"   "A*B*D"
+<span style="color: #3b4650">#&gt;</span> [1] 0.01285</div>
+      </div>
+    </div>
+  </div>
+    <iframe class="tf-live-frame" title="tidyfault website, live R runtime" src="/" loading="lazy"></iframe>
+    <button type="button" class="tf-live-toggle" aria-pressed="false" title="Show or hide the live site (key L)">Live site · L</button>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
+    <span>tidyfault · CCS 2026 · runs in your browser</span><span>6 / 14</span>
+  </div>
+</div>
+</section>
+
+<section class="slide" aria-label="7. Live · Python">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; align-items: baseline; justify-content: space-between">
+    <h2 style="margin: 0; font-size: 40px; line-height: 46px; font-weight: 600">Same page, same example: Python, via Pyodide</h2>
+    <span style="font-size: 16px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #0b0405; background: #3eb4ad; border-radius: 999px; padding: 6px 14px">[LIVE EMBED · tidyfault.netlify.app]</span>
+  </div>
+  <div class="tf-live">
+  <div style="flex-grow: 1; display: flex; flex-direction: column; border: 1px solid #c5ccd3; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(11,4,5,0.06), 0 6px 20px rgba(11,4,5,0.08)">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: #e9edf0; border-bottom: 1px solid #c5ccd3">
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: #c5ccd3"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c5ccd3"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c5ccd3"></span>
+      <span style="margin-left: 12px; flex-grow: 1; padding: 6px 14px; background: #ffffff; border: 1px solid #c5ccd3; border-radius: 999px; font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: #3b4650">https://tidyfault.netlify.app</span>
+    </div>
+    <div style="flex-grow: 1; display: grid; grid-template-columns: 220px minmax(0, 1fr); background: #ffffff">
+      <div style="padding: 24px 20px; border-right: 1px solid #c5ccd3; display: flex; flex-direction: column; gap: 10px; font-size: 18px; line-height: 24px">
+        <a href="#home" style="font-weight: 600; color: #395d9c">Get started</a><span style="color: #3b4650">Core workflow</span><span style="color: #3b4650">Visualizing</span><span style="color: #3b4650">quantify()</span><span style="color: #3b4650">Reference · R</span><span style="color: #3b4650">Reference · Python</span>
+      </div>
+      <div style="padding: 24px 28px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="display: inline-flex; border: 1px solid #c5ccd3; border-radius: 999px; overflow: hidden"><span style="font-size: 15px; font-weight: 600; padding: 5px 14px; color: #3b4650">R</span><span style="font-size: 15px; font-weight: 600; padding: 5px 14px; background: #2e5c8a; color: #ffffff">Python</span></div>
+          <span style="margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3eb4ad"></span> Pyodide live</span>
+          <button type="button" style="font: 600 16px/20px 'Source Sans 3', sans-serif; padding: 8px 18px; border: 0; border-radius: 999px; background: #3eb4ad; color: #0b0405">▶ Run</button>
+        </div>
+        <pre style="margin: 0; padding: 20px 24px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 20px; line-height: 30px; overflow: hidden"><span style="color: #60ceac">import</span> tidyfault <span style="color: #60ceac">as</span> tf
+gates = tf.<span style="color: #60ceac">curate</span>(tf.data.fakenodes, tf.data.fakeedges)
+tf.<span style="color: #60ceac">concentrate</span>(gates)
+tf.<span style="color: #60ceac">quantify</span>(tf.<span style="color: #60ceac">formulate</span>(tf.<span style="color: #60ceac">equate</span>(gates)),
+            [0.10, 0.20, 0.05, 0.15], prob=True)</pre>
+        <div style="padding: 12px 24px; background: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 18px; line-height: 28px; white-space: pre"><span style="color: #3b4650">#&gt;</span> ['B*C', 'A*B*D']
+<span style="color: #3b4650">#&gt;</span> 0.01285</div>
+      </div>
+    </div>
+  </div>
+    <iframe class="tf-live-frame" title="tidyfault website, live Python runtime" src="/" loading="lazy"></iframe>
+    <button type="button" class="tf-live-toggle" aria-pressed="false" title="Show or hide the live site (key L)">Live site · L</button>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
+    <span>tidyfault · CCS 2026 · same names, same answers</span><span>7 / 14</span>
+  </div>
+</div>
+</section>
+
+<section class="slide" aria-label="8. Figure → cut sets → probability">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <h2 style="margin: 0; font-size: 40px; line-height: 46px; font-weight: 600">Figure → cut sets → probability</h2>
+  <div style="display: grid; grid-template-columns: 560px minmax(0, 1fr); gap: 40px; flex-grow: 1; align-items: start">
+    <figure style="margin: 0; padding: 20px; border: 1px solid #c5ccd3; border-radius: 14px; background: #ffffff">
+      <svg viewBox="0 0 520 420" width="520" height="420" role="img" aria-label="Fault tree for the fakenodes example: T over G1 (AND); G1 over G2 (AND) and G3 (OR); G2 over G5 (OR) and B; G3 over G4 (AND) and A; G5 over C and D; G4 over B and C">
+        <g stroke="#b7c1cb" stroke-width="3" fill="none" stroke-linecap="round">
+          <path d="M260 56 V86"/><path d="M260 140 L150 190"/><path d="M260 140 L370 190"/>
+          <path d="M150 240 L90 290"/><path d="M150 240 L210 290"/><path d="M370 240 L310 290"/><path d="M370 240 L430 290"/>
+          <path d="M90 340 L50 380"/><path d="M90 340 L130 380"/><path d="M310 340 L270 380"/><path d="M310 340 L350 380"/>
+        </g>
+        <rect x="210" y="16" width="100" height="40" rx="4" fill="#382a54" stroke="#0b0405" stroke-width="2"/><text x="260" y="43" text-anchor="middle" fill="#ffffff" font-family="Source Sans 3" font-weight="700" font-size="18">T</text>
+        <path d="M232 140 V112 A28 28 0 0 1 288 112 V140 Z" fill="#395d9c" stroke="#0b0405" stroke-width="2"/><text x="260" y="134" text-anchor="middle" fill="#ffffff" font-family="Source Sans 3" font-weight="700" font-size="16">G1</text>
+        <path d="M122 240 V212 A28 28 0 0 1 178 212 V240 Z" fill="#395d9c" stroke="#0b0405" stroke-width="2"/><text x="150" y="234" text-anchor="middle" fill="#ffffff" font-family="Source Sans 3" font-weight="700" font-size="16">G2</text>
+        <path d="M340 242 Q370 228 400 242 Q400 210 370 186 Q340 210 340 242 Z" fill="#3eb4ad" stroke="#0b0405" stroke-width="2"/><text x="370" y="232" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="16">G3</text>
+        <path d="M60 342 Q90 328 120 342 Q120 310 90 286 Q60 310 60 342 Z" fill="#3eb4ad" stroke="#0b0405" stroke-width="2"/><text x="90" y="332" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="16">G5</text>
+        <circle cx="210" cy="312" r="20" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="210" y="318" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="16">B</text>
+        <path d="M282 340 V312 A28 28 0 0 1 338 312 V340 Z" fill="#395d9c" stroke="#0b0405" stroke-width="2"/><text x="310" y="334" text-anchor="middle" fill="#ffffff" font-family="Source Sans 3" font-weight="700" font-size="16">G4</text>
+        <circle cx="430" cy="312" r="20" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="430" y="318" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="16">A</text>
+        <circle cx="50" cy="396" r="18" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="50" y="402" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="15">C</text>
+        <circle cx="130" cy="396" r="18" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="130" y="402" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="15">D</text>
+        <circle cx="270" cy="396" r="18" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="270" y="402" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="15">B</text>
+        <circle cx="350" cy="396" r="18" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="350" y="402" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="15">C</text>
+      </svg>
+      <figcaption style="margin-top: 8px; font-size: 15px; line-height: 20px; color: #3b4650">Example tree, drawn by <span style="font-family: 'IBM Plex Mono', monospace">illustrate()</span> + <span style="font-family: 'IBM Plex Mono', monospace">plot()</span> [swap in the 300 dpi render]</figcaption>
+    </figure>
+    <div style="display: flex; flex-direction: column; gap: 18px">
+      <div style="padding: 20px 24px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px">
+        <div style="font-size: 15px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650; margin-bottom: 6px">equate()</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; line-height: 32px">(B * (C + D)) * (A + (B * C))</div>
+      </div>
+      <div style="padding: 20px 24px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px">
+        <div style="font-size: 15px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650; margin-bottom: 6px">concentrate() · minimal cut sets</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 30px; line-height: 38px; font-weight: 500">B*C &nbsp;&nbsp; A*B*D</div>
+        <div style="font-size: 20px; line-height: 28px; color: #3b4650; margin-top: 4px">Smallest failure combinations · found by MOCUS</div>
+      </div>
+      <div style="padding: 20px 24px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px">
+        <div style="font-size: 15px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650; margin-bottom: 6px">quantify(prob = TRUE) · P(A, B, C, D) = 0.10, 0.20, 0.05, 0.15</div>
+        <div style="display: flex; align-items: baseline; gap: 16px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 44px; line-height: 50px; font-weight: 500">0.01285</span><span style="font-size: 20px; line-height: 28px; color: #3b4650">exact, over the full truth table</span></div>
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
+    <span>tidyfault · CCS 2026</span><span>8 / 14</span>
+  </div>
+</div>
+</section>
+
+<section class="slide" aria-label="9. Thousands of scenarios, one call">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650"><span style="width: 28px; height: 8px; border-radius: 4px; background: #53c9ad"></span>Simulation at scale</div>
+  <h2 style="margin: 0; font-size: 48px; line-height: 54px; font-weight: 700">Thousands of scenarios, one call</h2>
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 40px; flex-grow: 1; align-items: stretch">
+    <figure style="margin: 0; display: flex; flex-direction: column; gap: 10px; padding: 24px 24px 16px; border: 1px solid #c5ccd3; border-radius: 14px">
+      <div style="display: flex; justify-content: space-between; font-size: 17px; line-height: 22px; color: #3b4650"><span>10,000 possible worlds · IT security tree</span><span>P(top event)</span></div>
+      <div style="position: relative; height: 320px; border-bottom: 2px solid #0b0405">
+        <div style="position: absolute; left: 8.7%; width: 35.5%; top: 0; bottom: 0; background: rgba(83,201,173,0.18); border-left: 2px dashed #3eb4ad; border-right: 2px dashed #3eb4ad"></div>
+        <div style="position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 3px; padding: 0 2px">
+          <div style="flex: 1; height: 10px; background: #382a54; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 64px; background: #382a54; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 184px; background: #413f80; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 267px; background: #395d9c; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 300px; background: #395d9c; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 267px; background: #357ba3; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 214px; background: #357ba3; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 171px; background: #3497a9; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 105px; background: #3497a9; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 76px; background: #3eb4ad; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 48px; background: #3eb4ad; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 32px; background: #53c9ad; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 16px; background: #53c9ad; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 9px; background: #60ceac; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 6px; background: #60ceac; border-radius: 2px 2px 0 0"></div>
+          <div style="flex: 1; height: 3px; background: #85d9b1"></div>
+          <div style="flex: 1; height: 2px; background: #85d9b1"></div>
+          <div style="flex: 1; height: 2px; background: #85d9b1"></div>
+          <div style="flex: 1; height: 1px; background: #85d9b1"></div>
+          <div style="flex: 1; height: 1px; background: #85d9b1"></div>
+          <div style="flex: 1; height: 1px; background: #85d9b1"></div>
+          <div style="flex: 1; height: 0"></div>
+          <div style="flex: 1; height: 0"></div>
+          <div style="flex: 1; height: 1px; background: #85d9b1"></div>
+        </div>
+        <div style="position: absolute; left: 23.3%; top: -6px; bottom: 0; border-left: 3px solid #0b0405"></div>
+        <div style="position: absolute; left: calc(23.3% + 10px); top: -4px; font-size: 17px; line-height: 22px; font-weight: 600; background: #ffffff; padding: 0 4px">point estimate 0.016</div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: #3b4650"><span>0.003</span><span>0.017</span><span>0.031</span><span>0.045</span><span>0.059</span></div>
+      <figcaption style="font-size: 15px; line-height: 20px; color: #3b4650">Each basic event's probability drawn from a Beta around its point value (concentration 40). Shaded: middle 90% of worlds.</figcaption>
+    </figure>
+    <div style="display: flex; flex-direction: column; gap: 18px">
+      <pre style="margin: 0; padding: 18px 22px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 20px; line-height: 30px; overflow: hidden"><span style="color: #60ceac">quantify</span>(f, worlds,
+         prob = TRUE)</pre>
+      <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; font-size: 26px; line-height: 34px">
+        <li>One row = one possible world</li>
+        <li>Uncertain inputs → a distribution</li>
+        <li>No GUI, no clicking</li>
+      </ul>
+      <div style="margin-top: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+        <div style="padding: 14px 16px; background: #53c9ad; border-radius: 8px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 34px; line-height: 40px; font-weight: 500">10,000</span><span style="font-size: 16px; line-height: 20px">scenarios</span></div>
+        <div style="padding: 14px 16px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 34px; line-height: 40px; font-weight: 500">3.5 s</span><span style="font-size: 16px; line-height: 20px; color: #3b4650">one CPU core</span></div>
+        <div style="grid-column: span 2; padding: 14px 16px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 30px; line-height: 36px; font-weight: 500">0.008 – 0.028</span><span style="font-size: 16px; line-height: 20px; color: #3b4650">90% of worlds · median 0.015</span></div>
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026 · seed 20261012</span><span>9 / 14</span></div>
+</div>
+</section>
+
+<section class="slide" aria-label="10. Speed">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <h2 style="margin: 0; font-size: 40px; line-height: 46px; font-weight: 600">50 gates: 19 s in R, 2 s in C++</h2>
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 40px; flex-grow: 1; align-items: stretch">
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 24px; border: 1px solid #c5ccd3; border-radius: 14px">
+      <div style="display: flex; gap: 24px; font-size: 17px; line-height: 22px; color: #3b4650">
+        <span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 16px; height: 16px; background: #382a54; border-radius: 3px"></span>mocus_r()</span>
+        <span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 16px; height: 16px; background: #53c9ad; border-radius: 3px"></span>mocus_rcpp()</span>
+        <span style="margin-left: auto">median of 10 runs · seconds</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; align-items: end; height: 340px; padding: 0 12px; border-bottom: 1px solid #c5ccd3">
+        <div style="display: flex; gap: 6px; align-items: flex-end; height: 340px">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: flex-end"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px">0.28</span><div style="width: 100%; height: 5px; background: #382a54; border-radius: 3px 3px 0 0"></div></div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: flex-end"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px">0.02</span><div style="width: 100%; height: 2px; background: #53c9ad; border-radius: 3px 3px 0 0"></div></div>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: flex-end; height: 340px">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: flex-end"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px">2.88</span><div style="width: 100%; height: 46px; background: #382a54; border-radius: 3px 3px 0 0"></div></div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: flex-end"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px">0.23</span><div style="width: 100%; height: 4px; background: #53c9ad; border-radius: 3px 3px 0 0"></div></div>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: flex-end; height: 340px">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: flex-end"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px">6.45</span><div style="width: 100%; height: 103px; background: #382a54; border-radius: 3px 3px 0 0"></div></div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: flex-end"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px">0.57</span><div style="width: 100%; height: 9px; background: #53c9ad; border-radius: 3px 3px 0 0"></div></div>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: flex-end; height: 340px">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: flex-end"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px">19.39</span><div style="width: 100%; height: 310px; background: #382a54; border-radius: 3px 3px 0 0"></div></div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: flex-end"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px">1.98</span><div style="width: 100%; height: 32px; background: #53c9ad; border-radius: 3px 3px 0 0"></div></div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; padding: 0 12px; font-size: 17px; line-height: 22px; color: #3b4650; text-align: center">
+        <span>30 gates · 30 events</span><span>40 · 40</span><span>45 · 45</span><span>50 · 50</span>
+      </div>
+    </div>
+    <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; font-size: 26px; line-height: 34px">
+      <li>Same MOCUS, R vs C++ (Rcpp)</li>
+      <li>C++ is the default</li>
+      <li>500 runs: identical cut sets every time</li>
+      <li style="color: #3b4650">Beyond ~50 gates: the algorithm, not the language</li>
+    </ul>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
+    <span>tidyfault · CCS 2026 · median of 10 runs</span><span>10 / 14</span>
+  </div>
+</div>
+</section>
+
+<section class="slide" aria-label="11. Where can data leak out?">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <div style="font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650">Socio-technical case study</div>
+  <h2 style="margin: 0; font-size: 40px; line-height: 46px; font-weight: 600">Where can data leak out?</h2>
+  <div style="display: grid; grid-template-columns: 620px minmax(0, 1fr); gap: 40px; flex-grow: 1; align-items: start">
+    <figure style="margin: 0; padding: 16px; border: 1px solid #c5ccd3; border-radius: 14px">
+      <svg viewBox="0 0 600 380" width="588" height="372" role="img" aria-label="IT security fault tree: DE top event over BP (OR); BP over EA, UE and IE (all AND); EA over CC (OR), MN and PM; CC over PC and LR; UE over VS, PO and WB; IE over IM, DA and EP">
+        <g stroke="#b7c1cb" stroke-width="2.5" fill="none" stroke-linecap="round">
+          <path d="M300 46 V70"/><path d="M300 110 L120 160 M300 110 V160 M300 110 L480 160"/>
+          <path d="M120 206 L50 250 M120 206 L120 250 M120 206 L190 250"/>
+          <path d="M300 206 L230 250 M300 206 V250 M300 206 L370 250"/>
+          <path d="M480 206 L410 250 M480 206 V250 M480 206 L550 250"/>
+          <path d="M50 296 L20 340 M50 296 L80 340"/>
+        </g>
+        <rect x="255" y="12" width="90" height="34" rx="4" fill="#382a54" stroke="#0b0405" stroke-width="2"/><text x="300" y="35" text-anchor="middle" fill="#ffffff" font-family="Source Sans 3" font-weight="700" font-size="15">DE</text>
+        <path d="M274 112 Q300 100 326 112 Q326 88 300 68 Q274 88 274 112 Z" fill="#3eb4ad" stroke="#0b0405" stroke-width="2"/><text x="300" y="104" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="14">BP</text>
+        <path d="M98 206 V184 A22 22 0 0 1 142 184 V206 Z" fill="#395d9c" stroke="#0b0405" stroke-width="2"/><text x="120" y="201" text-anchor="middle" fill="#ffffff" font-family="Source Sans 3" font-weight="700" font-size="14">EA</text>
+        <path d="M278 206 V184 A22 22 0 0 1 322 184 V206 Z" fill="#395d9c" stroke="#0b0405" stroke-width="2"/><text x="300" y="201" text-anchor="middle" fill="#ffffff" font-family="Source Sans 3" font-weight="700" font-size="14">UE</text>
+        <path d="M458 206 V184 A22 22 0 0 1 502 184 V206 Z" fill="#395d9c" stroke="#0b0405" stroke-width="2"/><text x="480" y="201" text-anchor="middle" fill="#ffffff" font-family="Source Sans 3" font-weight="700" font-size="14">IE</text>
+        <path d="M26 298 Q50 286 74 298 Q74 274 50 254 Q26 274 26 298 Z" fill="#3eb4ad" stroke="#0b0405" stroke-width="2"/><text x="50" y="291" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="14">CC</text>
+        <circle cx="120" cy="272" r="17" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="120" y="277" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">MN</text>
+        <circle cx="190" cy="272" r="17" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="190" y="277" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">PM</text>
+        <circle cx="230" cy="272" r="17" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="230" y="277" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">VS</text>
+        <circle cx="300" cy="272" r="17" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="300" y="277" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">PO</text>
+        <circle cx="370" cy="272" r="17" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="370" y="277" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">WB</text>
+        <circle cx="410" cy="272" r="17" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="410" y="277" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">IM</text>
+        <circle cx="480" cy="272" r="17" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="480" y="277" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">DA</text>
+        <circle cx="550" cy="272" r="17" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="550" y="277" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">EP</text>
+        <circle cx="20" cy="356" r="16" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="20" y="361" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">PC</text>
+        <circle cx="80" cy="356" r="16" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="80" y="361" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">LR</text>
+      </svg>
+      <figcaption style="margin-top: 6px; font-size: 15px; line-height: 20px; color: #3b4650">DE = data exfiltration · one OR gate over three AND branches: external attack, user error, insider. [Swap in the package's 300 dpi render.]</figcaption>
+    </figure>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <div style="padding: 20px 24px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px">
+        <div style="font-size: 15px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650; margin-bottom: 8px">Minimal cut sets · 4</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; line-height: 34px">DA*EP*IM<br>LR*MN*PM<br>MN*PC*PM<br>PO*VS*WB</div>
+      </div>
+      <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 26px; line-height: 34px">
+        <li>People + software + insiders</li>
+        <li>No single point of failure: every path needs 3</li>
+        <li><span style="background: #53c9ad; padding: 0 6px; border-radius: 4px">MN</span> and <span style="background: #53c9ad; padding: 0 6px; border-radius: 4px">PM</span> sit on 2 of 4 paths</li>
+        <li style="color: #3b4650">Harden those first</li>
+      </ul>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
+    <span>tidyfault · CCS 2026 · bundled dataset it_security</span><span>11 / 14</span>
+  </div>
+</div>
+</section>
+
+<section class="slide" aria-label="12. R and Python twins">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <h2 style="margin: 0; font-size: 40px; line-height: 46px; font-weight: 600">One grammar, two languages, one repository</h2>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+    <pre style="margin: 0; padding: 20px 24px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 19px; line-height: 29px; overflow: hidden"><span style="color: #a9e1bd"># R</span>
+gates &lt;- <span style="color: #60ceac">curate</span>(nodes, edges)
+f &lt;- gates |&gt; <span style="color: #60ceac">equate</span>() |&gt; <span style="color: #60ceac">formulate</span>()
+<span style="color: #60ceac">calculate</span>(f)
+<span style="color: #60ceac">concentrate</span>(gates)
+<span style="color: #60ceac">quantify</span>(f, c(.1, .2, .05, .15), prob = TRUE)</pre>
+    <pre style="margin: 0; padding: 20px 24px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 19px; line-height: 29px; overflow: hidden"><span style="color: #a9e1bd"># Python</span>
+gates = tf.<span style="color: #60ceac">curate</span>(nodes, edges)
+f = tf.<span style="color: #60ceac">formulate</span>(tf.<span style="color: #60ceac">equate</span>(gates))
+tf.<span style="color: #60ceac">calculate</span>(f)
+tf.<span style="color: #60ceac">concentrate</span>(gates)
+tf.<span style="color: #60ceac">quantify</span>(f, [.1, .2, .05, .15], prob=True)</pre>
+  </div>
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 420px; gap: 24px; flex-grow: 1; align-items: start">
+    <div style="padding: 20px 24px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px; display: flex; flex-direction: column; gap: 6px">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 52px; line-height: 56px; font-weight: 500">127</div>
+      <div style="font-size: 20px; line-height: 26px">parity tests against R's own output</div>
+    </div>
+    <div style="padding: 20px 24px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px; display: flex; flex-direction: column; gap: 6px">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 52px; line-height: 56px; font-weight: 500">1e-9</div>
+      <div style="font-size: 20px; line-height: 26px">tolerance · truth tables match row for row</div>
+    </div>
+    <div style="padding: 20px 20px; border: 1px solid #c5ccd3; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 18px; line-height: 28px; white-space: pre">github.com/timothyfraser/tidyfault
+├── R/        <span style="color: #3b4650">the R package</span>
+├── src/      <span style="color: #3b4650">MOCUS in C++</span>
+├── tests/    <span style="color: #3b4650">testthat</span>
+├── python/   <span style="color: #3b4650">the Python package</span>
+│   └── tests/  <span style="color: #3b4650">parity vs R</span>
+└── website/  <span style="color: #3b4650">built from both</span></div>
+  </div>
+  <p style="margin: 0; font-size: 22px; line-height: 30px; color: #3b4650">R is the reference · the Python twin caught 3 places R disagreed with itself</p>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
+    <span>tidyfault · CCS 2026</span><span>12 / 14</span>
+  </div>
+</div>
+</section>
+
+<section class="slide tf-dark" aria-label="13. Takeaways">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px 48px 60px; position: relative; background: #2e5c8a; color: #ffffff; font-family: 'Source Sans 3', system-ui, sans-serif; display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 40px; overflow: hidden">
+  <div style="display: flex; flex-direction: column; gap: 26px; min-width: 0">
+    <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase"><span style="width: 32px; height: 8px; border-radius: 4px; background: #53c9ad"></span>Takeaways</div>
+    <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 18px; font-size: 40px; line-height: 48px; font-weight: 600">
+      <li>Fault trees are logic networks</li>
+      <li>Tidy tables in, cut sets out</li>
+      <li>Simulate <span style="color: #53c9ad">thousands</span> of worlds, not one diagram</li>
+      <li>Same grammar in R and Python</li>
+    </ul>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px">
+      <pre style="margin: 0; padding: 14px 20px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 20px; line-height: 30px; overflow: hidden">remotes::<span style="color: #60ceac">install_github</span>("timothyfraser/tidyfault")
+pip install \
+  "git+https://github.com/timothyfraser/tidyfault#subdirectory=python"</pre>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px 28px; font-family: 'IBM Plex Mono', monospace; font-size: 22px; line-height: 30px"><a href="https://tidyfault.netlify.app" style="color: #ffffff; text-decoration: none">tidyfault.netlify.app</a><span>github.com/timothyfraser/tidyfault</span></div>
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px">
+    <img src="assets/img/tidyfault-hex.png" alt="tidyfault hex logo" style="width: 230px; height: auto; filter: drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 14px rgba(83,201,173,0.55))">
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background: #1a3a5c"></div>
+</div>
+</section>
+
+<section class="slide tf-dark" aria-label="14. Q&A">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px 48px 60px; position: relative; background: #1a3a5c; color: #ffffff; font-family: 'Source Sans 3', system-ui, sans-serif; display: grid; grid-template-columns: minmax(0, 1fr) 470px; gap: 48px; overflow: hidden">
+  <div style="display: flex; flex-direction: column; gap: 28px; min-width: 0">
+    <div style="font-size: 230px; line-height: 200px; font-weight: 700; letter-spacing: -0.03em; color: #53c9ad">Q&amp;A</div>
+    <div style="display: flex; align-items: center; gap: 24px; margin-top: auto">
+      <div style="flex: none; width: 168px; height: 168px; border-radius: 50%; overflow: hidden; background: #ffffff; border: 6px solid #53c9ad; box-sizing: border-box"><img src="assets/img/headshot-tim.png" alt="Timothy Fraser" style="display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 32px; line-height: 38px; font-weight: 700">Timothy Fraser</span>
+        <span style="font-size: 22px; line-height: 28px; opacity: 0.92">tmf77@cornell.edu</span>
+        <span style="font-size: 22px; line-height: 28px; opacity: 0.92">with Jingyao Tong · Aquila Hash, Inc.</span>
+      </div>
+    </div>
+    <img src="assets/img/tidyfault-hex.png" alt="tidyfault hex logo" style="position: absolute; left: 560px; top: 56px; width: 136px; height: auto; filter: drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 12px rgba(83,201,173,0.55))">
+  </div>
+  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px">
+    <div style="padding: 18px; background: #ffffff; border-radius: 14px; box-shadow: 0 0 0 6px #53c9ad"><img src="assets/img/qr-tidyfault.svg" alt="QR code linking to tidyfault.netlify.app" style="display: block; width: 400px; height: 400px"></div>
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 26px; line-height: 32px; font-weight: 500">tidyfault.netlify.app</div>
+    <div style="font-size: 20px; line-height: 26px; opacity: 0.9">Try it in your browser, now</div>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background: #53c9ad"></div>
+</div>
+</section>
+
+</main>
+<script src="assets/slides.js?v=1"></script>
+<script>
+/* Deck-local keys, kept out of the sigma engine.
+   L  show / hide the live website on the two Live slides (the static mock is the offline fallback).
+   F  toggle fullscreen. */
+(function () {
+  var body = document.body;
+  function setLive(on) {
+    body.classList.toggle('tf-live-on', on);
+    [].forEach.call(document.querySelectorAll('.tf-live-toggle'), function (b) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  }
+  function toggleLive() { setLive(!body.classList.contains('tf-live-on')); }
+  [].forEach.call(document.querySelectorAll('.tf-live-toggle'), function (b) {
+    b.addEventListener('click', function (e) { e.stopPropagation(); toggleLive(); b.blur(); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    if (e.key === 'l' || e.key === 'L') { e.preventDefault(); toggleLive(); }
+    else if (e.key === 'f' || e.key === 'F') {
+      e.preventDefault();
+      try {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+      } catch (err) { /* fullscreen refused: ignore */ }
+    }
+  });
+})();
+</script>
+</body>
+</html>

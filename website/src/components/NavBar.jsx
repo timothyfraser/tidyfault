@@ -28,6 +28,8 @@ export default function NavBar({ active }) {
             );
           })}
           <a href="https://github.com/timothyfraser/tidyfault">GitHub</a>
+          {/* A plain link, not a router Link: /slides/ is a static deck in public/slides/. */}
+          <a className="nav-slides" href="/slides/">Slides</a>
         </nav>
       </div>
     </header>
