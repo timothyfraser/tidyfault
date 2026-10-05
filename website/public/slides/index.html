@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>tidyfault · Conference on Complex Systems 2026</title>
 <link rel="stylesheet" href="assets/slides.css?v=1">
+<link rel="stylesheet" href="assets/deck-tabs.css?v=1">
 </head>
 <body data-deck-title="tidyfault · CCS 2026" data-deck-kind="conference">
 <main class="deck">
@@ -53,7 +54,7 @@
       <p style="margin: 0 0 10px">This paper introduces tidyfault, an R package that provides a unified, pipe-friendly workflow for fault tree analysis, built on R’s ‘tidyverse’ principles. By representing complex system logic as "tidy" data frames of nodes and edges, the package allows researchers to leverage the full power of functional programming and visualization in R. The package implements a pipeline for processing fault trees from nodes and edges through boolean equation extraction, truth table generation, and minimal cutset identification using a custom R implementation of the Method of Obtaining Cut Sets (MOCUS) algorithm. Additional functions support binary scenario evaluation, probability computation, and ggplot2-compatible visualization, helping bring FTA fully into modern R data science workflows. Unlike traditional GUI-based FTA tools, tidyfault allows for the batch evaluation of thousands of failure scenarios, making it uniquely suited for the high-dimensional simulations typical of complex systems research.</p>
       <p style="margin: 0">We demonstrate the package’s functionality through case studies involving security systems and database failures. These examples highlight how tidyfault can identify critical vulnerabilities and single points of failure within socio-technical systems. It is the authors’ hope that tidyfault’s reproducible, programmatic fault tree analysis framework will help a new generation of systems engineers scale up their FTA analyses to match the growing size and scope of modern complex systems.</p>
     </div>
-    <div style="margin-top: auto; display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>2 / 14</span></div>
+    <div style="margin-top: auto; display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>2 / 15</span></div>
   </div>
 </div>
 </section>
@@ -81,7 +82,7 @@
       <div style="font-size: 17px; line-height: 22px; color: #3b4650">bar length on a log scale</div>
     </div>
   </div>
-  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>3 / 14</span></div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>3 / 15</span></div>
 </div>
 </section>
 
@@ -132,7 +133,7 @@
       </ul>
     </div>
   </div>
-  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>4 / 14</span></div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>4 / 15</span></div>
 </div>
 </section>
 
@@ -165,7 +166,7 @@ f     &lt;- gates |&gt; <span style="color: #60ceac">equate</span>() |&gt; <span
       <li style="color: #3b4650">Branches: <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">quantify()</span>, <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">simulate()</span>, <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">plot()</span></li>
     </ul>
   </div>
-  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>5 / 14</span></div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026</span><span>5 / 15</span></div>
 </div>
 </section>
 
@@ -205,7 +206,7 @@ gates &lt;- <span style="color: #60ceac">curate</span>(nodes = fakenodes, edges 
     <button type="button" class="tf-live-toggle" aria-pressed="false" title="Show or hide the live site (key L)">Live site · L</button>
   </div>
   <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
-    <span>tidyfault · CCS 2026 · runs in your browser</span><span>6 / 14</span>
+    <span>tidyfault · CCS 2026 · runs in your browser</span><span>6 / 15</span>
   </div>
 </div>
 </section>
@@ -246,7 +247,7 @@ tf.<span style="color: #60ceac">quantify</span>(tf.<span style="color: #60ceac">
     <button type="button" class="tf-live-toggle" aria-pressed="false" title="Show or hide the live site (key L)">Live site · L</button>
   </div>
   <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
-    <span>tidyfault · CCS 2026 · same names, same answers</span><span>7 / 14</span>
+    <span>tidyfault · CCS 2026 · same names, same answers</span><span>7 / 15</span>
   </div>
 </div>
 </section>
@@ -294,72 +295,12 @@ tf.<span style="color: #60ceac">quantify</span>(tf.<span style="color: #60ceac">
     </div>
   </div>
   <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
-    <span>tidyfault · CCS 2026</span><span>8 / 14</span>
+    <span>tidyfault · CCS 2026</span><span>8 / 15</span>
   </div>
 </div>
 </section>
 
-<section class="slide" aria-label="9. Thousands of scenarios, one call">
-<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
-  <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650"><span style="width: 28px; height: 8px; border-radius: 4px; background: #53c9ad"></span>Simulation at scale</div>
-  <h2 style="margin: 0; font-size: 48px; line-height: 54px; font-weight: 700">Thousands of scenarios, one call</h2>
-  <div style="display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 40px; flex-grow: 1; align-items: stretch">
-    <figure style="margin: 0; display: flex; flex-direction: column; gap: 10px; padding: 24px 24px 16px; border: 1px solid #c5ccd3; border-radius: 14px">
-      <div style="display: flex; justify-content: space-between; font-size: 17px; line-height: 22px; color: #3b4650"><span>10,000 possible worlds · IT security tree</span><span>P(top event)</span></div>
-      <div style="position: relative; height: 320px; border-bottom: 2px solid #0b0405">
-        <div style="position: absolute; left: 8.7%; width: 35.5%; top: 0; bottom: 0; background: rgba(83,201,173,0.18); border-left: 2px dashed #3eb4ad; border-right: 2px dashed #3eb4ad"></div>
-        <div style="position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 3px; padding: 0 2px">
-          <div style="flex: 1; height: 10px; background: #382a54; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 64px; background: #382a54; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 184px; background: #413f80; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 267px; background: #395d9c; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 300px; background: #395d9c; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 267px; background: #357ba3; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 214px; background: #357ba3; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 171px; background: #3497a9; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 105px; background: #3497a9; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 76px; background: #3eb4ad; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 48px; background: #3eb4ad; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 32px; background: #53c9ad; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 16px; background: #53c9ad; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 9px; background: #60ceac; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 6px; background: #60ceac; border-radius: 2px 2px 0 0"></div>
-          <div style="flex: 1; height: 3px; background: #85d9b1"></div>
-          <div style="flex: 1; height: 2px; background: #85d9b1"></div>
-          <div style="flex: 1; height: 2px; background: #85d9b1"></div>
-          <div style="flex: 1; height: 1px; background: #85d9b1"></div>
-          <div style="flex: 1; height: 1px; background: #85d9b1"></div>
-          <div style="flex: 1; height: 1px; background: #85d9b1"></div>
-          <div style="flex: 1; height: 0"></div>
-          <div style="flex: 1; height: 0"></div>
-          <div style="flex: 1; height: 1px; background: #85d9b1"></div>
-        </div>
-        <div style="position: absolute; left: 23.3%; top: -6px; bottom: 0; border-left: 3px solid #0b0405"></div>
-        <div style="position: absolute; left: calc(23.3% + 10px); top: -4px; font-size: 17px; line-height: 22px; font-weight: 600; background: #ffffff; padding: 0 4px">point estimate 0.016</div>
-      </div>
-      <div style="display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: #3b4650"><span>0.003</span><span>0.017</span><span>0.031</span><span>0.045</span><span>0.059</span></div>
-      <figcaption style="font-size: 15px; line-height: 20px; color: #3b4650">Each basic event's probability drawn from a Beta around its point value (concentration 40). Shaded: middle 90% of worlds.</figcaption>
-    </figure>
-    <div style="display: flex; flex-direction: column; gap: 18px">
-      <pre style="margin: 0; padding: 18px 22px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 20px; line-height: 30px; overflow: hidden"><span style="color: #60ceac">quantify</span>(f, worlds,
-         prob = TRUE)</pre>
-      <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; font-size: 26px; line-height: 34px">
-        <li>One row = one possible world</li>
-        <li>Uncertain inputs → a distribution</li>
-        <li>No GUI, no clicking</li>
-      </ul>
-      <div style="margin-top: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
-        <div style="padding: 14px 16px; background: #53c9ad; border-radius: 8px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 34px; line-height: 40px; font-weight: 500">10,000</span><span style="font-size: 16px; line-height: 20px">scenarios</span></div>
-        <div style="padding: 14px 16px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 34px; line-height: 40px; font-weight: 500">3.5 s</span><span style="font-size: 16px; line-height: 20px; color: #3b4650">one CPU core</span></div>
-        <div style="grid-column: span 2; padding: 14px 16px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 30px; line-height: 36px; font-weight: 500">0.008 – 0.028</span><span style="font-size: 16px; line-height: 20px; color: #3b4650">90% of worlds · median 0.015</span></div>
-      </div>
-    </div>
-  </div>
-  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace"><span>tidyfault · CCS 2026 · seed 20261012</span><span>9 / 14</span></div>
-</div>
-</section>
-
-<section class="slide" aria-label="10. Speed">
+<section class="slide" aria-label="9. Speed">
 <div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
   <h2 style="margin: 0; font-size: 40px; line-height: 46px; font-weight: 600">50 gates: 19 s in R, 2 s in C++</h2>
   <div style="display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 40px; flex-grow: 1; align-items: stretch">
@@ -399,18 +340,18 @@ tf.<span style="color: #60ceac">quantify</span>(tf.<span style="color: #60ceac">
     </ul>
   </div>
   <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
-    <span>tidyfault · CCS 2026 · median of 10 runs</span><span>10 / 14</span>
+    <span>tidyfault · CCS 2026 · median of 10 runs</span><span>9 / 15</span>
   </div>
 </div>
 </section>
 
-<section class="slide" aria-label="11. Where can data leak out?">
-<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
-  <div style="font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650">Socio-technical case study</div>
-  <h2 style="margin: 0; font-size: 40px; line-height: 46px; font-weight: 600">Where can data leak out?</h2>
-  <div style="display: grid; grid-template-columns: 620px minmax(0, 1fr); gap: 40px; flex-grow: 1; align-items: start">
+<section class="slide" aria-label="10. Case study 1 of 3: Where can data leak out?">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 18px">
+  <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650"><span style="width: 28px; height: 8px; border-radius: 4px; background: #53c9ad"></span>Case study 1 of 3 · a socio-technical system</div>
+  <h2 style="margin: 0; font-size: 48px; line-height: 54px; font-weight: 700">Where can data leak out?</h2>
+  <div style="display: grid; grid-template-columns: 590px minmax(0, 1fr); gap: 36px; flex-grow: 1; align-items: start; min-height: 0">
     <figure style="margin: 0; padding: 16px; border: 1px solid #c5ccd3; border-radius: 14px">
-      <svg viewBox="0 0 600 380" width="588" height="372" role="img" aria-label="IT security fault tree: DE top event over BP (OR); BP over EA, UE and IE (all AND); EA over CC (OR), MN and PM; CC over PC and LR; UE over VS, PO and WB; IE over IM, DA and EP">
+      <svg viewBox="0 0 600 380" width="558" height="353" role="img" aria-label="IT security fault tree: DE top event over BP (OR); BP over EA, UE and IE (all AND); EA over CC (OR), MN and PM; CC over PC and LR; UE over VS, PO and WB; IE over IM, DA and EP">
         <g stroke="#b7c1cb" stroke-width="2.5" fill="none" stroke-linecap="round">
           <path d="M300 46 V70"/><path d="M300 110 L120 160 M300 110 V160 M300 110 L480 160"/>
           <path d="M120 206 L50 250 M120 206 L120 250 M120 206 L190 250"/>
@@ -435,43 +376,136 @@ tf.<span style="color: #60ceac">quantify</span>(tf.<span style="color: #60ceac">
         <circle cx="20" cy="356" r="16" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="20" y="361" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">PC</text>
         <circle cx="80" cy="356" r="16" fill="#def5e5" stroke="#0b0405" stroke-width="2"/><text x="80" y="361" text-anchor="middle" fill="#0b0405" font-family="Source Sans 3" font-weight="700" font-size="13">LR</text>
       </svg>
-      <figcaption style="margin-top: 6px; font-size: 15px; line-height: 20px; color: #3b4650">DE = data exfiltration · one OR gate over three AND branches: external attack, user error, insider. [Swap in the package's 300 dpi render.]</figcaption>
+      <figcaption style="margin-top: 6px; font-size: 15px; line-height: 20px; color: #3b4650">DE = sensitive data leaves the organization. One OR over three AND paths: outsider, unpatched flaw, insider.</figcaption>
     </figure>
-    <div style="display: flex; flex-direction: column; gap: 16px">
-      <div style="padding: 20px 24px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px">
-        <div style="font-size: 15px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650; margin-bottom: 8px">Minimal cut sets · 4</div>
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; line-height: 34px">DA*EP*IM<br>LR*MN*PM<br>MN*PC*PM<br>PO*VS*WB</div>
+    <div class="dt-tabs" data-group="case1">
+      <div class="dt-pills" role="tablist"><button type="button" class="dt-pill" role="tab" data-tab="question" aria-pressed="true">The question</button><button type="button" class="dt-pill" role="tab" data-tab="nodes" aria-pressed="false">Nodes &amp; edges</button><button type="button" class="dt-pill" role="tab" data-tab="rates" aria-pressed="false">Failure rates</button><button type="button" class="dt-pill" role="tab" data-tab="cutsets" aria-pressed="false">Cut sets</button><button type="button" class="dt-pill" role="tab" data-tab="ptop" aria-pressed="false">P(top)</button></div>
+      <div class="dt-panel" data-tab="question">
+        <ul style="margin: 0; padding: 4px 0 0; list-style: none; display: flex; flex-direction: column; gap: 24px; font-size: 30px; line-height: 38px"><li style="display: flex; gap: 16px; align-items: baseline"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #395d9c; transform: translateY(-4px)"></span><span>An organization holding sensitive data</span></li><li style="display: flex; gap: 16px; align-items: baseline"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #357ba3; transform: translateY(-4px)"></span><span>Three paths to a leak: people, software, insiders</span></li><li style="display: flex; gap: 16px; align-items: baseline"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #3eb4ad; transform: translateY(-4px)"></span><span>Each component fails at its own rate</span></li><li style="display: flex; gap: 16px; align-items: baseline"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #53c9ad; transform: translateY(-4px)"></span><span><strong>Which fix buys the most?</strong></span></li></ul>
       </div>
-      <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 26px; line-height: 34px">
-        <li>People + software + insiders</li>
-        <li>No single point of failure: every path needs 3</li>
-        <li><span style="background: #53c9ad; padding: 0 6px; border-radius: 4px">MN</span> and <span style="background: #53c9ad; padding: 0 6px; border-radius: 4px">PM</span> sit on 2 of 4 paths</li>
-        <li style="color: #3b4650">Harden those first</li>
-      </ul>
+      <div class="dt-panel" data-tab="nodes" hidden>
+        <div style="font-size: 18px; line-height: 24px; font-weight: 600; margin-bottom: 6px"><span data-stat="nodes.length"></span> nodes · <span data-stat="edges.length"></span> edges · two data frames</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 20px; font-weight: 500">nodes</div>
+        <div data-render="nodes"></div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 20px; font-weight: 500; margin-top: 6px">edges <span style="color: #3b4650; font-weight: 400">(from_event → to_event)</span></div>
+        <div data-render="edges" style="display: grid; grid-template-columns: repeat(5, max-content); justify-content: space-between; padding: 2px 8px 0"></div>
+      </div>
+      <div class="dt-panel" data-tab="rates" hidden>
+        <div style="font-size: 20px; line-height: 26px; font-weight: 600; margin-bottom: 6px">λ per component → P(fails within a year) = 1 − e<sup>−λ</sup></div>
+        <div data-render="rates"></div>
+      </div>
+      <div class="dt-panel" data-tab="cutsets" hidden>
+        <div data-render="cutsets"></div>
+      </div>
+      <div class="dt-panel" data-tab="ptop" hidden>
+        <div style="font-size: 17px; line-height: 22px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650">P(data leaves within a year)</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 128px; line-height: 136px; font-weight: 500" data-stat="p_top_1yr" data-fmt="f3"></div>
+        <div style="font-size: 36px; line-height: 44px; font-weight: 600">≈ 1 in <span data-stat="p_top_1yr" data-fmt="inv"></span></div>
+        <pre style="margin: 0; padding: 18px 24px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; overflow: hidden; margin-top: 22px; font-size: 20px; line-height: 30px; padding: 14px 20px"><span style="color: #60ceac">quantify</span>(f, newdata = p1, prob = TRUE)</pre>
+        <div style="margin-top: 10px; font-size: 18px; line-height: 24px; color: #3b4650">p1 = P(each event fails within a year), one row</div>
+      </div>
     </div>
   </div>
   <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
-    <span>tidyfault · CCS 2026 · bundled dataset it_security</span><span>11 / 14</span>
+    <span>tidyfault · CCS 2026 · bundled dataset it_security</span><span>10 / 15</span>
   </div>
 </div>
 </section>
 
-<section class="slide" aria-label="12. R and Python twins">
+<section class="slide" aria-label="11. Case study 2 of 3: Which fix buys the most?">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 18px">
+  <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650"><span style="width: 28px; height: 8px; border-radius: 4px; background: #53c9ad"></span>Case study 2 of 3 · marginal effects</div>
+  <h2 style="margin: 0; font-size: 48px; line-height: 54px; font-weight: 700">Which fix buys the most?</h2>
+  <div class="dt-tabs" data-group="case2" style="flex-grow: 1">
+    <div class="dt-pills" role="tablist"><button type="button" class="dt-pill" role="tab" data-tab="result" aria-pressed="true">Result</button><button type="button" class="dt-pill" role="tab" data-tab="code" aria-pressed="false">Code</button></div>
+    <div class="dt-panel" data-tab="result" style="display: grid; grid-template-columns: minmax(0, 1fr) 372px; gap: 28px; align-items: start">
+      <figure style="margin: 0; padding: 16px 22px 14px; border: 1px solid #c5ccd3; border-radius: 14px; display: flex; flex-direction: column; gap: 8px">
+        <div style="font-size: 18px; line-height: 24px; font-weight: 600">Cut one failure rate by 5% · change in P(leak within a year)</div>
+        <div data-render="legend" style="display: flex; gap: 24px; font-size: 16px; line-height: 20px; color: #3b4650"></div>
+        <div data-render="bars" style="display: flex; flex-direction: column"></div>
+      </figure>
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div data-render="callout" style="display: flex; flex-direction: column; gap: 14px"></div>
+        <ul style="margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 24px; line-height: 30px">
+          <li>Same 5% cut, ten rates, ten answers</li>
+          <li>Rank by marginal effect, not by hunch</li>
+        </ul>
+      </div>
+    </div>
+    <div class="dt-panel" data-tab="code" hidden>
+      <pre data-code="whatif" style="margin: 0; padding: 18px 24px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; overflow: hidden; font-size: 20px; line-height: 30px"></pre>
+      <div style="margin-top: 12px; font-size: 20px; line-height: 28px; color: #3b4650"><span style="font-family: 'IBM Plex Mono', monospace"><span data-stat="whatif.length" data-fmt="i+1"></span> rows in, <span data-stat="whatif.length" data-fmt="i+1"></span> top-event probabilities out · one quantify() call</span></div>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
+    <span>tidyfault · CCS 2026 · seed <span data-stat="seed"></span></span><span>11 / 15</span>
+  </div>
+</div>
+</section>
+
+<section class="slide" aria-label="12. Case study 3 of 3: How sure, and how soon?">
+<div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 18px">
+  <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #3b4650"><span style="width: 28px; height: 8px; border-radius: 4px; background: #53c9ad"></span>Case study 3 of 3 · time and uncertainty</div>
+  <h2 style="margin: 0; font-size: 48px; line-height: 54px; font-weight: 700">How sure, and how soon?</h2>
+  <div class="dt-tabs" data-group="case3" style="flex-grow: 1">
+    <div class="dt-pills" role="tablist"><button type="button" class="dt-pill" role="tab" data-tab="over-time" aria-pressed="true">Over time</button><button type="button" class="dt-pill" role="tab" data-tab="uncertainty" aria-pressed="false">Uncertainty</button><button type="button" class="dt-pill" role="tab" data-tab="code" aria-pressed="false">Code</button></div>
+    <div class="dt-panel" data-tab="over-time" style="display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start">
+      <figure style="margin: 0; padding: 14px 16px 6px; border: 1px solid #c5ccd3; border-radius: 14px; display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; justify-content: space-between; font-size: 17px; line-height: 22px; color: #3b4650"><span>P(top event) by year · same ten failure rates</span><span>P(leak by year t)</span></div>
+        <div data-render="timeline"></div>
+      </figure>
+      <ul style="margin: 8px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 18px; font-size: 26px; line-height: 34px">
+        <li style="display: flex; gap: 16px; align-items: baseline"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #395d9c; transform: translateY(-4px)"></span><span>Rare in one year</span></li>
+        <li style="display: flex; gap: 16px; align-items: baseline"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #3eb4ad; transform: translateY(-4px)"></span><span>Likely over a decade</span></li>
+        <li style="display: flex; gap: 16px; align-items: baseline"><span style="flex: none; width: 14px; height: 14px; border-radius: 3px; background: #53c9ad; transform: translateY(-4px)"></span><span><span data-stat="over_time.length"></span> time steps, one <span style="{MONO}; font-size: 22px">quantify()</span> call</span></li>
+      </ul>
+    </div>
+    <div class="dt-panel" data-tab="uncertainty" hidden style="display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start">
+      <figure style="margin: 0; padding: 14px 16px 8px; border: 1px solid #c5ccd3; border-radius: 14px; display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; justify-content: space-between; font-size: 17px; line-height: 22px; color: #3b4650"><span><span data-stat="uncertainty.n_worlds" data-fmt="i"></span> possible worlds · IT security tree</span><span>P(top event within a year)</span></div>
+        <div data-render="hist"></div>
+        <figcaption style="font-size: 15px; line-height: 20px; color: #3b4650">Each failure rate drawn from a Normal, spread of <span data-stat="uncertainty.cv" data-fmt="pp0"></span> of its value. Shaded: middle 90% of worlds.</figcaption>
+      </figure>
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="padding: 14px 16px; background: #53c9ad; border-radius: 8px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 28px; line-height: 40px; font-weight: 500"><span data-stat="uncertainty.n_worlds" data-fmt="i"></span> worlds</span><span style="font-size: 16px; line-height: 20px">one row each</span></div>
+        <div style="padding: 14px 16px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 28px; line-height: 40px; font-weight: 500">λ ± <span data-stat="uncertainty.cv" data-fmt="pp0"></span></span><span style="font-size: 16px; line-height: 20px; color: #3b4650">every failure rate, jittered</span></div>
+        <div style="padding: 14px 16px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 28px; line-height: 40px; font-weight: 500"><span data-stat="uncertainty.quantify_seconds" data-fmt="f2"></span> s · one call</span><span style="font-size: 16px; line-height: 20px; color: #3b4650">quantify(f, newdata = worlds)</span></div>
+      </div>
+    </div>
+    <div class="dt-panel" data-tab="code" hidden>
+      <pre data-code="timeline worlds" style="margin: 0; padding: 18px 24px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; overflow: hidden; font-size: 19px; line-height: 28px"></pre>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
+    <span>tidyfault · CCS 2026 · seed <span data-stat="seed"></span></span><span>12 / 15</span>
+  </div>
+</div>
+</section>
+
+<section class="slide" aria-label="13. R and Python twins">
 <div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px; background: #ffffff; color: #0b0405; font-family: 'Source Sans 3', system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
   <h2 style="margin: 0; font-size: 40px; line-height: 46px; font-weight: 600">One grammar, two languages, one repository</h2>
-  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
-    <pre style="margin: 0; padding: 20px 24px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 19px; line-height: 29px; overflow: hidden"><span style="color: #a9e1bd"># R</span>
+  <div style="display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 24px">
+    <div class="dt-tabs dt-tabs--mini" data-group="twins-r">
+      <div class="dt-pills" role="tablist"><button type="button" class="dt-pill" role="tab" data-tab="code" aria-pressed="true">Code</button><button type="button" class="dt-pill" role="tab" data-tab="output" aria-pressed="false">Output</button></div>
+      <pre class="dt-panel" data-tab="code" style="margin: 0; padding: 18px 24px; height: 238px; box-sizing: border-box; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 17px; line-height: 27px; overflow: hidden"><span style="color: #a9e1bd"># R</span>
 gates &lt;- <span style="color: #60ceac">curate</span>(nodes, edges)
 f &lt;- gates |&gt; <span style="color: #60ceac">equate</span>() |&gt; <span style="color: #60ceac">formulate</span>()
 <span style="color: #60ceac">calculate</span>(f)
 <span style="color: #60ceac">concentrate</span>(gates)
 <span style="color: #60ceac">quantify</span>(f, c(.1, .2, .05, .15), prob = TRUE)</pre>
-    <pre style="margin: 0; padding: 20px 24px; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 19px; line-height: 29px; overflow: hidden"><span style="color: #a9e1bd"># Python</span>
+      <pre class="dt-panel" data-tab="output" data-out="twins_r" hidden style="margin: 0; padding: 18px 24px; height: 238px; box-sizing: border-box; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; line-height: 20px; overflow: hidden"></pre>
+    </div>
+    <div class="dt-tabs dt-tabs--mini" data-group="twins-py">
+      <div class="dt-pills" role="tablist"><button type="button" class="dt-pill" role="tab" data-tab="code" aria-pressed="true">Code</button><button type="button" class="dt-pill" role="tab" data-tab="output" aria-pressed="false">Output</button></div>
+      <pre class="dt-panel" data-tab="code" style="margin: 0; padding: 18px 24px; height: 238px; box-sizing: border-box; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 17px; line-height: 27px; overflow: hidden"><span style="color: #a9e1bd"># Python</span>
 gates = tf.<span style="color: #60ceac">curate</span>(nodes, edges)
 f = tf.<span style="color: #60ceac">formulate</span>(tf.<span style="color: #60ceac">equate</span>(gates))
 tf.<span style="color: #60ceac">calculate</span>(f)
 tf.<span style="color: #60ceac">concentrate</span>(gates)
-tf.<span style="color: #60ceac">quantify</span>(f, [.1, .2, .05, .15], prob=True)</pre>
+round(tf.<span style="color: #60ceac">quantify</span>(f, [.1, .2, .05, .15], prob=True), 5)</pre>
+      <pre class="dt-panel" data-tab="output" data-out="twins_py" hidden style="margin: 0; padding: 18px 24px; height: 238px; box-sizing: border-box; background: #15101c; color: #e9edf0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; line-height: 20px; overflow: hidden"></pre>
+    </div>
   </div>
   <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 420px; gap: 24px; flex-grow: 1; align-items: start">
     <div style="padding: 20px 24px; background: #f5f7f8; border: 1px solid #c5ccd3; border-radius: 8px; display: flex; flex-direction: column; gap: 6px">
@@ -482,7 +516,7 @@ tf.<span style="color: #60ceac">quantify</span>(f, [.1, .2, .05, .15], prob=True
       <div style="font-family: 'IBM Plex Mono', monospace; font-size: 52px; line-height: 56px; font-weight: 500">1e-9</div>
       <div style="font-size: 20px; line-height: 26px">tolerance · truth tables match row for row</div>
     </div>
-    <div style="padding: 20px 20px; border: 1px solid #c5ccd3; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 18px; line-height: 28px; white-space: pre">github.com/timothyfraser/tidyfault
+    <div style="padding: 20px 20px; border: 1px solid #c5ccd3; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 18px; line-height: 24px; white-space: pre">github.com/timothyfraser/tidyfault
 ├── R/        <span style="color: #3b4650">the R package</span>
 ├── src/      <span style="color: #3b4650">MOCUS in C++</span>
 ├── tests/    <span style="color: #3b4650">testthat</span>
@@ -492,19 +526,19 @@ tf.<span style="color: #60ceac">quantify</span>(f, [.1, .2, .05, .15], prob=True
   </div>
   <p style="margin: 0; font-size: 22px; line-height: 30px; color: #3b4650">R is the reference · the Python twin caught 3 places R disagreed with itself</p>
   <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 20px; color: #3b4650; font-family: 'IBM Plex Mono', monospace">
-    <span>tidyfault · CCS 2026</span><span>12 / 14</span>
+    <span>tidyfault · CCS 2026</span><span>13 / 15</span>
   </div>
 </div>
 </section>
 
-<section class="slide tf-dark" aria-label="13. Takeaways">
+<section class="slide tf-dark" aria-label="14. Takeaways">
 <div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px 48px 60px; position: relative; background: #2e5c8a; color: #ffffff; font-family: 'Source Sans 3', system-ui, sans-serif; display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 40px; overflow: hidden">
   <div style="display: flex; flex-direction: column; gap: 26px; min-width: 0">
     <div style="display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase"><span style="width: 32px; height: 8px; border-radius: 4px; background: #53c9ad"></span>Takeaways</div>
     <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 18px; font-size: 40px; line-height: 48px; font-weight: 600">
       <li>Fault trees are logic networks</li>
       <li>Tidy tables in, cut sets out</li>
-      <li>Simulate <span style="color: #53c9ad">thousands</span> of worlds, not one diagram</li>
+      <li>Change one <span style="color: #53c9ad">failure rate</span>, see the system move</li>
       <li>Same grammar in R and Python</li>
     </ul>
     <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px">
@@ -521,7 +555,7 @@ pip install \
 </div>
 </section>
 
-<section class="slide tf-dark" aria-label="14. Q&A">
+<section class="slide tf-dark" aria-label="15. Q&A">
 <div style="width: 1280px; height: 720px; box-sizing: border-box; padding: 48px 48px 60px; position: relative; background: #1a3a5c; color: #ffffff; font-family: 'Source Sans 3', system-ui, sans-serif; display: grid; grid-template-columns: minmax(0, 1fr) 470px; gap: 48px; overflow: hidden">
   <div style="display: flex; flex-direction: column; gap: 28px; min-width: 0">
     <div style="font-size: 230px; line-height: 200px; font-weight: 700; letter-spacing: -0.03em; color: #53c9ad">Q&amp;A</div>
@@ -545,6 +579,8 @@ pip install \
 </section>
 
 </main>
+<script type="application/json" id="deck-data">{"generated_by":"case_study.R","seed":20261012,"tidyfault_version":"0.0.0.9","nodes":[{"id":1,"event":"DE","type":"top","label":"Sensitive data leaves the organization (top event)"},{"id":2,"event":"BP","type":"or","label":"Ways a breach can happen (OR)"},{"id":3,"event":"EA","type":"and","label":"Outsider gets admin access (AND)"},{"id":4,"event":"UE","type":"and","label":"Unpatched flaw is exploited (AND)"},{"id":5,"event":"IE","type":"and","label":"Insider sends data out (AND)"},{"id":6,"event":"CC","type":"or","label":"Log-in details stolen (OR)"},{"id":7,"event":"PC","type":"not","label":"Password phished (fake email or link)"},{"id":8,"event":"LR","type":"not","label":"Password leaked or reused"},{"id":9,"event":"MN","type":"not","label":"No second login step (MFA)"},{"id":10,"event":"PM","type":"not","label":"Admin access misconfigured"},{"id":11,"event":"VS","type":"not","label":"Known security hole"},{"id":12,"event":"PO","type":"not","label":"Patches applied late"},{"id":13,"event":"WB","type":"not","label":"Web filter missing or bypassed"},{"id":14,"event":"IM","type":"not","label":"Insider acts, or account taken over"},{"id":15,"event":"DA","type":"not","label":"No controls on copying data out"},{"id":16,"event":"EP","type":"not","label":"More access than the job needs"}],"edges":[{"from":1,"to":2,"from_event":"DE","to_event":"BP"},{"from":2,"to":3,"from_event":"BP","to_event":"EA"},{"from":2,"to":4,"from_event":"BP","to_event":"UE"},{"from":2,"to":5,"from_event":"BP","to_event":"IE"},{"from":3,"to":6,"from_event":"EA","to_event":"CC"},{"from":3,"to":9,"from_event":"EA","to_event":"MN"},{"from":3,"to":10,"from_event":"EA","to_event":"PM"},{"from":4,"to":11,"from_event":"UE","to_event":"VS"},{"from":4,"to":12,"from_event":"UE","to_event":"PO"},{"from":4,"to":13,"from_event":"UE","to_event":"WB"},{"from":5,"to":14,"from_event":"IE","to_event":"IM"},{"from":5,"to":15,"from_event":"IE","to_event":"DA"},{"from":5,"to":16,"from_event":"IE","to_event":"EP"},{"from":6,"to":7,"from_event":"CC","to_event":"PC"},{"from":6,"to":8,"from_event":"CC","to_event":"LR"}],"inputs":[{"event":"MN","meaning":"No second login step (MFA)","lambda_per_year":0.29,"p_1yr":0.25173643},{"event":"DA","meaning":"No controls on copying data out","lambda_per_year":0.25,"p_1yr":0.22119922},{"event":"PC","meaning":"Password phished (fake email or link)","lambda_per_year":0.22,"p_1yr":0.1974812},{"event":"EP","meaning":"More access than the job needs","lambda_per_year":0.2,"p_1yr":0.18126925},{"event":"WB","meaning":"Web filter missing or bypassed","lambda_per_year":0.17,"p_1yr":0.15633518},{"event":"PO","meaning":"Patches applied late","lambda_per_year":0.16,"p_1yr":0.14785621},{"event":"PM","meaning":"Admin access misconfigured","lambda_per_year":0.15,"p_1yr":0.13929202},{"event":"LR","meaning":"Password leaked or reused","lambda_per_year":0.13,"p_1yr":0.12190457},{"event":"VS","meaning":"Known security hole","lambda_per_year":0.11,"p_1yr":0.10416586},{"event":"IM","meaning":"Insider acts, or account taken over","lambda_per_year":0.09,"p_1yr":0.08606881}],"cutsets":[{"cutset":"MN*PC*PM","p_1yr":0.00692465},{"cutset":"LR*MN*PM","p_1yr":0.00427457},{"cutset":"DA*EP*IM","p_1yr":0.00345107},{"cutset":"PO*VS*WB","p_1yr":0.00240781}],"p_top_1yr":0.01614506,"whatif":[{"event":"PM","meaning":"Admin access misconfigured","p_top":0.01566618,"change":-0.00047888,"pct_change":-2.96610001},{"event":"MN","meaning":"No second login step (MFA)","p_top":0.01569813,"change":-0.00044692,"pct_change":-2.76817979},{"event":"PC","meaning":"Password phished (fake email or link)","p_top":0.01587335,"change":-0.00027171,"pct_change":-1.6829251},{"event":"IM","meaning":"Insider acts, or account taken over","p_top":0.01598189,"change":-0.00016317,"pct_change":-1.01065765},{"event":"LR","meaning":"Password leaked or reused","p_top":0.01598486,"change":-0.00016019,"pct_change":-0.99221747},{"event":"EP","meaning":"More access than the job needs","p_top":0.0159904,"change":-0.00015466,"pct_change":-0.95793625},{"event":"DA","meaning":"No controls on copying data out","p_top":0.01599417,"change":-0.00015089,"pct_change":-0.93457967},{"event":"VS","meaning":"Known security hole","p_top":0.01603243,"change":-0.00011263,"pct_change":-0.6976215},{"event":"PO","meaning":"Patches applied late","p_top":0.01603513,"change":-0.00010993,"pct_change":-0.68086617},{"event":"WB","meaning":"Web filter missing or bypassed","p_top":0.01603567,"change":-0.00010939,"pct_change":-0.67754683}],"whatif_base":0.01614506,"over_time":[{"years":0,"p_top":0},{"years":0.25,"p_top":0.00032562},{"years":0.5,"p_top":0.00239162},{"years":0.75,"p_top":0.007414},{"years":1,"p_top":0.01614506},{"years":1.25,"p_top":0.0289701},{"years":1.5,"p_top":0.04598691},{"years":1.75,"p_top":0.06707297},{"years":2,"p_top":0.09194274},{"years":2.25,"p_top":0.12019643},{"years":2.5,"p_top":0.15136101},{"years":2.75,"p_top":0.18492408},{"years":3,"p_top":0.2203612},{"years":3.25,"p_top":0.25715718},{"years":3.5,"p_top":0.29482213},{"years":3.75,"p_top":0.33290282},{"years":4,"p_top":0.3709902},{"years":4.25,"p_top":0.40872357},{"years":4.5,"p_top":0.44579218},{"years":4.75,"p_top":0.48193486},{"years":5,"p_top":0.51693802},{"years":5.25,"p_top":0.55063269},{"years":5.5,"p_top":0.58289071},{"years":5.75,"p_top":0.61362068},{"years":6,"p_top":0.64276357},{"years":6.25,"p_top":0.6702885},{"years":6.5,"p_top":0.69618852},{"years":6.75,"p_top":0.72047676},{"years":7,"p_top":0.74318279},{"years":7.25,"p_top":0.76434937},{"years":7.5,"p_top":0.78402955},{"years":7.75,"p_top":0.80228409},{"years":8,"p_top":0.81917928},{"years":8.25,"p_top":0.83478503},{"years":8.5,"p_top":0.84917325},{"years":8.75,"p_top":0.86241661},{"years":9,"p_top":0.87458736},{"years":9.25,"p_top":0.88575655},{"years":9.5,"p_top":0.89599332},{"years":9.75,"p_top":0.90536435},{"years":10,"p_top":0.91393355}],"uncertainty":{"n_worlds":10000,"cv":0.2,"q05":0.01103237,"median":0.01580139,"q95":0.02148841,"quantify_seconds":0.095,"hist_breaks":[0,0.00145833,0.00291667,0.004375,0.00583333,0.00729167,0.00875,0.01020833,0.01166667,0.013125,0.01458333,0.01604167,0.0175,0.01895833,0.02041667,0.021875,0.02333333,0.02479167,0.02625,0.02770833,0.02916667,0.030625,0.03208333,0.03354167,0.035],"hist_counts":[0,0,0,0,8,41,194,553,1021,1657,1828,1660,1265,870,503,232,105,41,16,5,1,0,0,0]},"twins_r":{"calculate_head":["# A tibble: 16 × 5","      A     B     C     D outcome","  \u003cdbl> \u003cdbl> \u003cdbl> \u003cdbl>   \u003cdbl>","1     0     1     1     0       1","2     0     1     1     1       1","3     1     1     0     1       1","4     1     1     1     0       1","# ℹ 12 more rows"],"calculate_rows":16,"concentrate":"[1] \"B*C\"   \"A*B*D\"","quantify":"[1] 0.01285"},"twins_py":{"calculate_head":"     A    B    C    D  outcome\n0  0.0  1.0  1.0  0.0      1.0\n1  0.0  1.0  1.0  1.0      1.0\n2  1.0  1.0  0.0  1.0      1.0\n3  1.0  1.0  1.0  0.0      1.0","calculate_rows":16,"concentrate":"['B*C', 'A*B*D']","quantify":"0.01285"},"code":{"whatif":"rates \u003c- it_security_outcomes_rates |>          # one lambda per event, per year\n  select(event, lambda) |>\n  pivot_wider(names_from = event, values_from = lambda)\n\nwhatif \u003c- map(names(rates), \\(e) mutate(rates, \"{e}\" := .data[[e]] * 0.95, cut = e)) |>\n  bind_rows(mutate(rates, cut = \"none\")) |>\n  mutate(across(-cut, \\(l) pexp(1, rate = l)),          # P(fail within 1 year)\n         p_top = quantify(f, newdata = pick(-cut), prob = TRUE))","timeline":"over_time \u003c- tibble(years = seq(0, 10, by = 0.25)) |>\n  bind_cols(rates[rep(1, 41), ]) |>\n  mutate(across(-years, \\(l) pexp(years, rate = l)),\n         p_top = quantify(f, newdata = pick(-years), prob = TRUE))","worlds":"n \u003c- 10000\nworlds \u003c- rates |> pivot_longer(everything(), names_to = \"event\", values_to = \"lambda\") |>\n  group_by(event) |>\n  reframe(world = seq_len(n), p = pexp(1, rate = pmax(rnorm(n, lambda, 0.2 * lambda), 0))) |>\n  pivot_wider(names_from = event, values_from = p)\nq_time \u003c- system.time(p_top \u003c- quantify(f, newdata = worlds, prob = TRUE))[[\"elapsed\"]]\nqs \u003c- quantile(p_top, c(0.05, 0.5, 0.95))"}}</script>
+<script src="assets/deck-tabs.js?v=1"></script>
 <script src="assets/slides.js?v=1"></script>
 <script>
 /* Deck-local keys, kept out of the sigma engine.
