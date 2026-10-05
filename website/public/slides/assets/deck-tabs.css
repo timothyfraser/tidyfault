@@ -1,0 +1,35 @@
+/* deck-tabs.css: pill tabs and the data-driven panels of the case-study slides (SLD-04).
+   Markup contract (see deck-tabs.js):
+     .dt-tabs                one tab group
+       .dt-pills > button.dt-pill[aria-pressed][data-tab]
+       .dt-panel[data-tab]   exactly one is visible at a time
+   Tokens are the deck's own (Mako palette, brand, ink, muted, line, panel). */
+
+.dt-tabs{display:flex;flex-direction:column;min-height:0;min-width:0}
+.dt-pills{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;padding:0}
+.dt-pill{font:600 16px/20px 'Source Sans 3',system-ui,sans-serif;padding:8px 14px;border-radius:999px;
+  border:1px solid #c5ccd3;background:#ffffff;color:#0b0405;cursor:pointer;margin:0;
+  -webkit-appearance:none;appearance:none}
+.dt-pill:hover{border-color:#3eb4ad}
+.dt-pill[aria-pressed="true"]{background:#53c9ad;border-color:#53c9ad;color:#0b0405}
+.dt-pill:focus-visible{outline:2px solid #2e5c8a;outline-offset:2px}
+
+.dt-panel{display:flex;flex-direction:column;min-height:0;min-width:0}
+.dt-panel[hidden]{display:none !important}
+
+/* the Code | Output toggle that sits in the corner of a code chunk (slide 13) */
+.dt-tabs--mini{position:relative}
+.dt-tabs--mini .dt-pills{position:absolute;top:9px;right:12px;z-index:2;gap:4px;margin:0}
+.dt-tabs--mini .dt-pill{font-size:13px;line-height:16px;padding:3px 11px;
+  background:#251729;border-color:#413f80;color:#e9edf0}
+.dt-tabs--mini .dt-pill[aria-pressed="true"]{background:#53c9ad;border-color:#53c9ad;color:#0b0405}
+
+/* compact data tables (nodes, rates) */
+.dt-tbl{border-collapse:collapse;width:100%}
+.dt-tbl th{font:600 13px/16px 'Source Sans 3',system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;
+  color:#3b4650;text-align:left;padding:0 4px 4px}
+.dt-tbl td{padding:0 4px;vertical-align:baseline}
+.dt-tbl .r{text-align:right}
+.dt-mono{font-family:'IBM Plex Mono',monospace}
+
+pre.dt-panel{display:block}
