@@ -9,7 +9,8 @@
     "check-generated": "node scripts/check-generated.mjs",
     "wheel": "bash scripts/build-wheel.sh",
     "dev": "npm run tokens && vite",
-    "build": "npm run tokens && npm run check-generated && vite build",
+    "llms": "node scripts/build-llms.mjs",
+    "build": "npm run tokens && npm run check-generated && vite build && npm run llms",
     "preview": "vite preview",
     "verify": "node scripts/verify-site.mjs"
   },
