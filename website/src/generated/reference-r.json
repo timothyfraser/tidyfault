@@ -1,0 +1,1055 @@
+{
+  "language": "R",
+  "package": "tidyfault",
+  "version": "0.0.0.9",
+  "generated_by": "website/scripts/extract-r.R",
+  "source_files": [
+    "DESCRIPTION",
+    "NAMESPACE",
+    "_pkgdown.yml",
+    "man/*.Rd"
+  ],
+  "source_hash": "eecc185fad30edc5ac9fabd1b44f0cb8",
+  "exports": [
+    "calculate",
+    "concentrate",
+    "curate",
+    "equate",
+    "formulate",
+    "gate",
+    "gate_and",
+    "gate_or",
+    "gate_top",
+    "get_gate",
+    "illustrate",
+    "mocus",
+    "mocus_cpp",
+    "mocus_r",
+    "mocus_rcpp",
+    "plot",
+    "plot.tidyfault_tree",
+    "populate",
+    "quantify",
+    "quantify_binary",
+    "quantify_binary_fast",
+    "quantify_prob",
+    "quantify_prob_fast",
+    "simulate",
+    "tabulate"
+  ],
+  "topics": [
+    {
+      "name": "curate",
+      "aliases": [
+        "curate"
+      ],
+      "kind": "function",
+      "title": "curate() Function",
+      "summary": "This function curates a data.frame of N gates and the sets of events immediately linked to those gates.",
+      "description": "<p>This function <em>curates</em> a <code>data.frame</code> of N <code>gates</code> and the <code>sets</code> of events immediately linked to those gates.</p>",
+      "usage": "curate(nodes, edges)",
+      "arguments": [
+        {
+          "name": "nodes",
+          "description": "(Required) data.frame of N <code>nodes</code> (1 to N rows), with a unique <code>id</code> for each node, an <code>event</code> name describing the node (some events occur multiple times), and a <code>type</code> vector categorizing nodes as <code>&quot;and&quot;</code> | <code>&quot;or&quot;</code> gates, <code>&quot;top&quot;</code> nodes, or <code>&quot;not&quot;</code> a gate or top node (ie. a normal node)"
+        },
+        {
+          "name": "edges",
+          "description": "(Required) data.frame of N <code>edges</code> (1 to N rows), showing ties between the <code>from</code> node's <code>id</code> to the <code>to</code> node's <code>id</code>."
+        }
+      ],
+      "format": "",
+      "value": "<p>A <code>data.frame</code> (tibble) with one row per gate, containing:</p><ul><li><code>gate</code>: Character vector of gate/event names</li><li><code>type</code>: Factor or character vector indicating gate type (<code>&quot;top&quot;</code>, <code>&quot;and&quot;</code>, or <code>&quot;or&quot;</code>)</li><li><code>class</code>: Factor with levels <code>&quot;top&quot;</code> and <code>&quot;gate&quot;</code>, classifying nodes as top events or intermediate gates</li><li><code>n</code>: Integer count of events immediately connected to this gate</li><li><code>set</code>: Character string containing the boolean expression for this gate's inputs, using <code>*</code> for AND operations and <code>+</code> for OR operations, wrapped in parentheses</li><li><code>items</code>: List column containing character vectors of event names that are inputs to this gate</li></ul><p>Rows are sorted with top events first, followed by gates in alphabetical order.</p>",
+      "details": "<p>This function performs the initial curation step in the fault tree analysis workflow:</p><ul><li>Filters nodes to only gates and top events (excludes basic events with <code>type == &quot;not&quot;</code>)</li><li>Joins edge information to identify which events connect to each gate</li><li>Converts gate relationships into boolean expressions: AND gates use <code>*</code> (multiplication), OR gates use <code>+</code> (addition)</li><li>Wraps each gate's set expression in parentheses to preserve order of operations</li><li>Creates both string (<code>set</code>) and list (<code>items</code>) representations of gate inputs for different downstream uses</li></ul><p>The output serves as the foundation for subsequent steps: <code><a href=\"/reference/equate.html\">equate()</a></code> uses the <code>set</code> column to build the complete boolean equation, while <code><a href=\"/reference/mocus.html\">mocus()</a></code> uses the <code>items</code> list column for cutset generation.</p>",
+      "sections": [],
+      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build the gate-level representation used by downstream functions\ngates <- curate(nodes = fakenodes, edges = fakeedges)\ngates\n\n# Example downstream workflow from curate() output\nformula <- gates %>%\n   equate() %>%\n   formulate()\ngates %>%\n   concentrate(method = \"mocus_rcpp\") %>%\n   tabulate(formula = formula, method = \"mocus_rcpp\")",
+      "seealso": "<p><code><a href=\"/reference/equate.html\">equate()</a></code> for building the complete boolean equation from curated gates, <code><a href=\"/reference/illustrate.html\">illustrate()</a></code> for visualizing the fault tree structure</p>",
+      "source_file": "R/curate.R",
+      "group": "Core workflow"
+    },
+    {
+      "name": "equate",
+      "aliases": [
+        "equate"
+      ],
+      "kind": "function",
+      "title": "equate() Function",
+      "summary": "This function extracts the equation for a fault tree from a data.frame of gates and sets, outputted by curate().",
+      "description": "<p>This function extracts the equation for a fault tree from a <code>data.frame</code> of <code>gate</code>s and <code>set</code>s, outputted by <code><a href=\"/reference/curate.html\">curate()</a></code>.</p>",
+      "usage": "equate(data)",
+      "arguments": [
+        {
+          "name": "data",
+          "description": "(Required) data.frame of N gates, containing columns for <code>gate</code>, <code>type</code>, and <code>set</code>. Outputted by <code><a href=\"/reference/curate.html\">curate()</a></code>. Must have at least one row with <code>class == &quot;top&quot;</code> representing the top event."
+        }
+      ],
+      "format": "",
+      "value": "<p>A character string containing the complete boolean equation for the entire fault tree. The equation:</p><ul><li>Uses <code>*</code> (multiplication) to represent AND operations</li><li>Uses <code>+</code> (addition) to represent OR operations</li><li>Contains only basic event names (no gate references)</li><li>Is wrapped in parentheses to preserve order of operations</li><li>Represents the top event's boolean logic in terms of all basic events</li></ul><p>This equation can be passed directly to <code><a href=\"/reference/formulate.html\">formulate()</a></code> to create an executable function.</p>",
+      "details": "<p>This function builds the complete boolean equation through an iterative substitution algorithm:</p><ul><li>Starts with the top event's <code>set</code> expression, which may contain references to other gates</li><li>Iteratively replaces each gate name with its corresponding <code>set</code> boolean expression</li><li>Continues until no gate names remain in any expression (only basic events remain)</li><li>Returns the fully expanded equation from the top event (first row of the data.frame)</li></ul><p>The algorithm processes gates in order and handles nested gate structures by repeatedly substituting until convergence. The substitution preserves the boolean operators (<code>*</code> for AND, <code>+</code> for OR) and parentheses structure created by <code><a href=\"/reference/curate.html\">curate()</a></code>.</p>",
+      "sections": [],
+      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build gate-level representation and expand to a full boolean equation\ngates <- curate(nodes = fakenodes, edges = fakeedges)\nequation <- equate(gates)\nequation\n\n# Example downstream use of equate() output\nformula <- formulate(equation)\ncalculate(formula)",
+      "seealso": "<p><code><a href=\"/reference/curate.html\">curate()</a></code> for creating the gates data.frame, <code><a href=\"/reference/formulate.html\">formulate()</a></code> for converting the equation string into an executable function</p>",
+      "source_file": "R/equate.R",
+      "group": "Core workflow"
+    },
+    {
+      "name": "formulate",
+      "aliases": [
+        "formulate"
+      ],
+      "kind": "function",
+      "title": "formulate() Function",
+      "summary": "This function formulates a character string (the boolean equation of a fault tree) into an R function that evaluates system failure.",
+      "description": "<p>This function <em>formulates</em> a character string (the boolean equation of a fault tree) into an R <code>function</code> that evaluates system failure. Handles AND and OR operations.</p>",
+      "usage": "formulate(formula)",
+      "arguments": [
+        {
+          "name": "formula",
+          "description": "(Required) A character string containing the boolean logic equation of a fault tree. Should use <code>*</code> for AND operations, <code>+</code> for OR operations, and parentheses for grouping. The equation should contain only basic event names (no gate references). Typically output from <code><a href=\"/reference/equate.html\">equate()</a></code>."
+        }
+      ],
+      "format": "",
+      "value": "<p>A function object that:</p><ul><li>Accepts named arguments for each basic event in the formula</li><li>Each argument accepts numeric values (typically 0 or 1 for binary events)</li><li>Returns a numeric value representing the system state (typically 0 for no failure, &gt;= 1 for failure)</li><li>Evaluates the boolean equation using R's arithmetic operators (<code>*</code> for AND, <code>+</code> for OR)</li></ul><p>The function can be called directly with event values or passed to <code><a href=\"/reference/calculate.html\">calculate()</a></code> to generate a complete truth table.</p>",
+      "details": "<p>This function converts a boolean equation string into an executable R function through the following process:</p><ul><li>Extracts all unique event names from the formula by splitting on operators (<code>+</code>, <code>*</code>, <code>(</code>, <code>)</code>)</li><li>Creates formal arguments for the function, one for each unique event name</li><li>Sets the function body to parse and evaluate the formula string</li><li>Returns a function that can be called with named arguments for each event</li></ul><p>The function uses R's arithmetic operators where multiplication (<code>*</code>) represents AND logic and addition (<code>+</code>) represents OR logic. When called with binary inputs (0/1), the function returns 0 for no failure and a positive value for failure. The function preserves the order of operations through parentheses in the original formula.</p>",
+      "sections": [],
+      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build a boolean equation and convert it to an executable function\nequation <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate()\nformula <- formulate(equation)\nformula\n\n# Evaluate across all combinations of basic events\ncalculate(formula)",
+      "seealso": "<p><code><a href=\"/reference/equate.html\">equate()</a></code> for generating the boolean equation string, <code><a href=\"/reference/calculate.html\">calculate()</a></code> for generating truth tables from the function</p>",
+      "source_file": "R/formulate.R",
+      "group": "Core workflow"
+    },
+    {
+      "name": "calculate",
+      "aliases": [
+        "calculate"
+      ],
+      "kind": "function",
+      "title": "calculate() Function",
+      "summary": "This function takes a supplied function f and computes the system failure outcomes (1 = failure vs. 0 = not) given every possible combination of input events failing (1) or not failing (0).",
+      "description": "<p>This function takes a supplied function <code>f</code> and computes the system failure outcomes (1 = failure vs. 0 = not) given every possible combination of input events failing (1) or not failing (0). Outputs a <code>data.frame</code>.</p>",
+      "usage": "calculate(f)",
+      "arguments": [
+        {
+          "name": "f",
+          "description": "(Required) Function outputted by <code><a href=\"/reference/formulate.html\">formulate()</a></code>, including arguments for all input events in the fault tree (excluding gates or top events). The function should accept binary (0/1) arguments for each basic event and return a numeric value."
+        }
+      ],
+      "format": "",
+      "value": "<p>A <code>data.frame</code> containing a truth table with:</p><ul><li>One column for each input event (named according to the function's formal arguments)</li><li>An <code>outcome</code> column indicating system failure (1) or no failure (0)</li></ul><p>Rows are arranged in descending order by <code>outcome</code>, with failure cases listed first. The truth table contains 2^n rows where n is the number of input events, representing all possible combinations of event states.</p>",
+      "details": "<p>This function generates a complete truth table by:</p><ul><li>Extracting the formal arguments from the supplied function to identify all input events</li><li>Creating a grid of all possible binary combinations (0/1) for each event using <code>tidyr::expand_grid()</code></li><li>Evaluating the function for each combination to determine system failure</li><li>Converting outcomes to binary: any value &gt;= 1 indicates failure (1), otherwise no failure (0)</li></ul><p>The function is designed to work with boolean functions created by <code><a href=\"/reference/formulate.html\">formulate()</a></code> that represent fault tree logic. The outcome threshold (&gt;= 1) allows for functions that may return counts or probabilities rather than strict boolean values.</p>",
+      "sections": [],
+      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build fault tree function and generate full truth table\nformula <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate() %>%\n   formulate()\ntruth_table <- calculate(formula)\ntruth_table\n\n# Optional downstream use with MOCUS minimization\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n   concentrate(method = \"mocus_rcpp\")",
+      "seealso": "<p><code><a href=\"/reference/formulate.html\">formulate()</a></code> for creating the function from a boolean equation</p>",
+      "source_file": "R/calculate.R",
+      "group": "Core workflow"
+    },
+    {
+      "name": "concentrate",
+      "aliases": [
+        "concentrate"
+      ],
+      "kind": "function",
+      "title": "concentrate() Function",
+      "summary": "This function concentrates the boolean equation of a fault tree to find the minimum cutsets in the fault tree.",
+      "description": "<p>This function <em>concentrates</em> the boolean equation of a fault tree to find the minimum cutsets in the fault tree. It takes a data.frame outputted by the <code><a href=\"/reference/curate.html\">curate()</a></code> function and applies one of the available MOCUS implementations to perform boolean minimization.</p>",
+      "usage": "concentrate(data, method = c(\"mocus_rcpp\", \"mocus_r\", \"mocus_original\"))",
+      "arguments": [
+        {
+          "name": "data",
+          "description": "(Required) data.frame containing output from <code><a href=\"/reference/curate.html\">curate()</a></code>. Expects the gates data.frame with columns <code>gate</code>, <code>type</code>, <code>set</code>, and <code>items</code>."
+        },
+        {
+          "name": "method",
+          "description": "(Optional) Character string specifying the minimization algorithm. Default is <code>&quot;mocus_rcpp&quot;</code>. Supported values are <code>&quot;mocus_rcpp&quot;</code>, <code>&quot;mocus_r&quot;</code>, and <code>&quot;mocus_original&quot;</code>."
+        }
+      ],
+      "format": "",
+      "value": "<p>A character vector where each element is a minimum cutset represented as a boolean expression (e.g., <code>&quot;A * B&quot;</code> for events A AND B). Each cutset represents a minimal set of events whose simultaneous occurrence causes system failure.</p>",
+      "details": "<p>This function performs boolean minimization to identify the minimum cutsets (minimal failure paths) in a fault tree using the MOCUS algorithm:</p><ul><li><p><strong>Rcpp MOCUS</strong> (<code>method = &quot;mocus_rcpp&quot;</code>):</p><ul><li>Uses the Rcpp-backed MOCUS implementation (<code><a href=\"/reference/mocus_rcpp.html\">mocus_rcpp()</a></code>)</li><li>Recommended default for speed on larger trees</li></ul></li><li><p><strong>Pure-R fast MOCUS</strong> (<code>method = &quot;mocus_r&quot;</code>):</p><ul><li>Uses the optimized pure-R implementation (<code><a href=\"/reference/mocus_r.html\">mocus_r()</a></code>)</li><li>Useful when compiled code is unavailable</li></ul></li><li><p><strong>Original MOCUS</strong> (<code>method = &quot;mocus_original&quot;</code>):</p><ul><li>Uses the original MOCUS implementation (<code><a href=\"/reference/mocus.html\">mocus()</a></code> with <code>method = &quot;mocus_original&quot;</code>) to generate all cutsets</li><li>Converts cutsets to a boolean equation format</li><li>Applies boolean simplification using <code>admisc::simplify()</code> to find minimum cutsets</li><li>Returns simplified cutsets as character strings</li></ul></li></ul><p>Minimum cutsets represent the smallest combinations of basic events that can cause the top event (system failure) to occur.</p>",
+      "sections": [],
+      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Extract minimum cutset from fault tree data\nformula <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate() %>%\n   formulate()\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n   concentrate(method = \"mocus_rcpp\") %>%\n   tabulate(formula = formula, method = \"mocus_rcpp\")",
+      "seealso": "<p><code><a href=\"/reference/curate.html\">curate()</a></code> for preparing gate data for MOCUS method, <code><a href=\"/reference/mocus_rcpp.html\">mocus_rcpp()</a></code>, <code><a href=\"/reference/mocus_r.html\">mocus_r()</a></code>, and <code><a href=\"/reference/mocus.html\">mocus()</a></code> for MOCUS implementations, <code><a href=\"/reference/tabulate.html\">tabulate()</a></code> for analyzing and summarizing minimum cutsets</p>",
+      "source_file": "R/concentrate.R",
+      "group": "Core workflow"
+    },
+    {
+      "name": "tabulate",
+      "aliases": [
+        "tabulate"
+      ],
+      "kind": "function",
+      "title": "tabulate() Function",
+      "summary": "This function tabulates a data.frame of N minimum cutsets in your fault tree, describing each mincut set, a query used to filter a table of all sets, the number of cutsets that include that mincut, the total number of cutsets leading to failure, and the coverage (percentage of cutsets covered out of total failures) for that mincut.",
+      "description": "<p>This function <em>tabulates</em> a <code>data.frame</code> of <code>N</code> minimum cutsets in your fault tree, describing each <code>mincut</code> set, a <code>query</code> used to filter a table of all sets, the number of <code>cutsets</code> that include that <code>mincut</code>, the total number of cutsets leading to <code>failure</code>, and the <code>coverage</code> (percentage of <code>cutsets</code> covered out of total failures) for that <code>mincut</code>.</p>",
+      "usage": "tabulate(\n  data,\n  formula,\n  method = c(\"mocus_rcpp\", \"mocus_r\", \"mocus_original\"),\n  query = FALSE\n)",
+      "arguments": [
+        {
+          "name": "data",
+          "description": "(Required) Output from <code><a href=\"/reference/concentrate.html\">concentrate()</a></code> function. Expects a character vector of minimum cutset expressions (e.g., <code>&quot;A * B&quot;</code>)."
+        },
+        {
+          "name": "formula",
+          "description": "(Required) Function output from <code><a href=\"/reference/formulate.html\">formulate()</a></code>. Used to generate the truth table for calculating coverage statistics."
+        },
+        {
+          "name": "method",
+          "description": "(Optional) Character string specifying the method used in <code><a href=\"/reference/concentrate.html\">concentrate()</a></code>. Default is <code>&quot;mocus_rcpp&quot;</code>. Supported values are <code>&quot;mocus_rcpp&quot;</code>, <code>&quot;mocus_r&quot;</code>, and <code>&quot;mocus_original&quot;</code>."
+        },
+        {
+          "name": "query",
+          "description": "(Optional) Logical - Whether to include the query column in the output. Default is <code>FALSE</code>."
+        }
+      ],
+      "format": "",
+      "value": "<p>A <code>data.frame</code> (tibble) with one row per minimum cutset, containing:</p><ul><li><code>mincut</code>: Character string representing the minimum cutset as a boolean expression (e.g., <code>&quot;A * B&quot;</code> for events A AND B)</li><li><code>query</code>: Character string containing a filter expression that can be used to identify truth table rows matching this cutset (e.g., <code>&quot;filter(A == 1, B == 1, outcome == 1)&quot;</code>) (only included if <code>query = TRUE</code>)</li><li><code>cutsets</code>: Integer count of truth table rows (cutsets) that match this minimum cutset and result in system failure</li><li><code>failures</code>: Integer count of total truth table rows that result in system failure (same for all rows)</li><li><code>coverage</code>: Numeric value (0 to 1) representing the proportion of failure cases covered by this minimum cutset. Calculated as <code>cutsets / failures</code>.</li></ul>",
+      "details": "<p>This function analyzes minimum cutsets to quantify their importance in system failure:</p><ul><li><strong>Truth Table Generation</strong>: Uses <code>formula</code> to generate a complete truth table via <code><a href=\"/reference/calculate.html\">calculate()</a></code>.</li><li><strong>Cutset Parsing</strong>: Splits each minimum cutset expression into individual events and determines their required states (1 for occurrence, 0 for non-occurrence)</li><li><strong>Query Construction</strong>: Creates filter expressions that identify truth table rows matching each cutset's event combination</li><li><strong>Coverage Calculation</strong>: Counts how many failure cases (rows with <code>outcome == 1</code>) are covered by each minimum cutset, then calculates coverage as a proportion</li></ul>",
+      "sections": [],
+      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\nformula <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate() %>%\n   formulate()\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n   concentrate(method = \"mocus_rcpp\") %>%\n   tabulate(formula = formula, method = \"mocus_rcpp\")",
+      "seealso": "<p><code><a href=\"/reference/concentrate.html\">concentrate()</a></code> for generating minimum cutsets, <code><a href=\"/reference/formulate.html\">formulate()</a></code> for creating the function used in truth table generation, <code><a href=\"/reference/calculate.html\">calculate()</a></code> for generating truth tables</p>",
+      "source_file": "R/tabulate.R",
+      "group": "Core workflow"
+    },
+    {
+      "name": "mocus",
+      "aliases": [
+        "mocus"
+      ],
+      "kind": "function",
+      "title": "mocus() Function",
+      "summary": "This function simplifies a data.frame of gates and their sets identified by curate(), generating each cutset in the fault tree using the MOCUS (Method of Obtaining Cutsets) algorithm.",
+      "description": "<p>This function <em>simplifies</em> a <code>data.frame</code> of gates and their sets identified by <code><a href=\"/reference/curate.html\">curate()</a></code>, generating each cutset in the fault tree using the MOCUS (Method of Obtaining Cutsets) algorithm.</p>",
+      "usage": "mocus(data, method = c(\"mocus_rcpp\", \"mocus_r\", \"mocus_original\"))",
+      "arguments": [
+        {
+          "name": "data",
+          "description": "(Required) data.frame containing gates and their sets, outputted by <code><a href=\"/reference/curate.html\">curate()</a></code>. Must contain columns <code>gate</code>, <code>type</code>, <code>class</code>, and <code>items</code> (list column of event vectors). The data.frame should have at least one row with <code>class == &quot;top&quot;</code> representing the top event."
+        },
+        {
+          "name": "method",
+          "description": "(Optional) Character string specifying which implementation to run. Default is <code>&quot;mocus_rcpp&quot;</code>. Supported values are <code>&quot;mocus_rcpp&quot;</code>, <code>&quot;mocus_r&quot;</code>, and <code>&quot;mocus_original&quot;</code> (same labels as <code><a href=\"/reference/concentrate.html\">concentrate()</a></code> and <code><a href=\"/reference/tabulate.html\">tabulate()</a></code>)."
+        }
+      ],
+      "format": "",
+      "value": "<p>A list where each element is a character vector representing a cutset (a set of basic events that can cause system failure). Each cutset vector contains the names of basic events. The list includes all cutsets found in the fault tree, not just minimum cutsets. Duplicate events within each cutset are removed (each event appears only once per cutset).</p>",
+      "details": "<p>This function implements the MOCUS (Method of Obtaining Cutsets) algorithm, which systematically expands gates in a fault tree to identify all cutsets. The algorithm works as follows:</p><ul><li><strong>Initialization</strong>: Starts with the top event as the first cutset</li><li><p><strong>Iterative Expansion</strong>: For each cutset containing gate references:</p><ul><li>Identifies gates that appear in the current cutset</li><li>For AND gates: Replaces the gate with all its input events (events are combined)</li><li>For OR gates: Creates separate cutsets for each input path (events are alternatives)</li><li>Removes the expanded gate from consideration</li></ul></li><li><strong>Convergence</strong>: Continues until no gates remain in any cutset (only basic events)</li><li><strong>Deduplication</strong>: Removes duplicate events within each cutset</li></ul><p>The algorithm handles nested gate structures by repeatedly expanding gates until all references are resolved. AND gates represent events that must all occur together, while OR gates represent alternative failure paths. The result includes all possible cutsets, which can then be minimized using boolean algebra (e.g., via <code><a href=\"/reference/concentrate.html\">concentrate()</a></code> with <code>method = &quot;mocus_original&quot;</code>). The default method (<code>&quot;mocus_rcpp&quot;</code>) uses the compiled implementation for speed. Use <code>&quot;mocus_r&quot;</code> for a pure-R queue-based variant, or <code>&quot;mocus_original&quot;</code> for the historical R loop used in early versions of the package.</p>",
+      "sections": [],
+      "examples": "",
+      "seealso": "<p><code><a href=\"/reference/curate.html\">curate()</a></code> for preparing the gates data.frame, <code><a href=\"/reference/concentrate.html\">concentrate()</a></code> for finding minimum cutsets from the generated cutsets, <code><a href=\"/reference/mocus_rcpp.html\">mocus_rcpp()</a></code>, <code><a href=\"/reference/mocus_r.html\">mocus_r()</a></code></p>",
+      "source_file": "R/mocus.R",
+      "group": "Core workflow"
+    },
+    {
+      "name": "mocus_r",
+      "aliases": [
+        "mocus_r"
+      ],
+      "kind": "function",
+      "title": "mocus_r() — Fast Pure-R MOCUS Implementation",
+      "summary": "Drop-in replacement for mocus() using a queue-based expansion, pre-indexed gate lookup, and integer-encoded events.",
+      "description": "<p>Drop-in replacement for mocus() using a queue-based expansion, pre-indexed gate lookup, and integer-encoded events. Same inputs/outputs as mocus().</p>",
+      "usage": "mocus_r(data)",
+      "arguments": [
+        {
+          "name": "data",
+          "description": "data.frame produced by curate(). Must have columns: gate (chr), type (chr/fct), class (chr/fct), items (list of chr vectors)."
+        }
+      ],
+      "format": "",
+      "value": "<p>Named list where each element is a character vector of basic events forming one cutset. Identical structure to mocus() output.</p>",
+      "details": "<p>Key improvements over original:</p><ol><li>Pre-indexes gate table into a named list — zero dplyr::filter() calls inside the loop.</li><li>Integer-encodes every event/gate name once up front; all inner-loop operations run on integer vectors (faster %in%, faster unique()).</li><li>Queue-based (append-only) expansion — never deletes/reallocates the working list mid-loop. A tail pointer advances; new cutsets are appended to the end.</li><li>Expands every gate in a cutset in a single pass rather than one gate per outer-loop iteration.</li><li>Convergence is tracked with a simple counter, not by re-flattening the entire list every iteration.</li></ol>",
+      "sections": [],
+      "examples": "",
+      "seealso": "",
+      "source_file": "R/mocus_fast_r.R",
+      "group": "Core workflow"
+    },
+    {
+      "name": "mocus_rcpp",
+      "aliases": [
+        "mocus_rcpp",
+        "mocus_cpp"
+      ],
+      "kind": "function",
+      "title": "mocus_rcpp() - Rcpp-Backed MOCUS Implementation",
+      "summary": "Drop-in replacement for mocus() that delegates the inner expansion loop to compiled C++ via Rcpp.",
+      "description": "<p>Drop-in replacement for mocus() that delegates the inner expansion loop to compiled C++ via Rcpp. The R layer handles encoding/decoding; C++ handles the queue-based gate expansion with zero R-level allocation in the hot path.</p>",
+      "usage": "mocus_rcpp(data)\n\nmocus_cpp(data)",
+      "arguments": [
+        {
+          "name": "data",
+          "description": "data.frame produced by curate(). Must have columns: gate (chr), type (chr/fct), class (chr/fct), items (list of chr vectors)."
+        }
+      ],
+      "format": "",
+      "value": "<p>Named list where each element is a character vector of basic events forming one cutset. Identical structure to mocus() / mocus_r() output.</p>",
+      "details": "<p>Encoding strategy:</p><ul><li>Every unique token (gate name or basic event name) is mapped to a positive integer ID once. All C++ operations work on ints.</li><li>Gate children are stored in a flat integer vector with per-gate start/end offsets, giving cache-friendly sequential access.</li><li>After C++ returns a list of integer-vector cutsets, R decodes them back to character vectors in one vectorised pass.</li></ul>",
+      "sections": [],
+      "examples": "",
+      "seealso": "",
+      "source_file": "R/mocus_rcpp.R",
+      "group": "Core workflow"
+    },
+    {
+      "name": "populate",
+      "aliases": [
+        "populate"
+      ],
+      "kind": "function",
+      "title": "populate() Function",
+      "summary": "Converts binary outcomes (0/1) to probability outcomes by replacing 1s with event failure probabilities.",
+      "description": "<p>Converts binary outcomes (0/1) to probability outcomes by replacing 1s with event failure probabilities. The output has the same structure as the input binary outcomes, but with probabilities instead of binary values.</p>",
+      "usage": "populate(binary_outcomes, event_probs)",
+      "arguments": [
+        {
+          "name": "binary_outcomes",
+          "description": "(Required) Data frame with binary (0/1) event states. Must have one column per basic event (with event names as column names) and optionally a <code>scenario</code> column. Each row represents one scenario."
+        },
+        {
+          "name": "event_probs",
+          "description": "(Required) Data frame with two columns: <code>event</code> (event names) and <code>probability</code> (failure probabilities in <code>[0, 1]</code>). Must contain probabilities for all events present in <code>binary_outcomes</code>."
+        }
+      ],
+      "format": "",
+      "value": "<p>A tibble with the same structure as <code>binary_outcomes</code>, where:</p><ul><li>Values of 1 are replaced with P(event) from <code>event_probs</code></li><li>Values of 0 remain as 0</li></ul><p>The <code>scenario</code> column (if present) is preserved unchanged.</p>",
+      "details": "<p>This function transforms binary event states by replacing occurrences (1s) with their corresponding failure probabilities. For each event column, if the binary value is 1 (event occurred), it is replaced with the failure probability P(event) from <code>event_probs</code>. If the binary value is 0 (event did not occur), it remains 0. This creates a data frame suitable for probabilistic evaluation where only occurring events have probability values.</p>",
+      "sections": [],
+      "examples": "library(tidyverse)\nlibrary(tidyfault)\n\ndata(\"db_outcomes_binary\")\ndata(\"db_probs\")\n\n# Convert binary outcomes to probability outcomes\npopulate(db_outcomes_binary, db_probs)\n\n# Compare: binary has 0/1, probability version has P(event) where binary was 1, 0 otherwise\ndb_outcomes_binary\npopulate(db_outcomes_binary, db_probs)",
+      "seealso": "<p><code><a href=\"/reference/quantify.html\">quantify()</a></code> for evaluating fault trees with binary or probabilistic inputs, <code><a href=\"/reference/quantify_prob.html\">quantify_prob()</a></code> for computing top event failure probability</p>",
+      "source_file": "R/populate.R",
+      "group": "Core workflow"
+    },
+    {
+      "name": "simulate",
+      "aliases": [
+        "simulate"
+      ],
+      "kind": "function",
+      "title": "simulate() Function",
+      "summary": "This function simulates a fault tree structure with nodes, edges, and basic event probabilities.",
+      "description": "<p>This function <em>simulates</em> a fault tree structure with nodes, edges, and basic event probabilities. Generates a valid fault tree with one top event, multiple gates (AND/OR), and basic events, ensuring each gate has at least two input events.</p>",
+      "usage": "simulate(n_gates = 3L, n_basic = 8L, p_range = c(0.01, 0.2), seed = NULL)",
+      "arguments": [
+        {
+          "name": "n_gates",
+          "description": "(Optional) Integer specifying the desired number of internal gates. Default is <code>3L</code>. The actual number of gates may be reduced if <code>n_basic</code> is insufficient to provide at least two basic events per gate."
+        },
+        {
+          "name": "n_basic",
+          "description": "(Optional) Integer specifying the number of basic events (leaf nodes) in the fault tree. Default is <code>8L</code>. Must be at least 1."
+        },
+        {
+          "name": "p_range",
+          "description": "(Optional) Numeric vector of length 2 specifying the minimum and maximum probability values for basic events. Default is <code>c(0.01, 0.2)</code>. Must satisfy <code>0 &lt; p_range[1] &lt; p_range[2] &lt; 1</code>."
+        },
+        {
+          "name": "seed",
+          "description": "(Optional) Integer seed for random number generation to ensure reproducibility. Default is <code>NULL</code> (no seed set)."
+        }
+      ],
+      "format": "",
+      "value": "<p>A list with three components:</p><ul><li><code>nodes</code>: Data frame with columns <code>id</code>, <code>event</code>, and <code>type</code>. Contains one top event (type <code>&quot;top&quot;</code>), <code>n_gates_eff</code> internal gates (type <code>&quot;and&quot;</code> or <code>&quot;or&quot;</code>), and <code>n_basic</code> basic events (type <code>&quot;not&quot;</code>). The <code>type</code> column is a factor with levels <code>c(&quot;top&quot;, &quot;and&quot;, &quot;or&quot;, &quot;not&quot;)</code>.</li><li><code>edges</code>: Data frame with columns <code>from</code> and <code>to</code>, representing connections between nodes. The top event connects to all gates, and gates connect to their assigned basic events.</li><li><code>prob</code>: Data frame with columns <code>event</code> and <code>probability</code>, containing probability values for each basic event, sampled uniformly from <code>p_range</code>.</li></ul>",
+      "details": "<p>This function generates a valid fault tree structure suitable for use with other <code>tidyfault</code> functions:</p><ul><li><strong>Gate constraint</strong>: Each gate (AND/OR) is guaranteed to have at least two input events. If <code>n_basic &lt; 2 * n_gates</code>, the number of gates is automatically reduced to <code>floor(n_basic / 2)</code>.</li><li><strong>Degenerate case</strong>: If <code>n_basic &lt; 2</code>, no internal gates are created; the top event connects directly to all basic events.</li><li><strong>Gate types</strong>: Gate types (AND/OR) are randomly assigned using <code>sample()</code>.</li><li><strong>Event allocation</strong>: Basic events are allocated to gates such that each gate receives at least two events, with any remaining events randomly distributed.</li><li><strong>Event naming</strong>: Top event is named <code>&quot;T&quot;</code>, gates are named <code>&quot;G1&quot;</code>, <code>&quot;G2&quot;</code>, etc., and basic events are named <code>&quot;E1&quot;</code>, <code>&quot;E2&quot;</code>, etc.</li></ul><p>The generated fault tree can be used directly with <code><a href=\"/reference/curate.html\">curate()</a></code>, <code><a href=\"/reference/equate.html\">equate()</a></code>, <code><a href=\"/reference/formulate.html\">formulate()</a></code>, and other <code>tidyfault</code> workflow functions.</p>",
+      "sections": [],
+      "examples": "# Load dependencies\nlibrary(tidyfault)\n\n# Simulate a fault tree with default parameters\nsim <- simulate(n_gates = 4L, n_basic = 10L, seed = 12345)\nsim$nodes\nsim$edges\nsim$prob\n\n# Use the simulated tree in the tidyfault workflow\ngates <- curate(nodes = sim$nodes, edges = sim$edges)\nequation <- equate(gates)\nformula <- formulate(equation)\ncutsets <- concentrate(gates)\n\n# Simulate a larger tree\nsim_large <- simulate(n_gates = 10L, n_basic = 25L, \n                     p_range = c(0.05, 0.3), seed = 42)",
+      "seealso": "<p><code><a href=\"/reference/curate.html\">curate()</a></code> for processing the simulated nodes and edges, <code><a href=\"/reference/illustrate.html\">illustrate()</a></code> for visualizing the generated fault tree structure</p>",
+      "source_file": "R/simulate.R",
+      "group": "Core workflow"
+    },
+    {
+      "name": "quantify",
+      "aliases": [
+        "quantify"
+      ],
+      "kind": "function",
+      "title": "quantify() Function",
+      "summary": "Unified wrapper function for evaluating fault trees.",
+      "description": "<p>Unified wrapper function for evaluating fault trees. Evaluates whether the top event occurs (binary evaluation) or computes top event failure probability (probabilistic evaluation) based on the <code>prob</code> parameter.</p>",
+      "usage": "quantify(f, newdata, prob = FALSE, fast = TRUE)",
+      "arguments": [
+        {
+          "name": "f",
+          "description": "(Required) Function from <code><a href=\"/reference/formulate.html\">formulate()</a></code>, with one argument per basic event. Used to identify event names and to evaluate the fault tree."
+        },
+        {
+          "name": "newdata",
+          "description": "(Required) Data for evaluation. When <code>prob = FALSE</code>, this represents binary scenarios (0/1 or TRUE/FALSE) for each basic event. When <code>prob = TRUE</code>, this represents failure probabilities (0 to 1) for each basic event. Can be a tibble/data frame with one column per basic event, a single vector/list, or (for <code>prob = TRUE</code>) a matrix. See details below."
+        },
+        {
+          "name": "prob",
+          "description": "(Optional) Logical. If <code>FALSE</code> (default), performs binary evaluation. If <code>TRUE</code>, computes failure probability."
+        },
+        {
+          "name": "fast",
+          "description": "(Optional) Logical. If <code>TRUE</code> (default), dispatches to optimized implementations (<code><a href=\"/reference/quantify_binary_fast.html\">quantify_binary_fast()</a></code> or <code><a href=\"/reference/quantify_prob_fast.html\">quantify_prob_fast()</a></code>). If <code>FALSE</code>, uses the legacy R implementations (<code><a href=\"/reference/quantify_binary.html\">quantify_binary()</a></code> or <code><a href=\"/reference/quantify_prob.html\">quantify_prob()</a></code>)."
+        }
+      ],
+      "format": "",
+      "value": "<p>A vector of outcomes. The type depends on <code>prob</code>:</p><ul><li>If <code>prob = FALSE</code>: Returns a logical vector (TRUE = system failure, FALSE = no failure). If <code>newdata</code> is a data frame with multiple rows, returns a vector with one outcome per row. If <code>newdata</code> is a single scenario, returns a single logical value.</li><li>If <code>prob = TRUE</code>: Returns a numeric vector of top event failure probabilities. If <code>newdata</code> is a single scenario, returns a single numeric value. If <code>newdata</code> has multiple rows, returns a numeric vector with one probability per scenario.</li></ul><p>Both modes return vectors in <code>predict()</code>-style format.</p>",
+      "details": "<p>This function provides a unified interface for both binary and probabilistic fault tree evaluation:</p><ul><li><strong>Binary evaluation</strong> (<code>prob = FALSE</code>): evaluates whether the top event occurs given binary event states.</li><li><strong>Probabilistic evaluation</strong> (<code>prob = TRUE</code>): computes the top event failure probability from basic event failure probabilities.</li><li><strong>Fast mode</strong> (<code>fast = TRUE</code>): uses optimized paths for larger scenario batches while preserving output semantics.</li><li><strong>Legacy mode</strong> (<code>fast = FALSE</code>): uses the original pure-R implementations.</li></ul><p>When <code>prob = FALSE</code>, <code>newdata</code> can be:</p><ul><li>A data frame with one column per basic event (names from <code>formalArgs(f)</code>)</li><li>A single vector/list (unnamed = positional, or named)</li><li>Values are logical (TRUE/FALSE) or numeric (0/1)</li></ul><p>When <code>prob = TRUE</code>, <code>newdata</code> can be:</p><ul><li>A single vector or list (one scenario) with probabilities in <code>[0, 1]</code></li><li>A data frame or matrix with one row per scenario and columns for each basic event (names must match <code>formalArgs(f)</code>)</li><li>Unnamed vectors are interpreted in <code>formalArgs(f)</code> order</li></ul>",
+      "sections": [],
+      "examples": "library(tidyverse)\nlibrary(tidyfault)\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\nf <- curate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate()\n\n# Binary evaluation (default): single scenario\nf %>% quantify(c(T, T, T, F))\nf %>% quantify(c(TRUE, FALSE, TRUE, FALSE))\n\n# Binary evaluation: multiple scenarios\nscenarios_tbl <- tibble(\n  A = c(1L, 0L, 1L),\n  B = c(0L, 1L, 1L),\n  C = c(1L, 0L, 0L),\n  D = c(0L, 1L, 1L)\n)\nf %>% quantify(scenarios_tbl)\n\n# Probabilistic evaluation: single scenario\nf %>% quantify(c(0.1, 0.2, 0.05, 0.15), prob = TRUE)\n\n# Legacy mode\nf %>% quantify(c(0.1, 0.2, 0.05, 0.15), prob = TRUE, fast = FALSE)\n\n# Probabilistic evaluation: multiple scenarios\nprobs_df <- as.data.frame(replicate(4, runif(100), simplify = FALSE))\nnames(probs_df) <- formalArgs(f)\nf %>% quantify(probs_df, prob = TRUE)",
+      "seealso": "<p><code><a href=\"/reference/formulate.html\">formulate()</a></code> for creating the function, <code><a href=\"/reference/calculate.html\">calculate()</a></code> for the full truth table, <code><a href=\"/reference/quantify_binary.html\">quantify_binary()</a></code>, <code><a href=\"/reference/quantify_binary_fast.html\">quantify_binary_fast()</a></code>, <code><a href=\"/reference/quantify_prob.html\">quantify_prob()</a></code>, and <code><a href=\"/reference/quantify_prob_fast.html\">quantify_prob_fast()</a></code></p>",
+      "source_file": "R/quantify.R",
+      "group": "Quantification"
+    },
+    {
+      "name": "quantify_binary",
+      "aliases": [
+        "quantify_binary"
+      ],
+      "kind": "function",
+      "title": "quantify_binary() Function",
+      "summary": "Evaluates whether the top event occurs (system fails) when given whether each basic event occurs or not.",
+      "description": "<p>Evaluates whether the top event occurs (system fails) when given whether each basic event occurs or not. Inputs are binary: each event is 0 (did not occur) or 1 (occurred). No probabilities—deterministic evaluation only.</p>",
+      "usage": "quantify_binary(f, newdata)",
+      "arguments": [
+        {
+          "name": "f",
+          "description": "(Required) Function from <code><a href=\"/reference/formulate.html\">formulate()</a></code>, with one argument per basic event. Used to identify event names and to evaluate the fault tree."
+        },
+        {
+          "name": "newdata",
+          "description": "(Required) Binary event states (0/1 or TRUE/FALSE) for each basic event. Either a tibble/data frame with one column per basic event (names from <code>formalArgs(f)</code>), or a single vector/list. A single scenario can be an unnamed vector in <code>formalArgs(f)</code> order (e.g. <code>c(T, T, T, F)</code> or <code>c(1, 1, 0, 1)</code>), or a named vector/list. Values are logical (TRUE/FALSE) or numeric (0/1), where 1/TRUE means the event occurred and 0/FALSE means it did not."
+        }
+      ],
+      "format": "",
+      "value": "<p>A logical vector of outcomes (TRUE = system failure, FALSE = no failure). If <code>newdata</code> is a data frame with multiple rows, returns a vector with one outcome per row. If <code>newdata</code> is a single scenario (vector/list), returns a single logical value.</p>",
+      "details": "<p>No probabilities are used; the function evaluates the fault tree on the given event states. Outcome is TRUE when <code>f(...) &gt;= 1</code> (system failure). Logical and 0/1 inputs are coerced to 0/1 internally to match <code><a href=\"/reference/calculate.html\">calculate()</a></code> behavior. When <code>newdata</code> is a data frame, evaluation is vectorized: <code>f</code> is called once with vector columns (one element per row), so many scenarios are handled efficiently. Returns only the outcome vector, similar to R's <code>predict()</code> function style.</p>",
+      "sections": [],
+      "examples": "library(tidyverse)\nlibrary(tidyfault)\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Pipe-friendly: single scenario in event order (e.g. A, B, C, D)\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate() %>%\n  quantify_binary(c(T, T, T, F))\n\nf <- curate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate()\n\n# Single scenario: unnamed vector in event order\nf %>% quantify_binary(c(TRUE, FALSE, TRUE, FALSE))\n\n# Single scenario: named vector (logical or 0/1)\none_scenario <- setNames(c(TRUE, FALSE, TRUE, FALSE), formalArgs(f))\nf %>% quantify_binary(one_scenario)\n\n# Tibble of scenarios: returns vector of outcomes (vectorized, one call to f for all rows)\nscenarios_tbl <- tibble(\n  A = c(1L, 0L, 1L),\n  B = c(0L, 1L, 1L),\n  C = c(1L, 0L, 0L),\n  D = c(0L, 1L, 1L)\n)\nf %>% quantify_binary(scenarios_tbl)  # Returns logical vector",
+      "seealso": "<p><code><a href=\"/reference/formulate.html\">formulate()</a></code> for creating the function, <code><a href=\"/reference/calculate.html\">calculate()</a></code> for the full truth table, <code><a href=\"/reference/quantify_prob.html\">quantify_prob()</a></code> for top event failure probability given basic event probabilities, <code><a href=\"/reference/quantify.html\">quantify()</a></code> for the unified wrapper function.</p>",
+      "source_file": "R/quantify_binary.R",
+      "group": "Quantification"
+    },
+    {
+      "name": "quantify_binary_fast",
+      "aliases": [
+        "quantify_binary_fast"
+      ],
+      "kind": "function",
+      "title": "quantify_binary_fast() Function",
+      "summary": "Evaluates top-event outcomes for binary scenarios using the same semantics as quantify_binary(), with streamlined coercion for larger batches.",
+      "description": "<p>Evaluates top-event outcomes for binary scenarios using the same semantics as <code><a href=\"/reference/quantify_binary.html\">quantify_binary()</a></code>, with streamlined coercion for larger batches.</p>",
+      "usage": "quantify_binary_fast(f, newdata)",
+      "arguments": [
+        {
+          "name": "f",
+          "description": "(Required) Function from <code><a href=\"/reference/formulate.html\">formulate()</a></code>, with one argument per basic event."
+        },
+        {
+          "name": "newdata",
+          "description": "(Required) Binary event states (0/1 or TRUE/FALSE) for each basic event. Accepts either a data frame/matrix of scenarios or a single vector/list."
+        }
+      ],
+      "format": "",
+      "value": "<p>Logical vector of outcomes (TRUE = system failure, FALSE = no failure).</p>",
+      "details": "",
+      "sections": [],
+      "examples": "",
+      "seealso": "",
+      "source_file": "R/quantify_binary_fast.R",
+      "group": "Quantification"
+    },
+    {
+      "name": "quantify_prob",
+      "aliases": [
+        "quantify_prob"
+      ],
+      "kind": "function",
+      "title": "quantify_prob() Function",
+      "summary": "Computes the top event failure probability from a fault tree when given basic event failure probabilities.",
+      "description": "<p>Computes the top event failure probability from a fault tree when given basic event failure probabilities. Assumes independent basic events; uses the full truth table to sum probabilities over all failure combinations.</p>",
+      "usage": "quantify_prob(f, newdata, truth_table = NULL)",
+      "arguments": [
+        {
+          "name": "f",
+          "description": "(Required) Function outputted by <code><a href=\"/reference/formulate.html\">formulate()</a></code>, with one argument per basic event. Used to identify event names and, if <code>truth_table</code> is not supplied, to generate the truth table via <code>calculate(f)</code>."
+        },
+        {
+          "name": "newdata",
+          "description": "(Required) Failure probabilities (0 to 1) for each basic event. Can be a single vector or list (one scenario), or a data frame or matrix with one row per scenario and columns for each basic event (names must match <code>formalArgs(f)</code>). Unnamed vectors are interpreted in <code>formalArgs(f)</code> order. Values should be in <code>[0, 1]</code>, where each value represents the probability that the corresponding basic event occurs."
+        },
+        {
+          "name": "truth_table",
+          "description": "(Optional) Data frame with one column per basic event (0/1) and an <code>outcome</code> column (1 = system failure, 0 = no failure). If provided, the truth table is not recomputed (useful when <code><a href=\"/reference/calculate.html\">calculate()</a></code> was already run)."
+        }
+      ],
+      "format": "",
+      "value": "<p>A numeric vector of top-event failure probabilities. If <code>newdata</code> is a single scenario (vector/list or single-row data frame), returns a single numeric value. If <code>newdata</code> has multiple rows (one per scenario), returns a numeric vector with one probability per scenario (same order as rows of <code>newdata</code>). Similar to R's <code>predict()</code> function style.</p>",
+      "details": "<p>The top event probability is computed exactly via the complete truth table: for each of the 2^n combinations of basic event states, the probability of that combination is the product of <code>newdata[e]</code> for events that occur (1) and <code>1 - newdata[e]</code> for events that do not (0). The function sums these probabilities over all combinations where <code>outcome == 1</code>. This is exact for independent basic events but has complexity O(2^n); for trees with many basic events, consider using minimal cut set approximations elsewhere. When <code>newdata</code> has multiple rows, the truth table is computed once and all scenarios are evaluated in one pass.</p>",
+      "sections": [],
+      "examples": "library(tidyverse)\nlibrary(tidyfault)\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\nf <- curate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate()\n# Pipe-friendly: probability vector in event order (e.g. A, B, C, D)\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate() %>%\n  quantify_prob(c(0.1, 0.2, 0.05, 0.15))\n\n# Named probs (names must match event names in the tree)\nprobs <- setNames(c(0.1, 0.2, 0.05, 0.15), formalArgs(f))\nf %>% quantify_prob(probs)\n\n# Reuse an existing truth table to avoid recomputing\ntt <- calculate(f)\nf %>% quantify_prob(probs, truth_table = tt)\n\n# Many scenarios at once (vectorized): pass a data frame, one row per scenario\nprobs_df <- as.data.frame(replicate(4, runif(1000), simplify = FALSE))\nnames(probs_df) <- formalArgs(f)\nf %>% quantify_prob(probs_df, truth_table = tt)  # length-1000 vector",
+      "seealso": "<p><code><a href=\"/reference/formulate.html\">formulate()</a></code> for creating the function from a boolean equation, <code><a href=\"/reference/calculate.html\">calculate()</a></code> for generating the truth table, <code><a href=\"/reference/quantify.html\">quantify()</a></code> for evaluating whether the top event occurs given binary (0/1) basic event states. The result matches the FaultTree package when the same tree is built and <code>ftree.calc(DF, use.bdd = TRUE)</code> is used (BDD accounts for repeated basic events; gate-by-gate with <code>use.bdd = FALSE</code> does not).</p>",
+      "source_file": "R/quantify_prob.R",
+      "group": "Quantification"
+    },
+    {
+      "name": "quantify_prob_fast",
+      "aliases": [
+        "quantify_prob_fast"
+      ],
+      "kind": "function",
+      "title": "quantify_prob_fast() Function",
+      "summary": "Computes top-event failure probability using the same exact truth-table approach as quantify_prob(), but with a compiled inner loop for faster evaluation across many scenarios.",
+      "description": "<p>Computes top-event failure probability using the same exact truth-table approach as <code><a href=\"/reference/quantify_prob.html\">quantify_prob()</a></code>, but with a compiled inner loop for faster evaluation across many scenarios.</p>",
+      "usage": "quantify_prob_fast(f, newdata, truth_table = NULL)",
+      "arguments": [
+        {
+          "name": "f",
+          "description": "(Required) Function outputted by <code><a href=\"/reference/formulate.html\">formulate()</a></code>, with one argument per basic event."
+        },
+        {
+          "name": "newdata",
+          "description": "(Required) Failure probabilities in <code>[0, 1]</code>. Can be a single vector/list, or a data frame/matrix with one row per scenario."
+        },
+        {
+          "name": "truth_table",
+          "description": "(Optional) Data frame with one column per basic event and an <code>outcome</code> column. If <code>NULL</code>, computed via <code>calculate(f)</code>."
+        }
+      ],
+      "format": "",
+      "value": "<p>Numeric vector of top-event failure probabilities (length 1 for a single scenario).</p>",
+      "details": "",
+      "sections": [],
+      "examples": "",
+      "seealso": "",
+      "source_file": "R/quantify_prob_fast.R",
+      "group": "Quantification"
+    },
+    {
+      "name": "illustrate",
+      "aliases": [
+        "illustrate"
+      ],
+      "kind": "function",
+      "title": "illustrate() Function",
+      "summary": "This function takes nodes and edges from a fault tree, computes a tree layout using tidygraph and ggraph, and returns ggplot-friendly data.frames of nodes, edges, and gate polygons.",
+      "description": "<p>This function takes nodes and edges from a fault tree, computes a <strong>tree</strong> layout using <code>tidygraph</code> and <code>ggraph</code>, and returns ggplot-friendly data.frames of nodes, edges, and gate polygons.</p>",
+      "usage": "illustrate(\n  nodes,\n  edges,\n  type = c(\"nodes\", \"edges\", \"both\", \"all\"),\n  node_key = \"id\",\n  layout = \"tree\",\n  size = 0.25,\n  scale_size = FALSE,\n  res = 50\n)",
+      "arguments": [
+        {
+          "name": "nodes",
+          "description": "(Required) dataset of nodes, including an <code>id</code> field (or whatever is written in <code>node_key</code>)"
+        },
+        {
+          "name": "edges",
+          "description": "(Required) dataset of edges, including <code>from</code> and <code>to</code> fields corresponding to the <code>id</code> of each node"
+        },
+        {
+          "name": "type",
+          "description": "(Optional) Character string specifying output format. Default is <code>&quot;both&quot;</code>, which returns a list with <code>&quot;nodes&quot;</code>, <code>&quot;edges&quot;</code>, and <code>&quot;gates&quot;</code>. Other options: <code>&quot;nodes&quot;</code> returns only node coordinates, <code>&quot;edges&quot;</code> returns only edge coordinates, <code>&quot;all&quot;</code> returns nodes, edges, gates, and pairwise edge data."
+        },
+        {
+          "name": "node_key",
+          "description": "(Optional) Character string naming the column in <code>nodes</code> that contains unique node identifiers. Default is <code>&quot;id&quot;</code>."
+        },
+        {
+          "name": "layout",
+          "description": "(Optional) Character string specifying the graph layout algorithm. Default is <code>&quot;tree&quot;</code>. <code>&quot;dendrogram&quot;</code> also works well. See <code>ggraph::create_layout()</code> for more layout options (e.g., <code>&quot;fr&quot;</code>, <code>&quot;kk&quot;</code>, <code>&quot;nicely&quot;</code>)."
+        },
+        {
+          "name": "size",
+          "description": "(Optional) Numeric value passed to <code><a href=\"/reference/gate.html\">gate()</a></code> function for constructing polygons. Controls the diameter of gate shapes. Defaults to <code>0.25</code>. When <code>scale_size = TRUE</code>, this is scaled by the layout extent."
+        },
+        {
+          "name": "scale_size",
+          "description": "(Optional) Logical. If <code>TRUE</code>, scale gate size to the layout extent. Default is <code>FALSE</code>; set to <code>TRUE</code> to try consistent proportions across very different trees."
+        },
+        {
+          "name": "res",
+          "description": "(Optional) Numeric value passed to <code><a href=\"/reference/gate.html\">gate()</a></code> function for constructing polygons. Controls the number of line segments used to draw curved gate shapes. Defaults to <code>50</code>."
+        }
+      ],
+      "format": "",
+      "value": "<p>The return type depends on the <code>type</code> parameter:</p><ul><li>For <code>type = &quot;nodes&quot;</code>: A data.frame with node coordinates (<code>x</code>, <code>y</code>) and all original columns from <code>nodes</code></li><li>For <code>type = &quot;edges&quot;</code>: A data.frame with edge coordinates formatted for <code>geom_line()</code>, containing columns <code>direction</code>, <code>id</code>, <code>x</code>, <code>y</code>, <code>edge_id</code></li><li><p>For <code>type = &quot;both&quot;</code> (default): A named list of class <code>c(&quot;tidyfault_tree&quot;, &quot;list&quot;)</code> (so <code><a href=\"/reference/plot.html\">plot()</a></code> dispatches to <code><a href=\"/reference/plot.html\">plot.tidyfault_tree()</a></code>) with three elements:</p><ul><li><code>nodes</code>: Node coordinates data.frame</li><li><code>edges</code>: Edge coordinates data.frame</li><li><code>gates</code>: Gate polygon coordinates data.frame with <code>x</code>, <code>y</code> columns for drawing gate shapes</li></ul></li><li>For <code>type = &quot;all&quot;</code>: A named list of class <code>c(&quot;tidyfault_tree&quot;, &quot;list&quot;)</code> with four elements: <code>nodes</code>, <code>edges</code>, <code>gates</code>, and <code>pairwise</code> (edge data with from/to coordinates)</li></ul>",
+      "details": "<p>This function prepares fault tree data for visualization with ggplot2 by:</p><ul><li>Creating a <code>tidygraph</code> object from nodes and edges</li><li>Computing graph layout coordinates using <code>ggraph::create_layout()</code> with the specified layout algorithm</li><li>Extracting node coordinates and preserving original node attributes</li><li>Computing edge coordinates by joining node positions to edge endpoints</li><li>Generating gate polygon shapes for AND, OR, and top event gates using the <code><a href=\"/reference/gate.html\">gate()</a></code> function</li></ul><p>The output is designed to work seamlessly with ggplot2. Nodes can be plotted with <code>geom_point()</code>, edges with <code>geom_line()</code>, and gates with <code>geom_polygon()</code>. The tree layout algorithm positions nodes hierarchically, making fault tree structure easy to visualize.</p>",
+      "sections": [],
+      "examples": "",
+      "seealso": "<p><code><a href=\"/reference/gate.html\">gate()</a></code> for generating gate polygons, <code>tbl_graph</code> for creating graph objects, <code>create_layout</code> for layout algorithms</p>",
+      "source_file": "R/illustrate.R",
+      "group": "Visualization"
+    },
+    {
+      "name": "plot",
+      "aliases": [
+        "plot",
+        "plot.tidyfault_tree"
+      ],
+      "kind": "S3 method",
+      "title": "Plot a fault tree from illustrate() output",
+      "summary": "Plot a fault tree from illustrate() output",
+      "description": "<p>An S3 method for <code>plot</code> on the <code>tidyfault_tree</code> objects returned by <code>illustrate(type = &quot;both&quot;)</code> and <code>illustrate(type = &quot;all&quot;)</code>. Calling <code><a href=\"/reference/plot.html\">plot()</a></code> on any other object dispatches to base R as usual.</p>",
+      "usage": "## S3 method for class 'tidyfault_tree'\nplot(\n  x,\n  type_col = \"type\",\n  gate_types = c(\"and\", \"or\", \"top\"),\n  edge_linewidth = 1,\n  gate_linewidth = 0.8,\n  gate_alpha = 1,\n  point_radius = NULL,\n  point_n = 100,\n  point_linewidth = 0.8,\n  outline_colour = \"#0b0405\",\n  gate_fill = c(top = \"#382a54\", and = \"#395d9c\", or = \"#3eb4ad\", `basic event` =\n    \"#def5e5\"),\n  coord_fixed = TRUE,\n  theme_void = TRUE,\n  expand = 0.2,\n  normalize = TRUE,\n  basic_radius_ratio = 0.18,\n  edge_colour = \"#b7c1cb\",\n  ...\n)",
+      "arguments": [
+        {
+          "name": "x",
+          "description": "A <code>tidyfault_tree</code> list returned by <code>illustrate(..., type = &quot;both&quot;)</code> or <code>illustrate(..., type = &quot;all&quot;)</code>, with elements <code>nodes</code>, <code>edges</code>, and <code>gates</code>."
+        },
+        {
+          "name": "type_col",
+          "description": "Character. Name of the column in <code>x$nodes</code> that holds node type (e.g. <code>&quot;top&quot;</code>, <code>&quot;and&quot;</code>, <code>&quot;or&quot;</code>, <code>&quot;not&quot;</code>). Default is <code>&quot;type&quot;</code>."
+        },
+        {
+          "name": "gate_types",
+          "description": "Character vector. Node types that are drawn as gate polygons. Default is <code>c(&quot;and&quot;, &quot;or&quot;, &quot;top&quot;)</code>."
+        },
+        {
+          "name": "edge_linewidth",
+          "description": "Numeric. Line width for edges. Default <code>1</code>."
+        },
+        {
+          "name": "gate_linewidth",
+          "description": "Numeric. Outline width for gate polygons. Default <code>0.8</code>."
+        },
+        {
+          "name": "gate_alpha",
+          "description": "Numeric. Fill opacity for gate polygons (0--1). Default <code>1</code>."
+        },
+        {
+          "name": "point_radius",
+          "description": "Numeric or <code>NULL</code>. Radius of basic-event circles in data units. If <code>NULL</code> (default), it is estimated from gate sizes (see <code>basic_radius_ratio</code>). Set explicitly (e.g. <code>0.1</code>) for full control when auto sizing is too small or too big."
+        },
+        {
+          "name": "point_n",
+          "description": "Integer. Number of vertices used to draw each basic-event circle polygon. Default <code>100</code>."
+        },
+        {
+          "name": "point_linewidth",
+          "description": "Numeric. Outline width for basic-event circles. Default <code>0.8</code>."
+        },
+        {
+          "name": "outline_colour",
+          "description": "Character. Colour for gate polygon and basic-event outlines. Default <code>&quot;black&quot;</code>."
+        },
+        {
+          "name": "gate_fill",
+          "description": "Named character vector of fill colours for gate types (<code>and</code>, <code>or</code>, <code>top</code>) and optionally <code>&quot;basic event&quot;</code> for leaf nodes. Default is <code>c(top = &quot;#382a54&quot;, and = &quot;#395d9c&quot;, or = &quot;#3eb4ad&quot;, &quot;basic event&quot; = &quot;#def5e5&quot;)</code>. If <code>NULL</code>, the viridis discrete palette is used instead."
+        },
+        {
+          "name": "coord_fixed",
+          "description": "Logical. If <code>TRUE</code> (default), use equal aspect ratio so shapes are not stretched."
+        },
+        {
+          "name": "theme_void",
+          "description": "Logical. If <code>TRUE</code> (default), remove axes and panel."
+        },
+        {
+          "name": "expand",
+          "description": "Numeric. Fixed padding (in data units) added to the view limits on each side. Default <code>0.2</code>. For trees with few nodes, the function automatically tightens this to <code>0.1</code>."
+        },
+        {
+          "name": "normalize",
+          "description": "Logical. If <code>TRUE</code> (default), scale and center node, edge, and gate coordinates so the plot extent is standardized across different trees."
+        },
+        {
+          "name": "basic_radius_ratio",
+          "description": "Numeric. Used only when <code>point_radius = NULL</code>. Basic-event radius is set to this fraction of the median gate extent (each gate's extent is half the sum of its x and y span). Default <code>0.18</code>. Larger values give bigger circles; smaller values give smaller circles."
+        },
+        {
+          "name": "edge_colour",
+          "description": "Character. Colour for edges. Default <code>&quot;#b7c1cb&quot;</code>."
+        },
+        {
+          "name": "...",
+          "description": "Ignored (for compatibility with the generic <code>plot</code>)."
+        }
+      ],
+      "format": "",
+      "value": "<p>A <code>ggplot</code> object.</p>",
+      "details": "<p>Builds a ggplot of the fault tree using the nodes, edges, and gate polygons returned by <code><a href=\"/reference/illustrate.html\">illustrate()</a></code>. Gate nodes (and, or, top) are drawn as polygons with outlines that follow their shape; other nodes (e.g. basic events) are drawn as circle polygons in the same data coordinate system, so their size stays visually consistent relative to the gates. Nodes and gates are labelled using the <code>event</code> column from <code>x$nodes</code>. To avoid pixelated output when saving, use <code>ggsave()</code> with an explicit <code>dpi</code> (e.g. <code>ggsave(&quot;plot.png&quot;, p, dpi = 300)</code>). Saving from the RStudio Plots pane or at a small size often produces low-resolution images. Basic-event circle size when <code>point_radius = NULL</code>: the function takes each gate polygon's extent (half of x-span + y-span), then uses the <em>median</em> of those extents times <code>basic_radius_ratio</code>. So circle size follows a typical gate size. It can still look too small or too big when gate sizes vary a lot (e.g. one large top gate and many small gates), or when the layout is very compact or very spread out. In those cases, set <code>point_radius</code> explicitly (e.g. <code>0.08</code> or <code>0.15</code>) or adjust <code>basic_radius_ratio</code>.</p>",
+      "sections": [],
+      "examples": "data(it_security_nodes, it_security_edges, package = \"tidyfault\")\nill <- illustrate(nodes = it_security_nodes, edges = it_security_edges, type = \"both\")\np <- plot(ill)\n## Not run:\nggsave(\"fault_tree.png\", p, dpi = 300)\n## End(Not run)",
+      "seealso": "",
+      "source_file": "R/plot.R",
+      "group": "Visualization"
+    },
+    {
+      "name": "gate",
+      "aliases": [
+        "gate"
+      ],
+      "kind": "function",
+      "title": "gate() Function",
+      "summary": "This internal function gathers all gate polygons for a set of supplied gate types and their x and y coordinates.",
+      "description": "<p>This internal function gathers all gate polygons for a set of supplied gate types and their x and y coordinates.</p>",
+      "usage": "gate(data, group = \"id\", gate = \"type\", size = 1, res = 50)",
+      "arguments": [
+        {
+          "name": "data",
+          "description": "(Required) data.frame of nodes with coordinates. Must include columns for <code>x</code> and <code>y</code> coordinates, and at least one row where the gate type is <code>&quot;and&quot;</code>, <code>&quot;or&quot;</code>, or <code>&quot;top&quot;</code>."
+        },
+        {
+          "name": "group",
+          "description": "(Default = <code>&quot;id&quot;</code>) Character string naming the column in <code>data</code> that contains unique identifiers for grouping nodes. Default is <code>&quot;id&quot;</code>."
+        },
+        {
+          "name": "gate",
+          "description": "(Default = <code>&quot;type&quot;</code>) Character string naming the column in <code>data</code> that contains gate types. Must contain values <code>&quot;and&quot;</code>, <code>&quot;or&quot;</code>, or <code>&quot;top&quot;</code>. Default is <code>&quot;type&quot;</code>."
+        },
+        {
+          "name": "size",
+          "description": "(Default = 1) Numeric value controlling the diameter of gate polygons. Larger values create bigger gate shapes."
+        },
+        {
+          "name": "res",
+          "description": "(Default = 50) Numeric value controlling the number of line segments used to draw curved gate shapes. Higher values create smoother curves but require more computation."
+        }
+      ],
+      "format": "",
+      "value": "<p>A data.frame (tibble) with columns <code>x</code> and <code>y</code> containing coordinate pairs that define gate polygon shapes. The data.frame is grouped by the <code>group</code> and <code>gate</code> columns, with one polygon per unique combination. Coordinates are centered at the node's position and scaled according to <code>size</code>.</p>",
+      "details": "<p>This function generates polygon coordinates for visualizing gates in fault tree diagrams:</p><ul><li>Filters nodes to only those with gate types (<code>&quot;and&quot;</code>, <code>&quot;or&quot;</code>, <code>&quot;top&quot;</code>)</li><li>Groups nodes by their identifier and gate type</li><li>Calls <code><a href=\"/reference/get_gate.html\">get_gate()</a></code> for each group to generate the appropriate polygon shape</li><li>Returns all polygon coordinates in a single data.frame suitable for use with <code>geom_polygon()</code> in ggplot2</li></ul><p>The function is typically called internally by <code><a href=\"/reference/illustrate.html\">illustrate()</a></code> but can be used directly to generate gate shapes for custom visualizations. Each gate type (AND, OR, top event) has a distinct shape generated by the corresponding <code>gate_*()</code> function.</p>",
+      "sections": [],
+      "examples": "",
+      "seealso": "<p><code><a href=\"/reference/get_gate.html\">get_gate()</a></code> for generating individual gate polygons, <code><a href=\"/reference/gate_and.html\">gate_and()</a></code> for AND gate shapes, <code><a href=\"/reference/gate_or.html\">gate_or()</a></code> for OR gate shapes, <code><a href=\"/reference/gate_top.html\">gate_top()</a></code> for top event shapes</p>",
+      "source_file": "R/gate.R",
+      "group": "Visualization"
+    },
+    {
+      "name": "gate_and",
+      "aliases": [
+        "gate_and"
+      ],
+      "kind": "function",
+      "title": "gate_and() Function",
+      "summary": "This function produces the AND gate polygons for fault trees.",
+      "description": "<p>This function produces the AND gate polygons for fault trees.</p>",
+      "usage": "gate_and(size = 2, res)",
+      "arguments": [
+        {
+          "name": "size",
+          "description": "(Default = 2) Numeric value controlling the base size/diameter of the AND gate shape. The shape is scaled proportionally. Default is <code>2</code>."
+        },
+        {
+          "name": "res",
+          "description": "(Required) Numeric value describing the resolution, or number of line segments used to draw the curved portions of the gate shape. Higher values create smoother curves. Typically set to 50 or higher."
+        }
+      ],
+      "format": "",
+      "value": "<p>A data.frame (tibble) with columns <code>x</code> and <code>y</code> containing coordinate pairs that define an AND gate polygon shape. The coordinates are centered at the origin (0, 0) and represent a rounded rectangle shape characteristic of AND gates in fault tree diagrams. The shape is symmetric and can be translated and scaled as needed.</p>",
+      "details": "<p>This function generates the geometric shape for AND gates in fault tree visualizations:</p><ul><li>Creates a rounded rectangle shape with curved sides</li><li>Uses square root functions to generate smooth curves on the left and right sides</li><li>Centers the shape at the origin (0, 0) for easy translation</li><li>The shape follows standard fault tree analysis conventions where AND gates are represented as rounded rectangles</li></ul><p>The AND gate shape is generated using mathematical curves: the left side uses <code>sqrt(x)</code> and the right side uses <code>sqrt(size - x)</code> to create symmetric rounded edges. The shape is then centered vertically and horizontally.</p>",
+      "sections": [],
+      "examples": "",
+      "seealso": "",
+      "source_file": "R/gate_and.R",
+      "group": "Visualization"
+    },
+    {
+      "name": "gate_or",
+      "aliases": [
+        "gate_or"
+      ],
+      "kind": "function",
+      "title": "gate_or() Function",
+      "summary": "This function produces the OR gate polygons for fault trees.",
+      "description": "<p>This function produces the OR gate polygons for fault trees.</p>",
+      "usage": "gate_or(size = 2, res)",
+      "arguments": [
+        {
+          "name": "size",
+          "description": "(Default = 2) Numeric value controlling the base size/diameter of the OR gate shape. The shape is scaled proportionally. Default is <code>2</code>."
+        },
+        {
+          "name": "res",
+          "description": "(Required) Numeric value describing the resolution, or number of line segments used to draw the curved portions of the gate shape. Higher values create smoother curves. Typically set to 50 or higher."
+        }
+      ],
+      "format": "",
+      "value": "<p>A data.frame (tibble) with columns <code>x</code> and <code>y</code> containing coordinate pairs that define an OR gate polygon shape. The coordinates are centered at the origin (0, 0) and represent a curved shape with a concave top and convex bottom, characteristic of OR gates in fault tree diagrams. The shape is symmetric and can be translated and scaled as needed.</p>",
+      "details": "<p>This function generates the geometric shape for OR gates in fault tree visualizations:</p><ul><li>Creates a curved shape with a concave top edge and convex bottom edge</li><li>Uses square root functions with different scaling factors for the top and bottom curves</li><li>Combines two curve segments (top and bottom) to form the complete gate shape</li><li>Centers the shape at the origin (0, 0) for easy translation</li><li>The shape follows standard fault tree analysis conventions where OR gates are represented as curved shapes</li></ul><p>The OR gate shape uses different mathematical curves for the top (concave, using <code>1/size * sqrt(x)</code>) and bottom (convex, using <code>size * sqrt(x)</code>) to create the distinctive curved appearance. The two curve segments are combined and centered to form the final polygon.</p>",
+      "sections": [],
+      "examples": "",
+      "seealso": "",
+      "source_file": "R/gate_or.R",
+      "group": "Visualization"
+    },
+    {
+      "name": "gate_top",
+      "aliases": [
+        "gate_top"
+      ],
+      "kind": "function",
+      "title": "gate_top() Function",
+      "summary": "This function produces the top event gate polygons for fault trees.",
+      "description": "<p>This function produces the top event gate polygons for fault trees.</p>",
+      "usage": "gate_top(size = 2, res)",
+      "arguments": [
+        {
+          "name": "size",
+          "description": "(Default = 2) Numeric value controlling the size of the top event rectangle. The shape is a square with sides of length <code>size</code>. Default is <code>2</code>."
+        },
+        {
+          "name": "res",
+          "description": "(Required) Numeric value describing the resolution. For rectangular shapes, this parameter is accepted for consistency with other gate functions but does not affect the output (rectangles don't require curve resolution)."
+        }
+      ],
+      "format": "",
+      "value": "<p>A data.frame (tibble) with columns <code>x</code> and <code>y</code> containing coordinate pairs that define a rectangular top event polygon shape. The coordinates are centered at the origin (0, 0) and represent a square shape characteristic of top events in fault tree diagrams. The shape can be translated and scaled as needed.</p>",
+      "details": "<p>This function generates the geometric shape for top events in fault tree visualizations:</p><ul><li>Creates a simple rectangular (square) shape</li><li>Defines the rectangle using corner coordinates</li><li>Centers the shape at the origin (0, 0) for easy translation</li><li>The shape follows standard fault tree analysis conventions where top events are represented as rectangles</li></ul><p>The top event shape is the simplest gate shape, consisting of a square defined by four corner points. The rectangle is created by specifying the four corners in order, then centering the shape by offsetting coordinates by <code>size/2</code> in both x and y directions. Unlike AND and OR gates, the top event shape does not use curved edges, so the <code>res</code> parameter is included for consistency but doesn't affect the output.</p>",
+      "sections": [],
+      "examples": "",
+      "seealso": "",
+      "source_file": "R/gate_top.R",
+      "group": "Visualization"
+    },
+    {
+      "name": "get_gate",
+      "aliases": [
+        "get_gate"
+      ],
+      "kind": "function",
+      "title": "get_gate() Function",
+      "summary": "This function produces the gate polygons for a set of supplied gate types and their x and y coordinates.",
+      "description": "<p>This function produces the gate polygons for a set of supplied gate types and their x and y coordinates.</p>",
+      "usage": "get_gate(x, y, gate, size = 1, res = 50)",
+      "arguments": [
+        {
+          "name": "x",
+          "description": "(Required) Numeric value or vector representing the x coordinate(s) of the gate center in the layout."
+        },
+        {
+          "name": "y",
+          "description": "(Required) Numeric value or vector representing the y coordinate(s) of the gate center in the layout."
+        },
+        {
+          "name": "gate",
+          "description": "(Required) Character vector of gate type names. Must contain one or more of <code>&quot;top&quot;</code>, <code>&quot;and&quot;</code>, or <code>&quot;or&quot;</code>. If multiple values are provided, only the first unique value is used."
+        },
+        {
+          "name": "size",
+          "description": "(Default = 1) Numeric value controlling the diameter of the gate polygon. The shape is scaled proportionally around the center point. Default is <code>1</code>."
+        },
+        {
+          "name": "res",
+          "description": "(Default = 50) Numeric value controlling the resolution (number of line segments) used to draw curved gate shapes. Higher values create smoother curves. Default is <code>50</code>."
+        }
+      ],
+      "format": "",
+      "value": "<p>A data.frame (tibble) with columns <code>x</code> and <code>y</code> containing coordinate pairs that define the gate polygon shape. The coordinates are centered at the provided <code>(x, y)</code> position and scaled according to <code>size</code>. The shape depends on the gate type: AND gates have a rounded rectangle shape, OR gates have a curved shape, and top events have a rectangular shape.</p>",
+      "details": "<p>This function is a wrapper that selects and generates the appropriate gate shape based on the gate type:</p><ul><li>Determines the gate type from the <code>gate</code> parameter (uses first unique value if multiple provided)</li><li>Calls the appropriate shape-generating function: <code><a href=\"/reference/gate_and.html\">gate_and()</a></code> for AND gates, <code><a href=\"/reference/gate_or.html\">gate_or()</a></code> for OR gates, or <code><a href=\"/reference/gate_top.html\">gate_top()</a></code> for top events</li><li>Scales and translates the base shape to match the specified <code>(x, y)</code> coordinates and <code>size</code> parameter</li><li>Returns coordinates ready for use with <code>geom_polygon()</code> in ggplot2</li></ul><p>The function handles coordinate transformation using <code>scales::rescale()</code> to position the gate shape correctly. Each gate type has a distinct visual representation following standard fault tree analysis conventions.</p>",
+      "sections": [],
+      "examples": "",
+      "seealso": "<p><code><a href=\"/reference/gate_and.html\">gate_and()</a></code> for AND gate shape generation, <code><a href=\"/reference/gate_or.html\">gate_or()</a></code> for OR gate shape generation, <code><a href=\"/reference/gate_top.html\">gate_top()</a></code> for top event shape generation</p>",
+      "source_file": "R/get_gate.R",
+      "group": "Visualization"
+    },
+    {
+      "name": "fakenodes",
+      "aliases": [
+        "fakenodes"
+      ],
+      "kind": "data",
+      "title": "fakenodes fault tree nodes dataset",
+      "summary": "An example dataset of nodes in a demonstration fault tree.",
+      "description": "<p>An example dataset of nodes in a demonstration fault tree.</p>",
+      "usage": "fakenodes",
+      "arguments": [],
+      "format": "<h4><code>fakenodes</code></h4><p>A data frame with 12 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifer (1 to N) for each node. Some events occur multiple times, but each time they have a unique <code>id</code></dd><dt>event</dt><dd>name of event. <code>&quot;T&quot;</code> mean top event. <code>&quot;G1&quot;</code>, <code>&quot;G2&quot;</code>, etc. mean gates.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"fakenodes\")\nhead(fakenodes)\ndim(fakenodes)",
+      "seealso": "",
+      "source_file": "R/fakenodes.R",
+      "group": "Data"
+    },
+    {
+      "name": "fakeedges",
+      "aliases": [
+        "fakeedges"
+      ],
+      "kind": "data",
+      "title": "fakeedges fault tree edge dataset",
+      "summary": "An example dataset of edges (connections) in a demonstration fault tree.",
+      "description": "<p>An example dataset of edges (connections) in a demonstration fault tree.</p>",
+      "usage": "fakeedges",
+      "arguments": [],
+      "format": "<h4><code>fakeedges</code></h4><p>A data frame with 11 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"fakeedges\")\nhead(fakeedges)\ndim(fakeedges)",
+      "seealso": "",
+      "source_file": "R/fakeedges.R",
+      "group": "Data"
+    },
+    {
+      "name": "db_nodes",
+      "aliases": [
+        "db_nodes"
+      ],
+      "kind": "data",
+      "title": "db_nodes database system failure fault tree nodes dataset",
+      "summary": "An example dataset of nodes in a database system failure fault tree.",
+      "description": "<p>An example dataset of nodes in a database system failure fault tree. This fault tree models scenarios where a database system becomes unavailable due to various failure modes including data corruption, access failures, storage issues, network problems, and hardware failures.</p>",
+      "usage": "db_nodes",
+      "arguments": [],
+      "format": "<h4><code>db_nodes</code></h4><p>A data frame with 13 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 13) for each node.</dd><dt>event</dt><dd>Name of event. <code>&quot;T&quot;</code> means top event (Database system unavailable). <code>&quot;G1&quot;</code>, <code>&quot;G2&quot;</code>, etc. mean gates. <code>&quot;DC&quot;</code> = Data corruption, <code>&quot;AF&quot;</code> = Access failure, <code>&quot;SF&quot;</code> = Storage failure, <code>&quot;BF&quot;</code> = Backup failure, <code>&quot;NF&quot;</code> = Network failure, <code>&quot;AUF&quot;</code> = Authentication failure, <code>&quot;HF&quot;</code> = Hardware failure, <code>&quot;MF&quot;</code> = Monitoring failure.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
+      "value": "",
+      "details": "<p>The fault tree structure:</p><ul><li>Top event: Database system unavailable</li><li>G1 (OR): Data corruption OR Access failure</li><li>G2 (AND): Storage failure AND Backup failure</li><li>G3 (OR): Network failure OR Authentication failure</li><li>G4 (AND): Hardware failure AND Monitoring failure</li></ul>",
+      "sections": [],
+      "examples": "data(\"db_nodes\")\nhead(db_nodes)\ndim(db_nodes)",
+      "seealso": "<p><code>db_edges</code> for the corresponding edges dataset</p>",
+      "source_file": "R/db_nodes.R",
+      "group": "Data"
+    },
+    {
+      "name": "db_edges",
+      "aliases": [
+        "db_edges"
+      ],
+      "kind": "data",
+      "title": "db_edges database system failure fault tree edge dataset",
+      "summary": "An example dataset of edges (connections) in a database system failure fault tree.",
+      "description": "<p>An example dataset of edges (connections) in a database system failure fault tree.</p>",
+      "usage": "db_edges",
+      "arguments": [],
+      "format": "<h4><code>db_edges</code></h4><p>A data frame with 11 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>Unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"db_edges\")\nhead(db_edges)\ndim(db_edges)",
+      "seealso": "<p><code>db_nodes</code> for the corresponding nodes dataset</p>",
+      "source_file": "R/db_edges.R",
+      "group": "Data"
+    },
+    {
+      "name": "ai_nodes",
+      "aliases": [
+        "ai_nodes"
+      ],
+      "kind": "data",
+      "title": "ai_nodes AI agent failure fault tree nodes dataset",
+      "summary": "An example dataset of nodes in an AI agent failure fault tree.",
+      "description": "<p>An example dataset of nodes in an AI agent failure fault tree. This fault tree models scenarios where an AI agent fails to complete a task due to model errors, prompt issues, API failures, and context limitations.</p>",
+      "usage": "ai_nodes",
+      "arguments": [],
+      "format": "<h4><code>ai_nodes</code></h4><p>A data frame with 14 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 14) for each node.</dd><dt>event</dt><dd>Name of event. <code>&quot;T&quot;</code> means top event (AI agent task failure). <code>&quot;G1&quot;</code>, <code>&quot;G2&quot;</code>, etc. mean gates. <code>&quot;ME&quot;</code> = Model error, <code>&quot;PE&quot;</code> = Prompt error, <code>&quot;TDI&quot;</code> = Training data issue, <code>&quot;VF&quot;</code> = Validation failure, <code>&quot;AF&quot;</code> = API failure, <code>&quot;TO&quot;</code> = Timeout, <code>&quot;RL&quot;</code> = Rate limit, <code>&quot;CWE&quot;</code> = Context window exceeded, <code>&quot;NFB&quot;</code> = No fallback.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
+      "value": "",
+      "details": "<p>The fault tree structure:</p><ul><li>Top event: AI agent task failure</li><li>G1 (OR): Model error OR Prompt error</li><li>G2 (AND): Training data issue AND Validation failure</li><li>G3 (OR): API failure OR Timeout OR Rate limit</li><li>G4 (AND): Context window exceeded AND No fallback</li></ul>",
+      "sections": [],
+      "examples": "data(\"ai_nodes\")\nhead(ai_nodes)\ndim(ai_nodes)",
+      "seealso": "<p><code>ai_edges</code> for the corresponding edges dataset</p>",
+      "source_file": "R/ai_nodes.R",
+      "group": "Data"
+    },
+    {
+      "name": "ai_edges",
+      "aliases": [
+        "ai_edges"
+      ],
+      "kind": "data",
+      "title": "ai_edges AI agent failure fault tree edge dataset",
+      "summary": "An example dataset of edges (connections) in an AI agent failure fault tree.",
+      "description": "<p>An example dataset of edges (connections) in an AI agent failure fault tree.</p>",
+      "usage": "ai_edges",
+      "arguments": [],
+      "format": "<h4><code>ai_edges</code></h4><p>A data frame with 11 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>Unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"ai_edges\")\nhead(ai_edges)\ndim(ai_edges)",
+      "seealso": "<p><code>ai_nodes</code> for the corresponding nodes dataset</p>",
+      "source_file": "R/ai_edges.R",
+      "group": "Data"
+    },
+    {
+      "name": "security_nodes",
+      "aliases": [
+        "security_nodes"
+      ],
+      "kind": "data",
+      "title": "security_nodes security breach fault tree nodes dataset",
+      "summary": "An example dataset of nodes in a security breach fault tree.",
+      "description": "<p>An example dataset of nodes in a security breach fault tree. This fault tree models scenarios where a security breach occurs due to external attacks, internal threats, vulnerabilities, and authentication failures.</p>",
+      "usage": "security_nodes",
+      "arguments": [],
+      "format": "<h4><code>security_nodes</code></h4><p>A data frame with 11 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 11) for each node.</dd><dt>event</dt><dd>Name of event. <code>&quot;T&quot;</code> means top event (Security breach detected). <code>&quot;G2&quot;</code>, <code>&quot;G3&quot;</code>, etc. mean gates. <code>&quot;VE&quot;</code> = Vulnerability exists, <code>&quot;ES&quot;</code> = Exploit successful, <code>&quot;PH&quot;</code> = Phishing, <code>&quot;MW&quot;</code> = Malware, <code>&quot;UA&quot;</code> = Unauthorized access, <code>&quot;WP&quot;</code> = Weak password, <code>&quot;N2F&quot;</code> = No 2FA.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
+      "value": "",
+      "details": "<p>The fault tree structure:</p><ul><li>Top event: Security breach detected</li><li>G2 (AND): Vulnerability exists AND Exploit successful</li><li>G3 (OR): Phishing OR Malware OR Unauthorized access</li><li>G4 (AND): Weak password AND No 2FA</li></ul>",
+      "sections": [],
+      "examples": "data(\"security_nodes\")\nhead(security_nodes)\ndim(security_nodes)",
+      "seealso": "<p><code>security_edges</code> for the corresponding edges dataset</p>",
+      "source_file": "R/security_nodes.R",
+      "group": "Data"
+    },
+    {
+      "name": "security_edges",
+      "aliases": [
+        "security_edges"
+      ],
+      "kind": "data",
+      "title": "security_edges security breach fault tree edge dataset",
+      "summary": "An example dataset of edges (connections) in a security breach fault tree.",
+      "description": "<p>An example dataset of edges (connections) in a security breach fault tree.</p>",
+      "usage": "security_edges",
+      "arguments": [],
+      "format": "<h4><code>security_edges</code></h4><p>A data frame with 11 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>Unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"security_edges\")\nhead(security_edges)\ndim(security_edges)",
+      "seealso": "<p><code>security_nodes</code> for the corresponding nodes dataset</p>",
+      "source_file": "R/security_edges.R",
+      "group": "Data"
+    },
+    {
+      "name": "it_security_nodes",
+      "aliases": [
+        "it_security_nodes"
+      ],
+      "kind": "data",
+      "title": "it_security_nodes IT security (data leak) fault tree nodes dataset",
+      "summary": "An example dataset of nodes in a fault tree for sensitive data leaving the organization.",
+      "description": "<p>An example dataset of nodes in a fault tree for sensitive data leaving the organization. The tree models three ways a breach can happen: an outsider gets high-level access, an attacker uses a known flaw that was not fixed, or someone inside sends data out.</p>",
+      "usage": "it_security_nodes",
+      "arguments": [],
+      "format": "<h4><code>it_security_nodes</code></h4><p>A data frame with 16 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 16) for each node.</dd><dt>event</dt><dd>Two-letter event code. <code>&quot;DE&quot;</code> = Sensitive data leaves the organization (top). Gates: <code>&quot;BP&quot;</code> = Ways a breach can happen (OR), <code>&quot;EA&quot;</code> = Outsider gets high-level access (AND), <code>&quot;UE&quot;</code> = Attacker uses a known flaw that was not fixed (AND), <code>&quot;IE&quot;</code> = Someone inside sends data out (AND), <code>&quot;CC&quot;</code> = Log-in details stolen or misused (OR). Basic events: <code>&quot;PC&quot;</code> = Passwords obtained via fake email or link, <code>&quot;LR&quot;</code> = Passwords exposed in a breach or reused elsewhere, <code>&quot;MN&quot;</code> = No second login step required, <code>&quot;PM&quot;</code> = Admin-level access set up incorrectly, <code>&quot;VS&quot;</code> = System has a known security hole, <code>&quot;PO&quot;</code> = Security updates not applied on time, <code>&quot;WB&quot;</code> = Web traffic filter missing or bypassed, <code>&quot;IM&quot;</code> = Employee did it on purpose or account was taken over, <code>&quot;DA&quot;</code> = No controls to stop data from being copied out, <code>&quot;EP&quot;</code> = User had more access than needed for their job.</dd><dt>type</dt><dd>Factor classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot;.</dd></dl>",
+      "value": "",
+      "details": "<p>The fault tree structure (event codes):</p><ul><li>Top event: DE (Sensitive data leaves the organization)</li><li>BP (OR): EA OR UE OR IE</li><li>EA (AND): CC AND MN AND PM</li><li>UE (AND): VS AND PO AND WB</li><li>IE (AND): IM AND DA AND EP</li><li>CC (OR): PC OR LR</li></ul>",
+      "sections": [],
+      "examples": "data(\"it_security_nodes\")\nhead(it_security_nodes)\ndim(it_security_nodes)",
+      "seealso": "<p><code>it_security_edges</code> for the corresponding edges dataset</p>",
+      "source_file": "R/it_security_nodes.R",
+      "group": "Data"
+    },
+    {
+      "name": "it_security_edges",
+      "aliases": [
+        "it_security_edges"
+      ],
+      "kind": "data",
+      "title": "it_security_edges IT security (data leak) fault tree edge dataset",
+      "summary": "An example dataset of edges (connections) in an IT security fault tree for sensitive data leaving the organization.",
+      "description": "<p>An example dataset of edges (connections) in an IT security fault tree for sensitive data leaving the organization.</p>",
+      "usage": "it_security_edges",
+      "arguments": [],
+      "format": "<h4><code>it_security_edges</code></h4><p>A data frame with 15 rows and 2 columns:</p><dl><dt>from</dt><dd>Source node <code>id</code>.</dd><dt>to</dt><dd>Destination node <code>id</code>.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"it_security_edges\")\nhead(it_security_edges)\ndim(it_security_edges)",
+      "seealso": "<p><code>it_security_nodes</code> for the corresponding nodes dataset</p>",
+      "source_file": "R/it_security_edges.R",
+      "group": "Data"
+    },
+    {
+      "name": "it_security_data",
+      "aliases": [
+        "it_security_data"
+      ],
+      "kind": "data",
+      "title": "it_security_data Binary scenario data for IT security fault tree",
+      "summary": "A small tibble of binary (0/1) scenarios for the 10 basic events in the IT security fault tree (sensitive data leaves the organization).",
+      "description": "<p>A small tibble of binary (0/1) scenarios for the 10 basic events in the IT security fault tree (sensitive data leaves the organization). Used with <code><a href=\"/reference/quantify.html\">quantify()</a></code> to evaluate whether the top event occurs under each scenario.</p>",
+      "usage": "it_security_data",
+      "arguments": [],
+      "format": "<h4><code>it_security_data</code></h4><p>A data frame with 3 rows and 10 columns. Each column is a basic event (two-letter code); 1 indicates the event occurred (condition true), 0 otherwise.</p><dl><dt>DA</dt><dd>No controls to stop data from being copied or sent out.</dd><dt>EP</dt><dd>User had more access than needed for their job.</dd><dt>IM</dt><dd>Employee did it on purpose or account was taken over.</dd><dt>LR</dt><dd>Passwords exposed in a breach or reused elsewhere.</dd><dt>MN</dt><dd>No second login step (e.g. code on phone) required.</dd><dt>PO</dt><dd>Security updates not applied on time.</dd><dt>PC</dt><dd>Passwords obtained via fake email or link (phishing).</dd><dt>PM</dt><dd>Admin-level access set up incorrectly.</dd><dt>VS</dt><dd>System has a known security hole.</dd><dt>WB</dt><dd>Web traffic filter missing or attacker got around it.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"it_security_data\")\nhead(it_security_data)\ndim(it_security_data)",
+      "seealso": "<p><code>it_security_nodes</code>, <code>quantify</code></p>",
+      "source_file": "R/it_security_data.R",
+      "group": "Data"
+    }
+  ]
+}

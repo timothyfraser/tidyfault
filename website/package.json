@@ -5,14 +5,18 @@
   "type": "module",
   "scripts": {
     "tokens": "node scripts/tokens-to-css.mjs",
+    "generate": "Rscript scripts/extract-r.R && python3 scripts/extract-py.py",
+    "check-generated": "node scripts/check-generated.mjs",
+    "wheel": "bash scripts/build-wheel.sh",
     "dev": "npm run tokens && vite",
-    "build": "npm run tokens && vite build",
+    "build": "npm run tokens && npm run check-generated && vite build",
     "preview": "vite preview",
     "verify": "node scripts/verify-site.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
