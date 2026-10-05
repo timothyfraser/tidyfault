@@ -2,14 +2,15 @@
 
 # This script shows examples of how to use the tidyfault package.
 rm(list = ls())
-setwd("C:/Users/tmf77/tidyfault_paper/tidyfault")
+# Run from the package root (the folder holding DESCRIPTION).
+stopifnot(file.exists("DESCRIPTION"))
 remove.packages("tidyfault")
 unloadNamespace("tidyfault")
 devtools::document()
 # unloadNamespace("tidyfault")
 
 # devtools::build(vignettes = TRUE, manual = TRUE)
-# file.copy("../tidyfault_0.0.0.9.tar.gz", "C:/Users/tmf77/tidyfault_paper/tidyfault/tidyfault_0.0.0.9.tar.gz", overwrite = TRUE)
+# file.copy("../tidyfault_0.0.0.9.tar.gz", "tidyfault_0.0.0.9.tar.gz", overwrite = TRUE)
 # file.remove("../tidyfault_0.0.0.9.tar.gz")
 # install.packages("tidyfault_0.0.0.9.tar.gz", type = "source")
 # unlink("tidyfault_0.0.0.9.tar.gz")
