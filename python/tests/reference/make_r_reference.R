@@ -23,7 +23,7 @@ suppressPackageStartupMessages({
 })
 for (f in c("curate", "equate", "formulate", "calculate", "tabulate", "populate",
             "quantify_prob", "gate", "gate_and", "gate_or", "gate_top", "get_gate",
-            "mocus_fast_r", "quantify_binary", "quantify_binary_fast")) {
+            "mocus", "mocus_fast_r", "quantify_binary", "quantify_binary_fast")) {
   source(file.path(src, "R", paste0(f, ".R")))
 }
 # mocus_rcpp(), quantify_prob_fast() and quantify(prob = TRUE, fast = TRUE) need
@@ -31,22 +31,17 @@ for (f in c("curate", "equate", "formulate", "calculate", "tabulate", "populate"
 ld <- function(name) { e <- new.env(); load(file.path(src, "data", paste0(name, ".rda")), envir = e); e[[name]] }
 num <- function(x) sprintf("%.17g", x)   # full double precision, parsed back with float()
 
-# the minimal OR-top tree from tests/testthat/helper-trees.R
+# the minimal tree from tests/testthat/helper-trees.R: T -> G1 (or) -> A, B
 minimal <- list(
-  nodes = tibble(id = 1:3, event = c("T", "A", "B"),
-                 type = factor(c("top", "not", "not"), levels = c("top", "and", "or", "not"))),
-  edges = tibble(from = c(1L, 1L), to = c(2L, 3L)))
+  nodes = tibble(id = 1:4, event = c("T", "G1", "A", "B"),
+                 type = factor(c("top", "or", "not", "not"), levels = c("top", "and", "or", "not"))),
+  edges = tibble(from = c(1L, 2L, 2L), to = c(2L, 3L, 4L)))
 
 trees <- list(
   minimal     = list(nodes = minimal$nodes, edges = minimal$edges, probs = NULL),
   fake        = list(nodes = ld("fakenodes"), edges = ld("fakeedges"), probs = NULL),
   db          = list(nodes = ld("db_nodes"), edges = ld("db_edges"), probs = ld("db_probs")),
-  # R's equate() matches gate names as regex SUBSTRINGS, so on ai_nodes the top
-  # gate "T" matches inside basic event "TO" and equate() never terminates (the
-  # string grows until memory runs out). The top event's name never appears in
-  # the finished equation, so it is renamed here to get R's intended output.
-  ai          = list(nodes = mutate(ld("ai_nodes"), event = ifelse(event == "T", "TOPEVENT", event)),
-                     edges = ld("ai_edges"), probs = ld("ai_probs")),
+  ai          = list(nodes = ld("ai_nodes"), edges = ld("ai_edges"), probs = ld("ai_probs")),
   security    = list(nodes = ld("security_nodes"), edges = ld("security_edges"), probs = ld("security_probs")),
   it_security = list(nodes = ld("it_security_nodes"), edges = ld("it_security_edges"), probs = ld("it_security_probs")),
   breach      = list(nodes = ld("breach_nodes"), edges = ld("breach_edges"), probs = NULL))
@@ -76,16 +71,14 @@ for (nm in names(trees)) {
     }
     rec$quantify_prob <- num(quantify_prob(f, newdata = p))
   }
-  # concentrate() (admisc::simplify) does not finish within minutes on the
-  # 10-event it_security tree, so cutsets/tabulate fixtures skip it.
-  if (nm != "it_security") {
+  {
     cuts <- tidyfault::concentrate(gates)
     tab <- tabulate(cuts, formula = f, query = TRUE)
     rec$concentrate <- cuts
     rec$tabulate <- list(mincut = tab$mincut, query = tab$query, cutsets = tab$cutsets,
                          failures = tab$failures, coverage = num(tab$coverage))
-    # every (non-minimal) cut set, in R's order: the pure-R queue and the compiled one.
-    # R expands the TOP event as AND; the Python default follows the equation (OR).
+    # every (non-minimal) cut set, in R's order: the pure-R queue and the compiled
+    # one, both starting from the top event's one gate (SPEC TF4.2).
     rec$mocus_r <- lapply(mocus_r(gates), as.character)
     rec$mocus_rcpp <- lapply(tidyfault::mocus_rcpp(gates), as.character)
     rec$concentrate_mocus_r <- tidyfault::concentrate(gates, method = "mocus_r")
@@ -108,6 +101,27 @@ for (nm in names(trees)) {
   }
   res$trees[[nm]] <- rec
 }
+
+# curate()'s TF4.2 refusals, word for word: the Python twin must raise the same text.
+lvl <- c("top", "and", "or", "not")
+bad <- list(
+  two_children = list(nodes = tibble(id = 1:3, event = c("T", "A", "B"), type = factor(c("top", "not", "not"), lvl)),
+                      edges = tibble(from = c(1L, 1L), to = c(2L, 3L))),
+  zero_children = list(nodes = tibble(id = 1:2, event = c("T", "A"), type = factor(c("top", "not"), lvl)),
+                       edges = tibble(from = integer(), to = integer())),
+  basic_child = list(nodes = tibble(id = 1:2, event = c("T", "A"), type = factor(c("top", "not"), lvl)),
+                     edges = tibble(from = 1L, to = 2L)),
+  unknown_child = list(nodes = tibble(id = 1:2, event = c("T", "A"), type = factor(c("top", "not"), lvl)),
+                       edges = tibble(from = 1L, to = 9L)),
+  two_tops = list(nodes = tibble(id = 1:3, event = c("T", "U", "A"), type = factor(c("top", "top", "not"), lvl)),
+                  edges = tibble(from = c(1L, 2L), to = c(3L, 3L))),
+  no_top = list(nodes = tibble(id = 1:2, event = c("G", "A"), type = factor(c("or", "not"), lvl)),
+                edges = tibble(from = 1L, to = 2L)),
+  db_old = list(nodes = filter(ld("db_nodes"), event != "G0"),
+                edges = ld("db_edges") %>% filter(from != 1) %>%
+                  mutate(from = ifelse(from == 14, 1, from))))
+res$curate_errors <- lapply(bad, function(t) tryCatch({ curate(t$nodes, t$edges); NA_character_ },
+                                                     error = conditionMessage))
 
 pop <- populate(ld("db_outcomes_binary"), ld("db_probs"))
 res$populate_db <- lapply(as.list(pop), function(col) if (is.numeric(col)) num(col) else col)

@@ -5,20 +5,23 @@
 #' due to model errors, prompt issues, API failures, and context limitations.
 #'
 #' @format ## `ai_nodes`
-#' A data frame with 6 rows and 3 columns:
+#' A data frame with 7 rows and 3 columns:
 #' \describe{
-#'   \item{id}{Unique identifier (1 to 6) for each node.}
+#'   \item{id}{Unique identifier (1 to 7) for each node.}
 #'   \item{event}{Name of event. `"T"` means top event (AI agent task failure).
-#'   `"G3"` is a gate. The basic events are `"AF"` = API failure, `"TO"` = Timeout,
+#'   `"G0"` (id 7, the top event's one gate) and `"G3"` are gates. The basic events are `"AF"` = API failure, `"TO"` = Timeout,
 #'   `"RL"` = Rate limit, and `"CWE"` = Context window exceeded.}
 #'   \item{type}{`factor` classification as "top", "and", "or", or "not" (meaning "not" a gate).}
 #' }
 #'
 #' @details
 #' The fault tree structure:
-#' - Top event: AI agent task failure
-#' - T (AND): G3 AND Context window exceeded
+#' - Top event: AI agent task failure. The top event is not a gate: its one
+#'   child is G0.
+#' - G0 (OR): G3 OR Context window exceeded (any branch fails the task)
 #' - G3 (OR): API failure OR Timeout OR Rate limit
+#'
+#' Minimal cut sets: `AF`, `CWE`, `RL`, `TO`.
 #'
 #' @examples
 #' data("ai_nodes")

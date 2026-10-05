@@ -3,11 +3,10 @@
 # mocus(), concentrate(), quantify() / quantify_binary() / quantify_prob_fast()
 # and simulate() in the Python port of tidyfault (python/src/tidyfault/), against R.
 # Expected values come from python/tests/reference/r_reference.json, made by
-# python/tests/reference/make_r_reference.R under R 4.5.2.
+# python/tests/reference/make_r_reference.R (the R version is recorded in its r_version field).
 #
-# R expands the top event as AND in MOCUS, while equate() joins its children with
-# OR. top="and" must reproduce R; the default (top="or") must agree with the
-# equation. Both are checked here.
+# The top event is not a gate (SPEC TF4.2): MOCUS starts from its one gate, in R
+# and here, so the cut sets match R element for element and agree with equate().
 #
 # Run: python -m pytest python/tests/test_mocus.py -q
 
@@ -26,6 +25,7 @@ TREES = {
     "db": ("db_nodes", "db_edges"),
     "ai": ("ai_nodes", "ai_edges"),
     "security": ("security_nodes", "security_edges"),
+    "it_security": ("it_security_nodes", "it_security_edges"),
     "breach": ("breach_nodes", "breach_edges"),
 }
 OUTCOMES = ("db", "ai", "security")
@@ -36,9 +36,10 @@ def _as_list(v):
 
 
 def _minimal():
-    nodes = pd.DataFrame({"id": [1, 2, 3], "event": ["T", "A", "B"],
-                          "type": pd.Categorical(["top", "not", "not"], categories=list(tf.NODE_TYPES))})
-    edges = pd.DataFrame({"from": [1, 1], "to": [2, 3]})
+    # T -> G1 (or) -> A, B, as in tests/testthat/helper-trees.R
+    nodes = pd.DataFrame({"id": [1, 2, 3, 4], "event": ["T", "G1", "A", "B"],
+                          "type": pd.Categorical(["top", "or", "not", "not"], categories=list(tf.NODE_TYPES))})
+    edges = pd.DataFrame({"from": [1, 2, 2], "to": [2, 3, 4]})
     return nodes, edges
 
 
@@ -53,42 +54,46 @@ def _cutsets(ref_list):
     return [_as_list(c) for c in _as_list(ref_list)]
 
 
-# --- mocus: top="and" reproduces R, element for element, in R's order ---------
+# --- mocus reproduces R, element for element, in R's order -------------------
 
 @pytest.mark.parametrize("name", ["minimal"] + list(TREES))
 @pytest.mark.parametrize("fn", ["mocus", "mocus_r", "mocus_rcpp", "mocus_cpp"])
-def test_mocus_top_and_matches_r(name, fn):
+def test_mocus_matches_r(name, fn):
     rec = REF["trees"][name]
-    got = getattr(tf, fn)(_gates(name), top="and")
-    assert got == _cutsets(rec["mocus_r"]), f"{fn}({name}, top='and') != R mocus_r()"
-    assert got == _cutsets(rec["mocus_rcpp"]), f"{fn}({name}, top='and') != R mocus_rcpp()"
+    got = getattr(tf, fn)(_gates(name))
+    assert got == _cutsets(rec["mocus_r"]), f"{fn}({name}) != R mocus_r()"
+    assert got == _cutsets(rec["mocus_rcpp"]), f"{fn}({name}) != R mocus_rcpp()"
 
 
 @pytest.mark.parametrize("name", ["minimal"] + list(TREES))
-def test_concentrate_top_and_matches_r(name):
+def test_concentrate_matches_r(name):
     rec = REF["trees"][name]
     for method in ("mocus_rcpp", "mocus_r", "mocus_original"):
-        got = tf.concentrate(_gates(name), method=method, top="and")
-        assert got == _as_list(rec["concentrate"]), f"concentrate({name}, {method}, top='and')"
-        assert got == _as_list(rec["concentrate_mocus_r"]), f"concentrate({name}, {method}, top='and')"
+        got = tf.concentrate(_gates(name), method=method)
+        assert got == _as_list(rec["concentrate"]), f"concentrate({name}, {method})"
+        assert got == _as_list(rec["concentrate_mocus_r"]), f"concentrate({name}, {method})"
 
 
-# --- default (top="or"): cut sets agree with the equation ---------------------
+# --- the cut sets agree with the equation -------------------------------------
 
-def test_minimal_tree_or_versus_and():
+def test_minimal_tree():
     g = _gates("minimal")
-    assert tf.equate(g).strip() == "(A + B)"
+    assert tf.equate(g).strip() == "( (A + B) )"
     assert tf.mocus(g) == [["A"], ["B"]]
-    assert tf.concentrate(g) == ["A", "B"]
-    # R's current behaviour, kept reachable: the top event read as AND
-    assert tf.mocus(g, top="and") == [["A", "B"]]
-    assert tf.concentrate(g, top="and") == ["A*B"] == _as_list(REF["trees"]["minimal"]["concentrate"])
+    assert tf.concentrate(g) == ["A", "B"] == _as_list(REF["trees"]["minimal"]["concentrate"])
+
+
+def test_mocus_refuses_a_top_with_two_children():
+    gates = pd.DataFrame({"gate": ["T"], "type": ["top"], "class": ["top"], "n": [2],
+                          "set": [" (A + B) "], "items": [["A", "B"]]})
+    with pytest.raises(ValueError, match="top event `T` must have exactly one child"):
+        tf.mocus(gates)
 
 
 @pytest.mark.parametrize("name", ["minimal"] + list(TREES))
 def test_or_cutsets_reproduce_the_truth_table(name):
-    """A truth-table row fails exactly when it contains some default-mode minimal
-    cut set: the cut sets and formulate(equate()) describe the same function."""
+    """A truth-table row fails exactly when it contains some minimal cut set:
+    the cut sets and formulate(equate()) describe the same function."""
     g = _gates(name)
     f = tf.formulate(tf.equate(g))
     tt = tf.calculate(f)
@@ -96,16 +101,10 @@ def test_or_cutsets_reproduce_the_truth_table(name):
     covered = np.zeros(len(tt), dtype=bool)
     for c in cuts:
         covered |= (tt[c] == 1).all(axis=1).to_numpy()
-    assert (covered == (tt["outcome"].to_numpy() >= 1)).all(), f"{name}: OR-mode cut sets disagree with the equation"
+    assert (covered == (tt["outcome"].to_numpy() >= 1)).all(), f"{name}: cut sets disagree with the equation"
 
 
-@pytest.mark.parametrize("name", ["fake", "breach"])
-def test_single_child_top_modes_agree(name):
-    g = _gates(name)
-    assert tf.concentrate(g) == tf.concentrate(g, top="and") == _as_list(REF["trees"][name]["concentrate"])
-
-
-def test_or_mode_expected_sets():
+def test_repaired_trees_expected_sets():
     assert tf.concentrate(_gates("db")) == ["AF", "AUF", "DC", "NF", "BF*SF", "HF*MF"]
     assert tf.concentrate(_gates("security")) == ["MW", "PH", "UA", "ES*VE", "N2F*WP"]
     assert tf.concentrate(_gates("ai")) == ["AF", "CWE", "RL", "TO"]
@@ -122,8 +121,10 @@ def test_mocus_rejects_bad_arguments():
     g = _gates("fake")
     with pytest.raises(ValueError, match="method"):
         tf.mocus(g, method="nope")
-    with pytest.raises(ValueError, match="top"):
-        tf.mocus(g, top="xor")
+    with pytest.raises(TypeError):
+        tf.mocus(g, top="or")          # no top= argument: the top event has no logic
+    with pytest.raises(TypeError):
+        tf.concentrate(g, top="and")
     with pytest.raises(ValueError, match="method"):
         tf.concentrate(g, method="nope")
 
@@ -206,14 +207,18 @@ def test_simulate_shape_matches_r():
     assert list(nodes["type"].cat.categories) == ["top", "and", "or", "not"]
     assert list(edges.columns) == ["from", "to"]
     assert list(prob.columns) == ["event", "probability"]
-    assert list(nodes["event"]) == ["T", "G1", "G2", "G3"] + [f"E{i}" for i in range(1, 9)]
+    assert list(nodes["event"]) == ["T", "G1", "G2", "G3"] + [f"E{i}" for i in range(1, 9)] + ["G0"]
     assert list(nodes["type"].astype(str))[0] == "top"
     assert set(nodes["type"].astype(str)[1:4]) <= {"and", "or"}
     assert list(prob["event"]) == [f"E{i}" for i in range(1, 9)]
     assert prob["probability"].between(0.01, 0.2).all()
     assert tf.validate_tree(nodes, edges)
-    # every gate has at least two basic events below it
-    kids = edges[edges["from"] != 1].groupby("from").size()
+    # the top event's one child is the OR gate G0 (last id), over the three gates
+    assert list(edges.loc[edges["from"] == 1, "to"]) == [13]
+    assert str(nodes["type"].iloc[-1]) == "or"
+    assert list(edges.loc[edges["from"] == 13, "to"]) == [2, 3, 4]
+    # every other gate has at least two basic events below it
+    kids = edges[~edges["from"].isin([1, 13])].groupby("from").size()
     assert (kids >= 2).all() and len(kids) == 3
 
 
@@ -238,8 +243,14 @@ def test_simulate_caps_gates_and_degenerate_case():
     capped = tf.simulate(n_gates=10, n_basic=5, seed=0)          # 5 // 2 = 2 gates
     assert list(capped["nodes"]["event"][:3]) == ["T", "G1", "G2"]
     flat = tf.simulate(n_gates=3, n_basic=1, seed=0)             # no room for a gate
-    assert list(flat["nodes"]["type"].astype(str)) == ["top", "not"]
-    assert list(flat["edges"]["from"]) == [1] and list(flat["edges"]["to"]) == [2]
+    assert list(flat["nodes"]["type"].astype(str)) == ["top", "not", "or"]
+    assert list(flat["edges"]["from"]) == [1, 3] and list(flat["edges"]["to"]) == [3, 2]
+    one = tf.simulate(n_gates=1, n_basic=4, seed=0)              # one gate: the top's only child
+    assert list(one["nodes"]["event"]) == ["T", "G1", "E1", "E2", "E3", "E4"]
+    assert list(one["edges"].loc[one["edges"]["from"] == 1, "to"]) == [2]
+    for k in range(1, 9):
+        sim = tf.simulate(n_gates=k, n_basic=k, seed=k)
+        assert tf.validate_tree(sim["nodes"], sim["edges"])
 
 
 def test_simulate_rejects_bad_arguments():

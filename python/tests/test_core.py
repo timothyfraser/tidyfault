@@ -3,7 +3,7 @@
 # The Python port of tidyfault (python/src/tidyfault/) against R, the reference.
 # Expected values come from python/tests/reference/r_reference.json, made by
 # python/tests/reference/make_r_reference.R, which SOURCES the R functions
-# from a tidyfault checkout and runs them under R 4.5.2. Two values are also pinned
+# from a tidyfault checkout and runs them (r_version records which R). Two values are also pinned
 # literally from the R package's README output.
 #
 # Run: python -m pytest python/tests/test_core.py -q
@@ -34,9 +34,10 @@ def _as_list(v):
 
 
 def _minimal():
-    nodes = pd.DataFrame({"id": [1, 2, 3], "event": ["T", "A", "B"],
-                          "type": pd.Categorical(["top", "not", "not"], categories=tf.NODE_TYPES)})
-    edges = pd.DataFrame({"from": [1, 1], "to": [2, 3]})
+    # T -> G1 (or) -> A, B: the top event is not a gate (SPEC TF4.2)
+    nodes = pd.DataFrame({"id": [1, 2, 3, 4], "event": ["T", "G1", "A", "B"],
+                          "type": pd.Categorical(["top", "or", "not", "not"], categories=tf.NODE_TYPES)})
+    edges = pd.DataFrame({"from": [1, 2, 2], "to": [2, 3, 4]})
     return nodes, edges
 
 
@@ -67,10 +68,7 @@ def test_quantify_prob_fakenodes_matches_r_readme():
 @pytest.mark.parametrize("name", ALL)
 def test_curate_matches_r(name):
     want = REF["trees"][name]["curate"]
-    nodes, edges = _tree(name)
-    if name == "ai":  # the R fixture renamed the top event (see make_r_reference.R)
-        nodes = nodes.assign(event=nodes["event"].replace({"T": "TOPEVENT"}))
-    got = tf.curate(nodes, edges)
+    got = tf.curate(*_tree(name))
     assert list(got.columns) == ["gate", "type", "class", "n", "set", "items"]
     assert got["gate"].tolist() == _as_list(want["gate"])
     assert got["type"].astype(str).tolist() == _as_list(want["type"])
@@ -214,12 +212,55 @@ def test_gate_helpers_round_trip():
 
 # --- Python-side behaviour ---------------------------------------------------------
 
-def test_ai_tree_deliberate_deviation():
-    """R's equate() never terminates on ai_nodes: it matches gate "T" inside event
-    "TO". The port matches whole names and returns the intended equation -- the one
-    R gives once the top event is renamed (see make_r_reference.R)."""
+def test_ai_tree_equation():
+    """Gate names match as whole tokens in both R and Python, so gate "T" never
+    matches inside basic event "TO"."""
     eq = tf.equate(tf.curate(tf.data.ai_nodes, tf.data.ai_edges))
-    assert eq == " ( (AF + TO + RL)  + CWE) " == REF["trees"]["ai"]["equation"]
+    assert eq == " ( ( (AF + TO + RL)  + CWE) ) " == REF["trees"]["ai"]["equation"]
+
+
+# --- the top event is not a gate (SPEC TF4.2): R's message, word for word ----------
+
+def _bad_trees():
+    t = list(tf.NODE_TYPES)
+
+    def n(ids, events, types):
+        return pd.DataFrame({"id": ids, "event": events, "type": pd.Categorical(types, categories=t)})
+
+    def e(frm, to):
+        return pd.DataFrame({"from": pd.Series(frm, dtype="int64"), "to": pd.Series(to, dtype="int64")})
+
+    db_nodes, db_edges = tf.data.db_nodes, tf.data.db_edges
+    db_old_nodes = db_nodes[db_nodes["event"] != "G0"].reset_index(drop=True)
+    db_old_edges = db_edges[db_edges["from"] != 1].replace({"from": {14: 1}}).reset_index(drop=True)
+    return {
+        "two_children": (n([1, 2, 3], ["T", "A", "B"], ["top", "not", "not"]), e([1, 1], [2, 3])),
+        "zero_children": (n([1, 2], ["T", "A"], ["top", "not"]), e([], [])),
+        "basic_child": (n([1, 2], ["T", "A"], ["top", "not"]), e([1], [2])),
+        "unknown_child": (n([1, 2], ["T", "A"], ["top", "not"]), e([1], [9])),
+        "two_tops": (n([1, 2, 3], ["T", "U", "A"], ["top", "top", "not"]), e([1, 2], [3, 3])),
+        "no_top": (n([1, 2], ["G", "A"], ["or", "not"]), e([1], [2])),
+        "db_old": (db_old_nodes, db_old_edges),
+    }
+
+
+@pytest.mark.parametrize("case", sorted(REF["curate_errors"]))
+def test_curate_refuses_like_r(case):
+    nodes, edges = _bad_trees()[case]
+    with pytest.raises(ValueError) as err:
+        tf.curate(nodes, edges)
+    assert str(err.value) == REF["curate_errors"][case]
+    with pytest.raises(ValueError) as err:
+        tf.validate_tree(nodes, edges)
+    assert REF["curate_errors"][case].removeprefix("curate(): ") in str(err.value)
+
+
+@pytest.mark.parametrize("name", list(TREES))
+def test_every_bundled_tree_is_valid(name):
+    nodes, edges = _tree(name)
+    assert tf.validate_tree(nodes, edges)
+    gates = tf.curate(nodes, edges)
+    assert gates.loc[gates["class"] == "top", "n"].tolist() == [1]
 
 
 def test_formula_calls_like_r():

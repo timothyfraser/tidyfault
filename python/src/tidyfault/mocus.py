@@ -2,10 +2,8 @@
 Cutsets). Pure Python; the queue algorithm is R's mocus_r() / the C++ in
 mocus_rcpp() step for step, so cut sets come back in R's order.
 
-One deliberate deviation (README, "Deviations from R"): R expands the TOP event
-like an AND gate, while curate() and equate() join the top event's children
-with OR. By default this port follows the equation (``top="or"``), so the cut
-sets agree with equate() and formulate(); ``top="and"`` reproduces R exactly.
+The top event is not a gate (SPEC TF4.2): the expansion starts from the top
+event's one child, an AND/OR gate, exactly as R does.
 """
 
 from __future__ import annotations
@@ -13,7 +11,6 @@ from __future__ import annotations
 from collections import deque
 
 METHODS = ("mocus_rcpp", "mocus_r", "mocus_original")
-TOP_MODES = ("or", "and")
 
 
 def _gate_table(data):
@@ -24,26 +21,31 @@ def _gate_table(data):
     for gate, typ, items in zip(data["gate"].astype(str), data["type"].astype(str), data["items"]):
         children = [str(i) for i in (items if items is not None else []) if i is not None]
         table[gate] = (typ, children)
-    tops = [g for g, c in zip(data["gate"].astype(str), data["class"].astype(str)) if c == "top"]
-    if not tops:
-        raise ValueError("mocus(): data has no row with class == 'top'")
-    return table, tops[0]
+    classes = data["class"].astype(str).tolist()
+    tops = [g for g, c in zip(data["gate"].astype(str), classes) if c == "top"]
+    if len(tops) != 1:
+        raise ValueError(f'MOCUS needs exactly one top event row (class "top"); found {len(tops)}. '
+                         "Build the gate table with curate().")
+    child = table[tops[0]][1]
+    gates = {g for g, c in zip(data["gate"].astype(str), classes) if c == "gate"}
+    if len(child) != 1 or child[0] not in gates:
+        raise ValueError(f"MOCUS: the top event `{tops[0]}` must have exactly one child and it must "
+                         "be a gate; found " + ", ".join(f"`{c}`" for c in child) +
+                         ". Build the gate table with curate(), which explains the fix.")
+    return table, child[0]
 
 
-def _mocus(data, top="or"):
-    if top not in TOP_MODES:
-        raise ValueError("top must be 'or' (the equation's semantics) or 'and' (R's current mocus)")
-    table, top_gate = _gate_table(data)
-    and_types = {"and"} | ({"top"} if top == "and" else set())
+def _mocus(data):
+    table, start = _gate_table(data)
 
-    queue = deque([[top_gate]])
+    queue = deque([[start]])
     results = []
     while queue:
         cutset = queue.popleft()
         and_pos, or_pos = [], []
         for p, tok in enumerate(cutset):
             if tok in table:
-                (and_pos if table[tok][0] in and_types else or_pos).append(p)
+                (and_pos if table[tok][0] == "and" else or_pos).append(p)
         if not and_pos and not or_pos:
             results.append(list(dict.fromkeys(cutset)))     # R's unique(): first occurrence order
             continue
@@ -61,30 +63,28 @@ def _mocus(data, top="or"):
     return results
 
 
-def mocus(data, method="mocus_rcpp", top="or"):
+def mocus(data, method="mocus_rcpp"):
     """Every cut set of the tree in ``data`` (the output of curate()).
 
     Returns a list of lists of basic-event names, one list per cut set (not yet
     minimal; concentrate() minimises). ``method`` takes R's labels; all three run
     the same pure-Python queue algorithm, which reproduces mocus_rcpp() and
     mocus_r() element for element ("mocus_original", R's historical loop, is
-    accepted as a label only). ``top="or"`` (default) expands the top event as
-    OR, as equate() does; ``top="and"`` expands it as AND, exactly as R's
-    mocus() does today.
+    accepted as a label only).
     """
     if method not in METHODS:
         raise ValueError("'method' should be one of " + ", ".join(repr(m) for m in METHODS))
-    return _mocus(data, top=top)
+    return _mocus(data)
 
 
-def mocus_r(data, top="or"):
+def mocus_r(data):
     """R's mocus_r(): the pure queue-based MOCUS. Same output as mocus()."""
-    return _mocus(data, top=top)
+    return _mocus(data)
 
 
-def mocus_rcpp(data, top="or"):
+def mocus_rcpp(data):
     """R's mocus_rcpp(): compiled in R, pure Python here. Same output as mocus()."""
-    return _mocus(data, top=top)
+    return _mocus(data)
 
 
 mocus_cpp = mocus_rcpp

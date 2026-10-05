@@ -4,22 +4,30 @@ from __future__ import annotations
 
 import pandas as pd
 
-from .tree import NODE_COLUMNS, EDGE_COLUMNS
+from .tree import NODE_COLUMNS, EDGE_COLUMNS, top_problem
 
-_JOIN = {"and": " * ", "or": " + ", "top": " + "}   # top's children are OR'd, as in R
+# The top event carries no logic (SPEC TF4.2): it has exactly one child, so its
+# set is that one name and there is nothing to join.
+_JOIN = {"and": " * ", "or": " + "}
 
 
 def curate(nodes, edges) -> pd.DataFrame:
     """Columns ``gate, type, class, n, set, items`` exactly as R returns them:
     top event first, then gates in (C-locale) alphabetical order; ``set`` is the
-    gate's inputs joined with `` * `` (and) or `` + `` (or/top) and wrapped as
-    ``" (...) "``; ``items`` is the list of input event names."""
+    gate's inputs joined with `` * `` (and) or `` + `` (or) and wrapped as
+    ``" (...) "``; ``items`` is the list of input event names.
+
+    Raises ``ValueError`` with R's message unless there is exactly one top
+    event whose one child is an ``and``/``or`` gate (SPEC TF4.2)."""
     for col in NODE_COLUMNS:
         if col not in nodes.columns:
             raise ValueError(f"curate(): nodes is missing column '{col}'")
     for col in EDGE_COLUMNS:
         if col not in edges.columns:
             raise ValueError(f"curate(): edges is missing column '{col}'")
+    problem = top_problem(nodes, edges)
+    if problem is not None:
+        raise ValueError("curate(): " + problem)
 
     typ = nodes["type"].astype(str)
     g = nodes.loc[typ.isin(["top", "and", "or"]), ["id", "event", "type"]]
@@ -43,7 +51,7 @@ def curate(nodes, edges) -> pd.DataFrame:
             "type": t,
             "class": "top" if t == "top" else "gate",
             "n": len(to_event),
-            "set": " (" + _JOIN[t].join(to_event) + ") ",
+            "set": " (" + _JOIN.get(t, "").join(to_event) + ") ",
             "items": items,
         })
     out = pd.DataFrame(rows, columns=["gate", "type", "class", "n", "set", "items"])

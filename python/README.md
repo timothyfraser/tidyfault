@@ -45,15 +45,19 @@ A fault tree is two tables, exactly as in R:
 | `edges` | `from`, `to` | one row per link, parent id to child id |
 
 A basic event that feeds two branches appears twice in `nodes`, same `event`,
-different `id`. `tf.validate_tree(nodes, edges)` (Python only) checks a tree
-and names every problem it finds.
+different `id`. The top event is not a gate: there is exactly one `top` node,
+it has exactly one child, and that child is an `and` or `or` gate. `curate()`
+refuses anything else with R's message, word for word, which names the top
+event and its children and asks for an `or` or `and` gate between them.
+`tf.validate_tree(nodes, edges)` (Python only) checks a tree and names every
+problem it finds, including that one.
 
 ## R | Python
 
 | R | Python | status |
 |---|---|---|
 | `curate(nodes, edges)` | `curate(nodes, edges)` | ported; tested against R on 7 trees |
-| `equate(data)` | `equate(data)` | ported; tested against R on 7 trees (see deviation) |
+| `equate(data)` | `equate(data)` | ported; tested against R on 7 trees |
 | `formulate(formula)` | `formulate(formula)` returns a callable `Formula` | ported; arguments and printed body match R |
 | `formalArgs(f)` | `formal_args(f)` | helper |
 | `calculate(f)` | `calculate(f)` | ported; full truth tables match R row for row |
@@ -64,9 +68,9 @@ and names every problem it finds.
 | `gate_and(size, res)`, `gate_or`, `gate_top` | same names | ported; coordinates match R to 1e-12 |
 | `get_gate(x, y, gate, size, res)` | `get_gate(x, y, gate, size=1, res=50)` | ported |
 | `data("fakenodes")` and the other 26 datasets | `tf.data.fakenodes`, `tf.load_data("fakenodes")` | all 27 bundled as CSV |
-| `mocus(data, method)` | `mocus(data, method="mocus_rcpp", top="or")` | ported, pure Python (no Rcpp); with `top="and"` the cut sets equal R's `mocus_r()` and `mocus_rcpp()` element for element on 6 trees (see deviation) |
-| `mocus_r(data)`, `mocus_rcpp(data)`, `mocus_cpp(data)` | same names, plus `top="or"` | ported; one pure-Python queue algorithm behind all of them |
-| `concentrate(data, method)` | `concentrate(data, method="mocus_rcpp", top="or")` | ported; with `top="and"` equals R on 6 trees for all three methods (see deviation) |
+| `mocus(data, method)` | `mocus(data, method="mocus_rcpp")` | ported, pure Python (no Rcpp); the cut sets equal R's `mocus_r()` and `mocus_rcpp()` element for element on 7 trees |
+| `mocus_r(data)`, `mocus_rcpp(data)`, `mocus_cpp(data)` | same names | ported; one pure-Python queue algorithm behind all of them |
+| `concentrate(data, method)` | `concentrate(data, method="mocus_rcpp")` | ported; equals R on 7 trees for all three methods |
 | `quantify(f, newdata, prob, fast)` | `quantify(f, newdata, prob=False, fast=True)` | ported; reproduces R on the `*_outcomes_binary` datasets and on 3 probability scenarios per tree to 1e-9 |
 | `quantify_binary(f, newdata)` | `quantify_binary(f, newdata)` | ported; DataFrame in, bool array out; one scenario in, one bool out |
 | `quantify_binary_fast()`, `quantify_prob_fast()` | same names | aliases of `quantify_binary()` and `quantify_prob()`; R's fast paths return the same values |
@@ -75,40 +79,11 @@ and names every problem it finds.
 
 ## Deliberate deviations from R
 
-1. **`equate()` matches gate names as whole names.** R uses each gate name as a
-   regex and matches it *anywhere* in a set. When one name sits inside another,
-   R goes wrong. On the bundled `ai_nodes` tree, gate `T` matches inside basic
-   event `TO`, and R's `equate()` never returns: the string grows until memory
-   runs out. The port gives the intended equation, `" ( (AF + TO + RL)  + CWE) "`.
-   That is what R produces once the top event is renamed. On every other bundled
-   tree the two agree character for character.
-2. **`equate()` refuses a cycle.** If gates reference each other in a loop,
-   R loops forever. Python raises `ValueError` and names the loop.
-3. **`formulate()` never calls `eval()`.** The equation is parsed by a small
+1. **`formulate()` never calls `eval()`.** The equation is parsed by a small
    `+` / `*` / parentheses grammar, so a malformed or hostile string raises
    `ValueError` and is never executed. Argument order follows R's `sort()` under
    an English locale: case-insensitive, lowercase first on ties.
-4. **`tabulate()` reads a `~` (NOT) prefix as "this event is 0"**, which is
-   what R means. R's own `filter(~A == 0)` would error.
-5. **`mocus()` and `concentrate()` read the top event as OR by default, as the
-   equation does.** R disagrees with itself when the top event has several
-   children: `curate()` and `equate()` join them with OR, but R's MOCUS
-   expands the top event like an AND gate. Minimal tree: top event T with
-   children A and B. `equate()` gives `" (A + B) "`, so A alone fails the
-   system, yet R's `concentrate()` returns the single cut set `"A*B"`. The
-   port's default, `top="or"`, gives `["A", "B"]`, cut sets that agree with
-   `equate()`, `formulate()` and `calculate()`. `top="and"` reproduces R
-   exactly, and the tests check both. Trees whose top event has one child
-   (`fakenodes`, `breach_nodes`) give the same answer either way; `db_nodes`,
-   `ai_nodes` and `security_nodes` do not (e.g. db: R gives four 6-event cut
-   sets, the equation gives `AF`, `AUF`, `DC`, `NF`, `BF*SF`, `HF*MF`).
-6. **`concentrate()` minimises by absorption, not `admisc::simplify()`.** MOCUS
-   cut sets are products of plain basic events, so the minimal cut sets are
-   the sets left after dropping duplicates and supersets. Output order follows
-   admisc: fewer events first, then by sorted event position. Where R falls
-   back to the unsimplified string (admisc's `'sols' not found` error), the
-   port still returns minimal sets.
-7. **`simulate(seed=)` draws from numpy, not R's random stream.** Same
+2. **`simulate(seed=)` draws from numpy, not R's random stream.** Same
    arguments, checks and return shape; a seed reproduces Python runs but not
    the tree R draws for the same seed.
 
@@ -126,10 +101,13 @@ To regenerate it, from the repository root:
 Rscript python/tests/reference/make_r_reference.R . python/tests/reference/r_reference.json
 ```
 
-The MOCUS, `concentrate()` and `quantify()` fixtures cover the minimal tree,
-`fake`, `db`, `ai`, `security` and `breach`. `it_security` is skipped: R's
-`concentrate()` does not finish on it in minutes. A full run takes about a
-minute under R 4.5.2.
+The MOCUS and `concentrate()` fixtures cover the minimal tree and all six
+bundled trees; the `quantify()` fixtures cover `db`, `ai` and `security`. The
+file also records `curate()`'s refusal messages for malformed tops, which the
+Python must reproduce word for word. A full run takes a few seconds.
 
-`data/*.csv` were converted from the R package's `data/*.rda` with `pyreadr`.
+`data/*.csv` were converted from the R package's `data/*.rda` with `pyreadr`;
+the tree tables changed by the repair of `db`, `ai` and `security` were
+rewritten from R with `write.csv(d, path, row.names = FALSE, quote = FALSE)`
+(factors as character), which reproduces the other tree CSVs byte for byte.
 | `plot(x, ...)` (ggplot) | `plot(ill, ...)` returns a matplotlib `Figure`; `to_png(fig, path, dpi=300)` | ported; same shapes, viridis fills, labels and legend as R |
