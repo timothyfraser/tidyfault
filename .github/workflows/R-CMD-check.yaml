@@ -1,20 +1,11 @@
-# R CMD check on the three desktop platforms, R release.
-# Path-filtered and cancel-in-progress because Actions minutes are scarce.
+# R CMD check, R release. Pull requests run ubuntu only (the PR is the gate, so
+# there is no push-to-main run: it duplicated every merge). macOS and Windows run
+# only on release tags (v*) and on demand, because macOS minutes bill at 10x and
+# Windows at 2x. Path-filtered and cancel-in-progress because Actions minutes are
+# scarce.
 name: R-CMD-check
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "R/**"
-      - "src/**"
-      - "tests/**"
-      - "man/**"
-      - "vignettes/**"
-      - "data/**"
-      - "DESCRIPTION"
-      - "NAMESPACE"
-      - ".github/workflows/R-CMD-check.yaml"
   pull_request:
     # Drafts run no CI (Actions minutes are scarce): the job's `if` skips them,
     # and ready_for_review triggers the first run when the PR is marked ready.
@@ -29,6 +20,8 @@ on:
       - "DESCRIPTION"
       - "NAMESPACE"
       - ".github/workflows/R-CMD-check.yaml"
+  push:
+    tags: ["v*"] # release tags: the full three-platform check (no path filter applies to tags)
   workflow_dispatch:
 
 concurrency:
@@ -42,14 +35,17 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ${{ matrix.config.os }}
     name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})
+    timeout-minutes: 20
 
     strategy:
       fail-fast: false
       matrix:
-        config:
-          - { os: ubuntu-latest, r: "release" }
-          - { os: macos-latest, r: "release" }
-          - { os: windows-latest, r: "release" }
+        # ubuntu always; macOS and Windows only on a v* tag push or a manual run.
+        # (`a && b || c` is Actions' ternary; both branches are non-empty strings.)
+        config: ${{ fromJSON(
+          (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')))
+          && '[{"os":"ubuntu-latest","r":"release"},{"os":"macos-latest","r":"release"},{"os":"windows-latest","r":"release"}]'
+          || '[{"os":"ubuntu-latest","r":"release"}]') }}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}

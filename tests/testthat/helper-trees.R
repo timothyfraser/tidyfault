@@ -37,3 +37,14 @@ cutset_signature <- function(cuts) {
   }, character(1))
   sort(unique(sig))
 }
+
+# The IT security tree as a formula, and its failure rates (per hour) as one
+# row, one column per basic event: shared by the quantify_if/_when/_ci tests.
+it_security_f <- function() {
+  curate(it_security_nodes, it_security_edges) %>% equate() %>% formulate()
+}
+
+it_security_rates <- function() {
+  r <- it_security_outcomes_rates
+  tibble::as_tibble(as.list(stats::setNames(r$lambda, r$event)))
+}

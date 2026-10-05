@@ -1,12 +1,9 @@
-# pytest for the Python twin in python/. Path-filtered; cancels superseded runs.
+# pytest for the Python twin in python/. Runs on pull requests (the gate; no
+# push-to-main run, it duplicated every merge), release tags and on demand.
+# Path-filtered; cancels superseded runs.
 name: python-tests
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "python/**"
-      - ".github/workflows/python-tests.yaml"
   pull_request:
     # Drafts run no CI (Actions minutes are scarce): the job's `if` skips them,
     # and ready_for_review triggers the first run when the PR is marked ready.
@@ -14,6 +11,8 @@ on:
     paths:
       - "python/**"
       - ".github/workflows/python-tests.yaml"
+  push:
+    tags: ["v*"] # release tags (no path filter applies to tags)
   workflow_dispatch:
 
 concurrency:
@@ -26,6 +25,7 @@ jobs:
   pytest:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     name: pytest (Python ${{ matrix.python-version }})
 
     strategy:

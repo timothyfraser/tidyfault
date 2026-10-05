@@ -16,6 +16,7 @@ permissions: read-all
 jobs:
   R:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     name: install_github (R)
     env:
       # Without it remotes falls back to a shared, rate-limited PAT and the
@@ -39,6 +40,7 @@ jobs:
 
   Python:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     name: pip git+ (Python)
     steps:
       - uses: actions/setup-python@v5

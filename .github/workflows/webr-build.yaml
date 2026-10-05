@@ -28,6 +28,7 @@ jobs:
     # has no pull_request trigger today; the guard keeps it so if one is added).
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     name: build and publish the webR repository
     permissions:
       contents: write # push the repository to the gh-pages branch
