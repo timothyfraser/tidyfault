@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import Code from "./Code.jsx";
 import { runPython } from "../runtime/pyodide.js";
+import { runR } from "../runtime/webr.js";
 
 const CHUNKS = {
   R: {
@@ -53,23 +54,32 @@ function TreeFigure() {
   );
 }
 
-// RT-02 wires webR here. Until then R keeps its static output and the Run
-// button stays disabled for the R tab.
-// eslint-disable-next-line no-unused-vars
-async function runR(code, onStatus) {
-  throw new Error("The R runtime is not wired yet (RT-02).");
-}
-
 const IDLE = { phase: "idle", message: "", result: null, error: null };
 
+// Chip text per language and phase. "unavailable" is the SPEC TF5 fallback: the
+// runtime could not be brought up, so the static output stays on screen.
 const CHIP = {
-  idle: "Python runs in your browser",
-  waiting: "Waiting",
-  loading: "Loading Python…",
-  running: "Running…",
-  done: "Done",
-  error: "Error",
+  R: {
+    idle: "R runs in your browser",
+    waiting: "Waiting",
+    loading: "Loading R…",
+    running: "Running…",
+    done: "Done",
+    error: "Error",
+    unavailable: "R runtime coming soon",
+  },
+  Python: {
+    idle: "Python runs in your browser",
+    waiting: "Waiting",
+    loading: "Loading Python…",
+    running: "Running…",
+    done: "Done",
+    error: "Error",
+    unavailable: "Python runtime unavailable",
+  },
 };
+
+const RUNNERS = { R: runR, Python: runPython };
 
 function splitLines(text) {
   return text ? text.replace(/\s+$/, "").split("\n") : [];
@@ -77,41 +87,48 @@ function splitLines(text) {
 
 export default function RunChunk() {
   const [lang, setLang] = useState("R");
-  const [py, setPy] = useState(IDLE);
-  const runId = useRef(0);
+  const [runs, setRuns] = useState({ R: IDLE, Python: IDLE });
+  const runIds = useRef({ R: 0, Python: 0 });
   const chunk = CHUNKS[lang];
-  const isPy = lang === "Python";
+  const run = runs[lang];
 
   function onRun() {
-    if (!isPy) return runR(chunk.code);
+    const which = lang;
+    const set = (fn) => setRuns((all) => ({ ...all, [which]: fn(all[which]) }));
     // Only the newest click drives the display; the interpreter itself queues
     // every click (a second click while one is in flight reports "waiting").
-    const id = ++runId.current;
-    const current = () => id === runId.current;
-    setPy({ phase: "loading", message: "Loading Python…", result: null, error: null });
-    runPython(chunk.code, ({ phase, message }) => {
-      if (current()) setPy((p) => ({ ...p, phase, message }));
+    const id = ++runIds.current[which];
+    const current = () => id === runIds.current[which];
+    set(() => ({ phase: "loading", message: CHIP[which].loading, result: null, error: null }));
+    RUNNERS[which](chunk.code, ({ phase, message }) => {
+      if (current()) set((p) => ({ ...p, phase, message }));
     }).then(
-      (result) => current() && setPy({ phase: "done", message: "", result, error: null }),
-      (e) =>
-        current() &&
-        setPy({
+      (result) => current() && set(() => ({ phase: "done", message: "", result, error: null })),
+      (e) => {
+        if (!current()) return;
+        if (e.unavailable) {
+          // Fallback: keep the static output, say why in the muted line.
+          set(() => ({ phase: "unavailable", message: `${e.message} Showing the saved output.`, result: null, error: null }));
+          return;
+        }
+        set(() => ({
           phase: "error",
           message: "",
           result: { stdout: e.stdout || "", stderr: e.stderr || "", figures: e.figures || [] },
           error: e.message,
-        })
+        }));
+      }
     );
-    return undefined;
   }
 
-  const live = isPy && py.result;
-  const lines = live ? splitLines(py.result.stdout) : chunk.output.split("\n");
-  const stderrLines = live ? splitLines(py.result.stderr) : [];
-  const figure = live && py.result.figures[0];
-  const busy = isPy && ["waiting", "loading", "running"].includes(py.phase);
-  const chipText = isPy ? CHIP[py.phase] : "R runtime coming soon";
-  const detail = isPy && py.phase === "loading" ? py.message : "";
+  const live = run.result;
+  const lines = live ? splitLines(run.result.stdout) : chunk.output.split("\n");
+  const stderrLines = live ? splitLines(run.result.stderr) : [];
+  const figure = live && run.result.figures[0];
+  const busy = ["waiting", "loading", "running"].includes(run.phase);
+  const chipText = CHIP[lang][run.phase];
+  const detail = run.phase === "loading" || run.phase === "unavailable" ? run.message : "";
+  const tag = lang === "R" ? "r" : "py";
 
   return (
     <div className="chunk">
@@ -129,14 +146,13 @@ export default function RunChunk() {
             </button>
           ))}
         </div>
-        <span className="chip" role="status" aria-live="polite" data-phase={isPy ? py.phase : "r-static"}>
+        <span className="chip" role="status" aria-live="polite" data-phase={run.phase}>
           <span className="dot" /> {chipText}
         </span>
         <button
           type="button"
           className="btn btn-run btn-sm"
-          disabled={!isPy}
-          title={isPy ? "Run this code in your browser" : "R runtime coming soon"}
+          title="Run this code in your browser"
           onClick={onRun}
         >
           {busy ? "▶ Run again" : "▶ Run"}
@@ -146,7 +162,7 @@ export default function RunChunk() {
         <Code text={chunk.code} />
       </pre>
       {detail && (
-        <div className="muted mono" style={{ padding: "6px var(--space-4)", fontSize: 12 }} data-testid="py-progress">
+        <div className="muted mono" style={{ padding: "6px var(--space-4)", fontSize: 12 }} data-testid={`${tag}-progress`}>
           {detail}
         </div>
       )}
@@ -162,9 +178,9 @@ export default function RunChunk() {
               {line}
             </div>
           ))}
-          {isPy && py.error && (
+          {run.error && (
             <div style={{ color: "var(--danger)", whiteSpace: "pre-wrap" }} role="alert">
-              Error: {py.error}
+              Error: {run.error}
             </div>
           )}
         </div>
@@ -176,7 +192,7 @@ export default function RunChunk() {
               style={{ maxWidth: "100%", height: "auto", display: "block" }}
             />
           ) : (
-            !(live && py.error) && <TreeFigure />
+            !(live && run.error) && <TreeFigure />
           )}
         </figure>
       </div>
