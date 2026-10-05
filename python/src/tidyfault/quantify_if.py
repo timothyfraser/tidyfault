@@ -10,9 +10,11 @@ import pandas as pd
 from ._values import is_one_row_like, one_row_values
 from .formulate import formal_args
 from .quantify import quantify
+from .quantify_ci import quantify_ci
 
 
-def quantify_if(f, data, cut=0.05, time=None, events=None):
+def quantify_if(f, data, cut=0.05, time=None, events=None, ci=False, n=1000, cv=0.2, level=0.90,
+                seed=None):
     """Which fix buys the most? A one-at-a-time sensitivity analysis of the top event.
 
     Cuts the failure rate (or probability) of each basic event in turn by the
@@ -25,20 +27,27 @@ def quantify_if(f, data, cut=0.05, time=None, events=None):
         From ``formulate()``, with one argument per basic event.
     data : DataFrame, Series or dict
         One row of values, one per basic event of ``f`` (extra columns are
-        ignored). With ``time``, the values are failure rates (events per unit
-        of time); without it, failure probabilities.
+        ignored). With ``time``, the values are failure rates (events per hour,
+        by default); without it, failure probabilities.
     cut : float
         The share to cut each value by, in (0, 1]: each event's value is
         multiplied by ``1 - cut``. Default 0.05 (a 5% cut). ``cut=1`` removes
         the event entirely.
     time : float or None
-        If given (a positive number), ``data`` holds failure rates and each
+        A positive number in the unit of the rates (hours, the
+        reliability-engineering convention; 8,760 hours is one year). If
+        given, ``data`` holds failure rates and each
         (cut) rate becomes the probability of failing by ``time``,
         ``1 - exp(-rate * time)`` (R's ``pexp(time, rate)``). If None
         (default), ``data`` holds probabilities and is used as is.
     events : list of str or None
         The basic events to cut. Default None cuts every basic event of ``f``,
         in ``formal_args(f)`` order.
+    ci : bool
+        False (default) returns the exact values only. True adds an
+        uncertainty interval per row from ``quantify_ci()``.
+    n, cv, level, seed
+        Passed to ``quantify_ci()`` when ``ci=True`` (ignored otherwise).
 
     Returns
     -------
@@ -47,7 +56,9 @@ def quantify_if(f, data, cut=0.05, time=None, events=None):
         the smallest (ties keep the order of ``events``), with columns
         ``event``, ``p_top`` (after the cut), ``baseline`` (no cut, the same in
         every row), ``change`` (``p_top - baseline``) and ``pct_change``
-        (``100 * (p_top / baseline - 1)``).
+        (``100 * (p_top / baseline - 1)``). With ``ci=True``, also ``lower``
+        and ``upper``: the central ``level`` interval of the probability after
+        the cut, from ``quantify_ci()``; ``p_top`` stays the exact value.
 
     Notes
     -----
@@ -55,6 +66,8 @@ def quantify_if(f, data, cut=0.05, time=None, events=None):
     one call, so the exact (truth-table) probability is used throughout. The
     cut is applied before any conversion: with ``time``, the rate is cut and
     then turned into a probability, which is what a fix to a component does.
+    With ``ci=True``, the baseline and every what-if share the same random
+    draws (common random numbers).
 
     Examples
     --------
@@ -62,8 +75,9 @@ def quantify_if(f, data, cut=0.05, time=None, events=None):
     >>> f = tf.formulate(tf.equate(tf.curate(tf.data.it_security_nodes, tf.data.it_security_edges)))
     >>> r = tf.data.it_security_outcomes_rates
     >>> rates = dict(zip(r["event"], r["lambda"]))
-    >>> tf.quantify_if(f, rates, cut=0.05, time=1)                       # doctest: +SKIP
-    >>> tf.quantify_if(f, rates, cut=0.9, time=1, events=["MN", "PO"])   # doctest: +SKIP
+    >>> tf.quantify_if(f, rates, cut=0.05, time=8760)                    # doctest: +SKIP
+    >>> tf.quantify_if(f, rates, cut=0.9, time=8760, events=["MN", "PO"],
+    ...                ci=True, n=200, seed=1)                           # doctest: +SKIP
     >>> tf.quantify_if(f, tf.data.it_security_probs)                     # doctest: +SKIP
     """
     if not callable(f):
@@ -77,8 +91,10 @@ def quantify_if(f, data, cut=0.05, time=None, events=None):
     if missing:
         raise ValueError("`data` must have a column for every basic event of `f`. Missing: "
                          + ", ".join(missing) + ".")
-    # Extra columns (an id, a label) are ignored.
-    sub = data[fargs] if isinstance(data, pd.DataFrame) else {a: data[a] for a in fargs}
+    # Extra columns (an id, a label) are ignored. Keep data's column order: it
+    # fixes the order of the random draws when ci=True.
+    keep = [c for c in have if c in fargs]
+    sub = data[keep] if isinstance(data, pd.DataFrame) else {a: data[a] for a in keep}
     values = one_row_values(sub, "data", "quantify_if")
 
     if events is None:
@@ -116,15 +132,23 @@ def quantify_if(f, data, cut=0.05, time=None, events=None):
             raise ValueError("Without `time`, `data` must hold probabilities in [0, 1]. Above 1: "
                              + ", ".join(above) + ". If these are failure rates, pass `time`.")
 
+    if not isinstance(ci, (bool, np.bool_)):
+        raise ValueError("`ci` must be TRUE or FALSE.")
+
     # Row 0 is the baseline; row i + 1 cuts events[i] alone.
+    cols = list(values.index)
     m = np.tile(values.to_numpy(dtype=float), (len(events) + 1, 1))
     for i, e in enumerate(events):
-        j = fargs.index(e)
+        j = cols.index(e)
         m[i + 1, j] = m[i + 1, j] * (1 - cut)
+    # The interval is drawn on the values before any conversion, as the cut is.
+    if ci:
+        interval = quantify_ci(f, pd.DataFrame(m, columns=cols), n=n, cv=cv, time=time,
+                               level=level, seed=seed)
     if time is not None:
         m = -np.expm1(-m * time)   # R's pexp(time, rate)
 
-    p = np.atleast_1d(quantify(f, newdata=pd.DataFrame(m, columns=fargs), prob=True)).astype(float)
+    p = np.atleast_1d(quantify(f, newdata=pd.DataFrame(m, columns=cols), prob=True)).astype(float)
     baseline = p[0]
     out = pd.DataFrame({
         "event": events,
@@ -133,4 +157,7 @@ def quantify_if(f, data, cut=0.05, time=None, events=None):
         "change": p[1:] - baseline,
         "pct_change": 100 * (p[1:] / baseline - 1),
     })
+    if ci:
+        out["lower"] = interval["lower"].to_numpy()[1:]
+        out["upper"] = interval["upper"].to_numpy()[1:]
     return out.sort_values("pct_change", kind="stable").reset_index(drop=True)

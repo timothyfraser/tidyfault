@@ -337,19 +337,24 @@ it_security_data = tibble(
   WB = c(0, 0, 1)       # Web traffic filter missing or attacker got around it
 )
 
-# 3. Exponential failure rates (lambda per year)
+# 3. Exponential failure rates (lambda per hour, the reliability-engineering
+#    convention). Each rate is written per year below, then divided by the
+#    8,760 hours in a year (24 * 365), so pexp(8760, lambda) is the chance of
+#    failing within one year.
 it_security_outcomes_rates = tribble(
-  ~event, ~lambda, ~time_unit,
-  "DA",   0.25,  "years",   # No controls to stop data from being copied or sent out: 0.25 failures/year
-  "EP",   0.20,  "years",   # User had more access than needed for their job: 0.20 failures/year
-  "IM",   0.09,  "years",   # Employee did it on purpose or account was taken over: 0.09 failures/year
-  "LR",   0.13,  "years",   # Passwords exposed in a breach or reused elsewhere: 0.13 failures/year
-  "MN",   0.29,  "years",   # No second login step (e.g. code on phone) required: 0.29 failures/year
-  "PO",   0.16,  "years",   # Security updates not applied on time: 0.16 failures/year
-  "PC",   0.22,  "years",   # Passwords obtained via fake email or link (phishing): 0.22 failures/year
-  "PM",   0.15,  "years",   # Admin-level access set up incorrectly: 0.15 failures/year
-  "VS",   0.11,  "years",   # System has a known security hole: 0.11 failures/year
-  "WB",   0.17,  "years")   # Web traffic filter missing or attacker got around it: 0.17 failures/year
+  ~event, ~per_year,
+  "DA",   0.25,   # No controls to stop data from being copied or sent out: 0.25 failures/year
+  "EP",   0.20,   # User had more access than needed for their job: 0.20 failures/year
+  "IM",   0.09,   # Employee did it on purpose or account was taken over: 0.09 failures/year
+  "LR",   0.13,   # Passwords exposed in a breach or reused elsewhere: 0.13 failures/year
+  "MN",   0.29,   # No second login step (e.g. code on phone) required: 0.29 failures/year
+  "PO",   0.16,   # Security updates not applied on time: 0.16 failures/year
+  "PC",   0.22,   # Passwords obtained via fake email or link (phishing): 0.22 failures/year
+  "PM",   0.15,   # Admin-level access set up incorrectly: 0.15 failures/year
+  "VS",   0.11,   # System has a known security hole: 0.11 failures/year
+  "WB",   0.17) %>%  # Web traffic filter missing or attacker got around it: 0.17 failures/year
+  mutate(lambda = per_year / 8760, time_unit = "hours") %>%
+  select(event, lambda, time_unit)
 
 # Make a data directory if it doesn't already exist
 dir.create("data", showWarnings = FALSE)

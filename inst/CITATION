@@ -1,17 +1,17 @@
-citHeader("To cite tidyfault in publications, please use:")
-
-citEntry(
-  entry = "Manual",
+bibentry(
+  bibtype = "Manual",
+  header = "To cite tidyfault in publications, please use:",
   title = "tidyfault: Fault Tree Analysis in R with Tidyverse Coding",
-  author = personList(
+  author = c(
     person("Timothy", "Fraser", email = "timothy.fraser.1@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-4509-0244")),
     person("Jingyao", "Tong", email = "jingyaotong6@gmail.com", role = "aut",
            comment = c(ORCID = "0009-0009-6147-756X"))
   ),
   year = "2026",
-  note = "R package version",
-  url = "https://github.com/timothyfraser/tidyfault"
+  note = paste("R package version", meta$Version),
+  url = "https://github.com/timothyfraser/tidyfault",
+  footer = paste("An article on tidyfault has been submitted to the",
+                 "Journal of Statistical Software; cite this entry for the software until",
+                 "the article is published.")
 )
-
-citFooter("A Journal of Statistical Software article is in preparation; cite this entry for the software until a dedicated article entry is published.")

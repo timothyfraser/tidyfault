@@ -1,6 +1,6 @@
 Package: tidyfault
 Title: Fault Tree Analysis in R with Tidyverse Coding
-Version: 0.0.0.9
+Version: 0.1.0
 Authors@R: 
     c(person("Timothy", "Fraser", , "timothy.fraser.1@gmail.com", role = c("aut", "cre"),
              comment = c(ORCID = "0000-0002-4509-0244")),

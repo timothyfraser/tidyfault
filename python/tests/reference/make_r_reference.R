@@ -25,7 +25,7 @@ suppressPackageStartupMessages({
 for (f in c("curate", "equate", "formulate", "calculate", "tabulate", "populate",
             "quantify_prob", "gate", "gate_and", "gate_or", "gate_top", "get_gate",
             "mocus", "mocus_fast_r", "quantify_binary", "quantify_binary_fast",
-            "quantify_if", "stipulate")) {
+            "quantify_if", "quantify_ci", "quantify_when")) {
   source(file.path(src, "R", paste0(f, ".R")))
 }
 # mocus_rcpp(), quantify_prob_fast() and quantify(prob = TRUE, fast = TRUE) need
@@ -145,7 +145,8 @@ gp <- gate(gnodes, size = 0.5, res = 16)
 res$gate_frame <- list(columns = names(gp), group = gp$group, gate = as.character(gp$gate),
                        x = num(gp$x), y = num(gp$y))
 
-# quantify_if() and stipulate(): deterministic, so Python must equal R to 1e-9.
+# quantify_if() and quantify_when(ci = FALSE): deterministic, so Python must
+# equal R to 1e-9. Rates are per hour; 8,760 hours is one year.
 quantify <- tidyfault::quantify   # the compiled quantify() that quantify_if() calls
 its <- ld("it_security_outcomes_rates")
 its_rates <- as_tibble(as.list(setNames(its$lambda, its$event)))
@@ -154,18 +155,22 @@ f_min <- formulate(equate(curate(minimal$nodes, minimal$edges)))
 qi <- function(x) list(event = x$event, p_top = num(x$p_top), baseline = num(x$baseline),
                        change = num(x$change), pct_change = num(x$pct_change))
 res$quantify_if <- list(
-  it_security_rates_cut05_t1 = qi(quantify_if(f_its, its_rates, cut = 0.05, time = 1)),
-  it_security_rates_cut90_t5_PO_MN = qi(quantify_if(f_its, its_rates, cut = 0.9, time = 5,
-                                                    events = c("PO", "MN"))),
+  it_security_rates_cut05_t8760 = qi(quantify_if(f_its, its_rates, cut = 0.05, time = 8760)),
+  it_security_rates_cut90_t43800_PO_MN = qi(quantify_if(f_its, its_rates, cut = 0.9, time = 43800,
+                                                        events = c("PO", "MN"))),
   it_security_probs_cut1 = qi(quantify_if(f_its, ld("it_security_probs"), cut = 1)),
   minimal_probs_cut50 = qi(quantify_if(f_min, c(A = 0.1, B = 0.2), cut = 0.5)))
-st <- function(x) list(levels = levels(x$scenario), columns = names(x),
-                       values = lapply(as.list(x[-1]), num))
-res$stipulate <- list(
-  it_security_four = st(stipulate(its_rates, "Fix A only" = c(MN = 0.1), "Fix B only" = c(PO = 0.1),
-                                  "Fix A and B" = c(MN = 0.1, PO = 0.1))),
-  it_security_no_baseline = st(stipulate(its_rates, "Half" = c(DA = 0.5, WB = 2), baseline = NULL)),
-  minimal_renamed = st(stipulate(c(A = 0.1, B = 0.2), "B off" = c(B = 0), baseline = "As is")))
+qw <- function(x) list(columns = names(x), levels = I(levels(x$scenario)),
+                       scenario = I(as.character(x$scenario)), time = num(x$time),
+                       p_top = num(x$p_top), reliability = num(x$reliability))
+res$quantify_when <- list(
+  it_security_four_default_time = qw(quantify_when(f_its, its_rates, "Fix A only" = c(MN = 0.1),
+                                                   "Fix B only" = c(PO = 0.1),
+                                                   "Fix A and B" = c(MN = 0.1, PO = 0.1), ci = FALSE)),
+  it_security_no_baseline = qw(quantify_when(f_its, its_rates, "Half" = c(DA = 0.5, WB = 2),
+                                             baseline = NULL, time = c(8760, 43800), ci = FALSE)),
+  minimal_renamed = qw(quantify_when(f_min, c(A = 0.001, B = 0.002), "B off" = c(B = 0),
+                                     baseline = "As is", time = c(0, 100, 1000), ci = FALSE)))
 
 writeLines(toJSON(res, auto_unbox = TRUE, pretty = TRUE, digits = NA), out, useBytes = TRUE)
 cat("wrote", out, "\n")
