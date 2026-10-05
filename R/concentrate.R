@@ -22,20 +22,16 @@
 #'     \item \strong{Original MOCUS} (`method = "mocus_original"`):
 #'       \itemize{
 #'         \item Uses the original MOCUS implementation (`mocus()` with `method = "mocus_original"`) to generate all cutsets
-#'         \item Converts cutsets to a boolean equation format
-#'         \item Applies boolean simplification using `admisc::simplify()` to find minimum cutsets
-#'         \item Returns simplified cutsets as character strings
+#'         \item Returns the cutsets as character strings
 #'       }
 #'   }
+#'   Every method then minimises the MOCUS products by absorption: duplicate cutsets and any cutset containing another cutset are dropped. Cutsets are ordered fewest events first, then by the sorted position of their events.
 #'   Minimum cutsets represent the smallest combinations of basic events that can cause the top event (system failure) to occur.
 #' 
 #' @seealso \code{\link{curate}} for preparing gate data for MOCUS method, \code{\link{mocus_rcpp}}, \code{\link{mocus_r}}, and \code{\link{mocus}} for MOCUS implementations, \code{\link{tabulate}} for analyzing and summarizing minimum cutsets
 #' 
 #' @keywords minimization minimum cutset fault tree
 #' @importFrom dplyr %>%
-#' @importFrom purrr map
-#' @importFrom stringr str_split str_trim
-#' @importFrom admisc simplify
 #' @export
 #' @examples
 #' # Load dependencies
@@ -63,28 +59,27 @@ concentrate = function(data, method = c("mocus_rcpp", "mocus_r", "mocus_original
     mocus_original = mocus(data, method = "mocus_original")
   )
 
-  combos = output %>%
-    map(~paste(., collapse = " * ") %>% paste("(", ., ")", sep = "")) %>%
-    unlist() %>%
-    paste(., collapse = " + ")
+  absorb_cutsets(output)
+}
 
-  values = output %>% unlist() %>% unique() %>% sort() %>% paste(collapse = ", ")
-
-  result = tryCatch(
-    admisc::simplify(combos, snames = values),
-    error = function(e) {
-      msg = conditionMessage(e)
-      if (grepl("object 'sols' not found", msg, fixed = TRUE)) {
-        return(combos)
-      } else {
-        stop(e)
-      }
-    }
-  ) %>%
-    as.vector() %>%
-    str_split(pattern = "[+]", simplify = FALSE) %>%
-    unlist() %>%
-    str_trim(side = "both")
-
-  return(result)
+# Minimal cut sets by absorption. MOCUS products contain only plain basic
+# events, so dropping duplicates and supersets gives the minimal sum of
+# products. Order: fewest events first, then by sorted event position.
+absorb_cutsets = function(products) {
+  events = sort(unique(unlist(products)))
+  idx = lapply(products, function(p) sort(unique(match(p, events))))
+  idx = idx[!duplicated(vapply(idx, paste, character(1), collapse = ","))]
+  if (length(idx) == 0L) {
+    return(character(0))
+  }
+  keep = vapply(
+    seq_along(idx),
+    function(i) !any(vapply(idx[-i], function(o) all(o %in% idx[[i]]), logical(1))),
+    logical(1)
+  )
+  idx = idx[keep]
+  n = lengths(idx)
+  cols = lapply(seq_len(max(n)), function(k) vapply(idx, function(x) x[k], numeric(1)))
+  idx = idx[do.call(order, c(list(n), cols))]
+  vapply(idx, function(x) paste(events[x], collapse = "*"), character(1))
 }
