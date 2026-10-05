@@ -1,0 +1,119 @@
+
+
+
+<p><a href="../reference/quantify.html"><code>quantify()</code></a>
+evaluates whether the <strong>top event</strong> occurs under each
+scenario. With the default <code>prob = FALSE</code>, inputs are
+<strong>binary</strong> (failed / not failed) for each basic event.</p>
+<p>This vignette covers:</p>
+<ul>
+<li>Calling the boolean function from <a
+href="../reference/formulate.html"><code>formulate()</code></a>
+directly.</li>
+<li>Passing many scenarios as a data frame.</li>
+<li>Generating random binary scenarios from event probabilities (IT
+security tree).</li>
+</ul>
+<h2 id="setup-formulate-the-top-event">Setup: formulate the top
+event</h2>
+<pre class="r"><code>library(tidyfault)
+library(dplyr)
+library(purrr)
+library(tibble)
+
+data(&quot;db_nodes&quot;)
+data(&quot;db_edges&quot;)
+
+f &lt;- curate(db_nodes, db_edges) |&gt;
+  equate() |&gt;
+  formulate()
+sort(names(formals(f)))</code></pre>
+<pre><code>#&gt; [1] &quot;AF&quot;  &quot;AUF&quot; &quot;BF&quot;  &quot;DC&quot;  &quot;HF&quot;  &quot;MF&quot;  &quot;NF&quot;  &quot;SF&quot;</code></pre>
+<hr />
+<h2 id="single-scenario-direct-function-call">Single scenario: direct
+function call</h2>
+<p>Any scenario can be passed as named arguments matching
+<code>formals(f)</code>:</p>
+<pre class="r"><code>f(DC = 1, AF = 1, SF = 0, BF = 0, NF = 0, AUF = 0, HF = 0, MF = 0)</code></pre>
+<pre><code>#&gt; [1] 2</code></pre>
+<hr />
+<h2 id="many-scenarios-quantify-on-a-data-frame">Many scenarios:
+<code>quantify()</code> on a data frame</h2>
+<p>Bundled <a
+href="../reference/db_outcomes_binary.html"><code>db_outcomes_binary</code></a>
+holds several rows of 0/1 inputs:</p>
+<pre class="r"><code>data(&quot;db_outcomes_binary&quot;)
+head(db_outcomes_binary)</code></pre>
+<pre><code>#&gt; # A tibble: 6 × 9
+#&gt;   scenario    DC    AF    SF    BF    NF   AUF    HF    MF
+#&gt;      &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+#&gt; 1        1     0     1     0     1     0     0     0     1
+#&gt; 2        2     0     0     1     0     1     0     0     1
+#&gt; 3        3     1     0     0     1     0     0     0     0
+#&gt; 4        4     0     1     0     0     1     0     1     0
+#&gt; 5        5     0     0     0     1     0     1     0     1
+#&gt; 6        6     1     0     0     0     1     0     0     1</code></pre>
+<p><a href="../reference/quantify.html"><code>quantify()</code></a>
+returns one logical top-event outcome per row:</p>
+<pre class="r"><code>mybinary &lt;- quantify(f, newdata = db_outcomes_binary)
+mybinary</code></pre>
+<pre><code>#&gt;  [1]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE</code></pre>
+<hr />
+<h2 id="batch-evaluation-it-security-tree">Batch evaluation: IT security
+tree</h2>
+<p>For larger batches, build a tibble of draws (one column per basic
+event), then call <code>quantify()</code> once. The example below uses
+<a
+href="../reference/it_security_probs.html"><code>it_security_probs</code></a>
+as Bernoulli parameters and fixes the seed for reproducibility.</p>
+<pre class="r"><code>data(&quot;it_security_nodes&quot;)
+data(&quot;it_security_edges&quot;)
+data(&quot;it_security_probs&quot;)
+
+f_sec &lt;- formulate(equate(curate(it_security_nodes, it_security_edges)))
+
+set.seed(123)
+n_binary &lt;- 5000
+batch_binary &lt;- it_security_probs |&gt;
+  map(~ rbinom(n_binary, size = 1, prob = .x)) |&gt;
+  as_tibble()
+
+outcomes_batch &lt;- quantify(f_sec, newdata = batch_binary)
+table(outcomes_batch)</code></pre>
+<pre><code>#&gt; outcomes_batch
+#&gt; FALSE  TRUE 
+#&gt;  4914    86</code></pre>
+<pre class="r"><code>mean(outcomes_batch)</code></pre>
+<pre><code>#&gt; [1] 0.0172</code></pre>
+<h3 id="why-vectorize">Why vectorize?</h3>
+<ul>
+<li>One call evaluates every row using the fast path when
+<code>fast = TRUE</code> (default).</li>
+<li>Column names must match <code>names(formals(f_sec))</code>.</li>
+</ul>
+<hr />
+<h2 id="summary">Summary</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Input</th>
+<th><code>quantify()</code> usage</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>One scenario</td>
+<td>Named vector, list, or one-row data frame</td>
+</tr>
+<tr class="even">
+<td>Many scenarios</td>
+<td>Data frame / tibble with one column per basic event</td>
+</tr>
+<tr class="odd">
+<td>Top event type</td>
+<td>Logical vector (<code>TRUE</code> = top event occurred)</td>
+</tr>
+</tbody>
+</table>
+<p>For probabilities instead of 0/1 inputs, see <a
+href="quantify-probabilities.html">quantify()-ing probabilities</a>.</p>
