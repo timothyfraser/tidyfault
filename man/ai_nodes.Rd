@@ -7,13 +7,12 @@
 \format{
 \subsection{\code{ai_nodes}}{
 
-A data frame with 14 rows and 3 columns:
+A data frame with 6 rows and 3 columns:
 \describe{
-\item{id}{Unique identifier (1 to 14) for each node.}
+\item{id}{Unique identifier (1 to 6) for each node.}
 \item{event}{Name of event. \code{"T"} means top event (AI agent task failure).
-\code{"G1"}, \code{"G2"}, etc. mean gates. \code{"ME"} = Model error, \code{"PE"} = Prompt error,
-\code{"TDI"} = Training data issue, \code{"VF"} = Validation failure, \code{"AF"} = API failure,
-\code{"TO"} = Timeout, \code{"RL"} = Rate limit, \code{"CWE"} = Context window exceeded, \code{"NFB"} = No fallback.}
+\code{"G3"} is a gate. The basic events are \code{"AF"} = API failure, \code{"TO"} = Timeout,
+\code{"RL"} = Rate limit, and \code{"CWE"} = Context window exceeded.}
 \item{type}{\code{factor} classification as "top", "and", "or", or "not" (meaning "not" a gate).}
 }
 }
@@ -30,10 +29,8 @@ due to model errors, prompt issues, API failures, and context limitations.
 The fault tree structure:
 \itemize{
 \item Top event: AI agent task failure
-\item G1 (OR): Model error OR Prompt error
-\item G2 (AND): Training data issue AND Validation failure
+\item T (AND): G3 AND Context window exceeded
 \item G3 (OR): API failure OR Timeout OR Rate limit
-\item G4 (AND): Context window exceeded AND No fallback
 }
 }
 \examples{

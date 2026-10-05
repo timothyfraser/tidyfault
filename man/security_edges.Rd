@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{security_edges}}{
 
-A data frame with 11 rows and 2 columns:
+A data frame with 10 rows and 2 columns:
 \describe{
 \item{from}{Unique \code{id} of the source/\code{from} node from which edge originates.}
 \item{to}{Unique \code{id} of the destination/\code{to} node that edge connects to.}

@@ -9,7 +9,7 @@
 #' @param newdata (Required) Binary event states (0/1 or TRUE/FALSE) for each basic
 #'   event. Either a tibble/data frame with one column per basic event (names from
 #'   \code{formalArgs(f)}), or a single vector/list. A single scenario can be an
-#'   unnamed vector in \code{formalArgs(f)} order (e.g. \code{c(T, T, T, F)} or
+#'   unnamed vector in \code{formalArgs(f)} order (e.g. \code{c(TRUE, TRUE, TRUE, FALSE)} or
 #'   \code{c(1, 1, 0, 1)}), or a named vector/list. Values are logical (TRUE/FALSE)
 #'   or numeric (0/1), where 1/TRUE means the event occurred and 0/FALSE means it did not.
 #'
@@ -36,7 +36,7 @@
 #' @importFrom methods formalArgs
 #' @importFrom tibble as_tibble
 #' @examples
-#' library(tidyverse)
+#' library(dplyr)
 #' library(tidyfault)
 #' data("fakenodes")
 #' data("fakeedges")
@@ -45,7 +45,7 @@
 #' curate(nodes = fakenodes, edges = fakeedges) %>%
 #'   equate() %>%
 #'   formulate() %>%
-#'   quantify_binary(c(T, T, T, F))
+#'   quantify_binary(c(TRUE, TRUE, TRUE, FALSE))
 #'
 #' f <- curate(nodes = fakenodes, edges = fakeedges) %>%
 #'   equate() %>%

@@ -33,7 +33,7 @@
 #' @importFrom tibble as_tibble
 #' @export
 #' @examples
-#' library(tidyverse)
+#' library(dplyr)
 #' library(tidyfault)
 #'
 #' data("db_outcomes_binary")

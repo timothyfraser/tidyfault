@@ -41,7 +41,7 @@ Minimum cutsets represent the smallest combinations of basic events that can cau
 }
 \examples{
 # Load dependencies
-library(tidyverse)
+library(dplyr)
 library(tidyfault)
 
 # Load example data into our environment

@@ -71,7 +71,7 @@ basic event (names must match \code{formalArgs(f)})
 }
 }
 \examples{
-library(tidyverse)
+library(dplyr)
 library(tidyfault)
 data("fakenodes")
 data("fakeedges")
@@ -81,7 +81,7 @@ f <- curate(nodes = fakenodes, edges = fakeedges) \%>\%
   formulate()
 
 # Binary evaluation (default): single scenario
-f \%>\% quantify(c(T, T, T, F))
+f \%>\% quantify(c(TRUE, TRUE, TRUE, FALSE))
 f \%>\% quantify(c(TRUE, FALSE, TRUE, FALSE))
 
 # Binary evaluation: multiple scenarios

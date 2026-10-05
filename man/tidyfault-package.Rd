@@ -8,7 +8,16 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-R Package for tidy fault tree analysis! Uses tidygraph and tidyverse packages, among others, to visualize fault trees, identify minimal cutsets, and other quantities of interest.
+Fault tree analysis with tidy data. Represents a fault tree as tables of nodes and edges, uses 'tidygraph' and 'ggraph' to lay out and draw it, and derives minimal cut sets and top event probabilities. Evaluates binary and probabilistic scenarios, and simulates random fault trees.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://tidyfault.netlify.app}
+  \item \url{https://github.com/timothyfraser/tidyfault}
+  \item Report bugs at \url{https://github.com/timothyfraser/tidyfault/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Timothy Fraser \email{timothy.fraser.1@gmail.com} (\href{https://orcid.org/0000-0002-4509-0244}{ORCID})
