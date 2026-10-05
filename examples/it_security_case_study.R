@@ -15,8 +15,9 @@
 #   4. Ask "which fix buys the most?": cut each failure rate by 5%, one at a
 #      time, and measure how much the top event's probability drops.
 #   5. Sweep four scenarios over 10 years (fix A, fix B, both, neither),
-#      simulating uncertainty in every failure rate, and report the
-#      probability of the top event with 90% intervals.
+#      where a fix removes 90% of a component's failures, simulating
+#      uncertainty in every failure rate, and report the probability of the
+#      top event with 90% intervals.
 #   6. Simulate 10,000 possible worlds for one year, to show the full
 #      distribution of the risk.
 #
@@ -27,14 +28,13 @@
 
 library(dplyr)     # data wrangling
 library(tidyr)     # pivot_wider(), crossing()
-library(purrr)     # map()
 library(tidyfault) # fault tree analysis
 
 set.seed(20261012) # the conference date, so every run gives the same draws
 
 horizon = 1        # the time window for a single probability (years)
 cut = 0.05         # step 4: cut each failure rate by 5%
-fix = 0.50         # step 5: a "fix" halves a component's failure rate
+fix = 0.10         # step 5: a "fix" cuts a component's failure rate by 90%
 cv = 0.20          # uncertainty: each failure rate varies by +/- 20% (sd / mean)
 n_sims = 1000      # step 5: simulations per scenario and time step
 n_worlds = 10000   # step 6: simulated worlds for one year
@@ -84,57 +84,40 @@ p_top = quantify(f = f, newdata = probs, prob = TRUE)
 
 # 4. Which fix buys the most? ###############################################
 
-# Make one row per "what-if": cut one component's failure rate by 5%, keep
-# the others as they are. Add the unchanged baseline as a final row.
-whatif = names(rates) %>%
-  map(~ rates %>% mutate(across(all_of(.x), ~ .x * (1 - cut)), changed = .x)) %>%
-  bind_rows() %>%
-  bind_rows(rates %>% mutate(changed = "none")) %>%
-  # Convert every rate to a probability within the horizon...
-  mutate(across(-changed, ~ pexp(q = horizon, rate = .x))) %>%
-  # ...and compute the top event's probability for all 11 rows in one call.
-  mutate(p_top = quantify(f = f, newdata = pick(-changed), prob = TRUE))
+# quantify_if() asks "what if?" once per component: cut that component's
+# failure rate by 5%, keep the others as they are, turn every rate into a
+# probability within the horizon, and recompute the top event. The baseline
+# and all 10 what-ifs go through the fault tree in one call.
+whatif = quantify_if(f = f, data = rates, cut = cut, time = horizon)
 
-# Express each what-if as a percent change from the baseline.
-baseline = whatif %>% filter(changed == "none") %>% pull(p_top)
+# The top event's probability with no cut (the same in every row).
+baseline = whatif$baseline[1]
 
+# Each what-if as a change from the baseline, biggest drop first.
 marginal_effects = whatif %>%
-  filter(changed != "none") %>%
-  mutate(change = p_top - baseline,
-         pct_change = 100 * (p_top / baseline - 1)) %>%
-  arrange(pct_change) %>%
-  select(changed, p_top, change, pct_change)
+  select(changed = event, p_top, change, pct_change)
 
 
 # 5. Scenario sweep over time ###############################################
 
 # Four scenarios: fix neither, fix A only, fix B only, or fix both.
-scenarios = tibble(
-  scenario = c("Neither", "Fix A only", "Fix B only", "Fix A and B"),
-  fix_a = c(FALSE, TRUE, FALSE, TRUE),
-  fix_b = c(FALSE, FALSE, TRUE, TRUE)
+# stipulate() writes one row of failure rates per scenario; each fix
+# multiplies that component's rate by `fix` (0.10 keeps 10% of its failures).
+scenarios = stipulate(
+  rates,
+  "Fix A only"  = setNames(fix, component_a),
+  "Fix B only"  = setNames(fix, component_b),
+  "Fix A and B" = setNames(c(fix, fix), c(component_a, component_b)),
+  baseline = "Neither"
 )
 
-# Uncertainty: we don't know each failure rate exactly. Draw n_sims plausible
-# values per component from a Normal around its estimate (sd = cv * lambda),
-# floored at zero. Every scenario reuses the SAME draws (common random
-# numbers), so differences between scenarios come from the fixes, not noise.
-draws = it_security_outcomes_rates %>%
-  select(event, lambda) %>%
-  crossing(sim = seq_len(n_sims)) %>%
-  mutate(lambda_sim = pmax(rnorm(n = n(), mean = lambda, sd = cv * lambda), 0))
-
-sweep = draws %>%
-  crossing(scenarios) %>%
-  # Apply each scenario's fixes: halve the failure rate of A and/or B.
-  mutate(lambda_sim = case_when(
-    event == component_a & fix_a ~ lambda_sim * fix,
-    event == component_b & fix_b ~ lambda_sim * fix,
-    TRUE ~ lambda_sim
-  )) %>%
-  # One row per scenario and simulation, one column per component's rate.
-  select(scenario, sim, event, lambda_sim) %>%
-  pivot_wider(names_from = event, values_from = lambda_sim) %>%
+# Uncertainty: we don't know each failure rate exactly. fluctuate() draws
+# n_sims plausible values per component from a Normal around its estimate
+# (sd = cv * lambda), floored at zero. Every scenario reuses the SAME draws
+# (common random numbers), so differences between scenarios come from the
+# fixes, not noise.
+sweep = scenarios %>%
+  fluctuate(n = n_sims, cv = cv) %>%
   # Repeat every row for each time step from 0 to 10 years...
   crossing(years = seq(from = 0, to = 10, by = 0.5)) %>%
   # ...turn rates into probabilities of failing by that time...
@@ -154,8 +137,7 @@ over_time = sweep %>%
     p_top = median(p_top),
     .groups = "drop"
   ) %>%
-  mutate(reliability = 1 - p_top,
-         scenario = factor(scenario, levels = scenarios$scenario)) %>%
+  mutate(reliability = 1 - p_top) %>%
   arrange(scenario, years)
 
 
@@ -163,13 +145,10 @@ over_time = sweep %>%
 
 # Same idea as step 5, for one year and no fixes, with many more draws: each
 # row is one possible world with its own set of failure rates.
-worlds = it_security_outcomes_rates %>%
-  select(event, lambda) %>%
-  crossing(world = seq_len(n_worlds)) %>%
-  mutate(p = pexp(q = horizon,
-                  rate = pmax(rnorm(n = n(), mean = lambda, sd = cv * lambda), 0))) %>%
-  select(world, event, p) %>%
-  pivot_wider(names_from = event, values_from = p)
+worlds = rates %>%
+  fluctuate(n = n_worlds, cv = cv) %>%
+  rename(world = sim) %>%
+  mutate(across(all_of(names(rates)), ~ pexp(q = horizon, rate = .x)))
 
 # All 10,000 worlds through the fault tree in one call.
 worlds = worlds %>%

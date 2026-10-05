@@ -94,6 +94,12 @@ reference:
       - quantify_binary_fast
       - quantify_prob
       - quantify_prob_fast
+  - title: What-ifs and uncertainty
+    desc: Which fix buys the most, scenario tables, and uncertainty draws.
+    contents:
+      - quantify_if
+      - stipulate
+      - fluctuate
   - title: Example fault trees
     desc: Node and edge tables for the bundled example fault trees.
     contents:

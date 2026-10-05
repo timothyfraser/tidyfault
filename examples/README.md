@@ -15,6 +15,18 @@ Both scripts follow the same steps: build the tree, turn failure rates into
 probabilities, find the minimal cut sets, rank the fixes, sweep four scenarios
 over 10 years with uncertainty, and simulate 10,000 possible worlds.
 
+Three tidyfault helpers do the what-if work, with the same names in R and
+Python:
+
+- `quantify_if()` ranks the fixes (step 4): it cuts each failure rate by 5% in
+  turn and reports how much the probability of the top event drops.
+- `stipulate()` writes the scenario table (step 5): fix neither, fix A only
+  (add multi-factor authentication, `MN`), fix B only (patch on time, `PO`), or
+  both. A fix removes 90% of that component's failures.
+- `fluctuate()` adds uncertainty (steps 5 and 6): it draws plausible failure
+  rates around each estimate (+/- 20%), and every scenario reuses the same
+  draws, so the differences between scenarios come from the fixes alone.
+
 ## Run it
 
 From the root of the repository:
@@ -25,7 +37,7 @@ python examples/it_security_case_study.py
 ```
 
 You need the tidyfault package for the language you use. The R script also uses
-dplyr, tidyr and purrr. The Python script uses pandas and numpy.
+dplyr and tidyr. The Python script uses pandas and numpy.
 
 Both scripts also run in the browser on the tidyfault website, through webR (R)
 and Pyodide (Python). Nothing needs to be installed.
