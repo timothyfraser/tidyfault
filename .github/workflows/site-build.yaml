@@ -1,0 +1,46 @@
+# Build and verify the website on PRs that touch it. Never deploys:
+# Netlify builds main itself (netlify.toml). Path-filtered, drafts skipped,
+# cancel-in-progress, because Actions minutes are scarce.
+name: site-build
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "website/**"
+      - "man/**"
+      - "NAMESPACE"
+      - "DESCRIPTION"
+      - "_pkgdown.yml"
+      - "python/src/**"
+      - "netlify.toml"
+      - ".github/workflows/site-build.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+jobs:
+  build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - run: npm ci
+      # check-generated (inside build) fails if the reference JSON is stale.
+      - run: npm run build
+      # The runner ships Google Chrome; verify-site.mjs uses it via CHROME_PATH.
+      - run: node scripts/verify-site.mjs
+        env:
+          CHROME_PATH: /usr/bin/google-chrome

@@ -30,7 +30,7 @@
 #' @examples
 #' 
 #' # Load dependencies
-#' library(tidyverse)
+#' library(dplyr)
 #' library(tidyfault)
 #' 
 #' # Load example data into our environment

@@ -3,6 +3,12 @@
 
 # tidyfault
 
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/timothyfraser/tidyfault/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/timothyfraser/tidyfault/actions/workflows/R-CMD-check.yaml)
+[![python-tests](https://github.com/timothyfraser/tidyfault/actions/workflows/python-tests.yaml/badge.svg)](https://github.com/timothyfraser/tidyfault/actions/workflows/python-tests.yaml)
+<!-- badges: end -->
+
 <img src="man/figures/logo.png" align="right" width="120" style="float: right; margin-left: 1rem;" alt="tidyfault logo" />
 
 ## R Package for tidy *Fault Tree Analysis* (FTA)!
@@ -31,12 +37,9 @@ plotting tools in R.
 <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=520&amp;q=70" width="48%" alt="Close-up of a printed circuit board"/>
 
 <details>
-
 <summary>
-
 Image Sources
 </summary>
-
 All photographs are served from the [Unsplash](https://unsplash.com/)
 CDN and are subject to the [Unsplash
 License](https://unsplash.com/license).
@@ -48,14 +51,14 @@ License](https://unsplash.com/license).
 
 ## Key capabilities
 
-| Capability | What tidyfault provides |
-|----|----|
-| Tidy inputs | Fault trees as [`nodes` / `edges`](https://tidyfault.netlify.app/reference/curate.html) tables (one row per gate or basic event, one row per directed link). |
-| Core pipeline | [`curate()`](https://tidyfault.netlify.app/reference/curate.html) → [`equate()`](https://tidyfault.netlify.app/reference/equate.html) → [`formulate()`](https://tidyfault.netlify.app/reference/formulate.html) → [`calculate()`](https://tidyfault.netlify.app/reference/calculate.html) → [`concentrate()`](https://tidyfault.netlify.app/reference/concentrate.html) → [`tabulate()`](https://tidyfault.netlify.app/reference/tabulate.html). |
-| Minimal cutsets | MOCUS-style expansion ([`mocus()`](https://tidyfault.netlify.app/reference/mocus.html), Rcpp-backed by default) plus boolean reduction in [`concentrate()`](https://tidyfault.netlify.app/reference/concentrate.html). |
-| Visualization | [`illustrate()`](https://tidyfault.netlify.app/reference/illustrate.html) and [`plot()`](https://tidyfault.netlify.app/reference/plot.html) for **ggplot2** / **ggraph** fault tree layouts. |
-| Quantification | [`quantify()`](https://tidyfault.netlify.app/reference/quantify.html) for binary scenarios or top-event probabilities over many rows at once. |
-| Documentation | [Articles](https://tidyfault.netlify.app/articles/index.html) on workflows, plotting, `quantify()`, and simulation. |
+| Capability      | What tidyfault provides                                                                                                                                                                                                                                                                                                                                                                                                                          |
+|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Tidy inputs     | Fault trees as [`nodes` / `edges`](https://tidyfault.netlify.app/reference/curate.html) tables (one row per gate or basic event, one row per directed link).                                                                                                                                                                                                                                                                                     |
+| Core pipeline   | [`curate()`](https://tidyfault.netlify.app/reference/curate.html) → [`equate()`](https://tidyfault.netlify.app/reference/equate.html) → [`formulate()`](https://tidyfault.netlify.app/reference/formulate.html) → [`calculate()`](https://tidyfault.netlify.app/reference/calculate.html) → [`concentrate()`](https://tidyfault.netlify.app/reference/concentrate.html) → [`tabulate()`](https://tidyfault.netlify.app/reference/tabulate.html). |
+| Minimal cutsets | MOCUS-style expansion ([`mocus()`](https://tidyfault.netlify.app/reference/mocus.html), Rcpp-backed by default) plus boolean reduction in [`concentrate()`](https://tidyfault.netlify.app/reference/concentrate.html).                                                                                                                                                                                                                           |
+| Visualization   | [`illustrate()`](https://tidyfault.netlify.app/reference/illustrate.html) and [`plot()`](https://tidyfault.netlify.app/reference/plot.html) for **ggplot2** / **ggraph** fault tree layouts.                                                                                                                                                                                                                                                     |
+| Quantification  | [`quantify()`](https://tidyfault.netlify.app/reference/quantify.html) for binary scenarios or top-event probabilities over many rows at once.                                                                                                                                                                                                                                                                                                    |
+| Documentation   | [Articles](https://tidyfault.netlify.app/articles/index.html) on workflows, plotting, `quantify()`, and simulation.                                                                                                                                                                                                                                                                                                                              |
 
 ------------------------------------------------------------------------
 
@@ -119,7 +122,7 @@ myfunction = myequation %>% formulate()
 myfunction
 #> function (A, B, C, D) 
 #> (((B * (C + D)) * (A + (B * C))))
-#> <environment: 0x000002d1cfb479a8>
+#> <environment: 0x558fc1cd8538>
 ```
 
 4.  `calculate()` the full truth table of all possible combinations of
@@ -168,7 +171,10 @@ mytable
 
 ``` r
 myviz <- illustrate(nodes = fakenodes, edges = fakeedges, type = "both")
-myplot <- plot(myviz)
+myplot <- plot(
+  myviz,
+  gate_fill = c(top = "#382a54", and = "#395d9c", or = "#3eb4ad", "basic event" = "#def5e5")
+)
 myplot
 ```
 

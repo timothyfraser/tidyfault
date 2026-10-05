@@ -15,13 +15,13 @@
 #'   \itemize{
 #'     \item For `type = "nodes"`: A data.frame with node coordinates (`x`, `y`) and all original columns from `nodes`
 #'     \item For `type = "edges"`: A data.frame with edge coordinates formatted for `geom_line()`, containing columns `direction`, `id`, `x`, `y`, `edge_id`
-#'     \item For `type = "both"` (default): A named list with three elements:
+#'     \item For `type = "both"` (default): A named list of class `c("tidyfault_tree", "list")` (so `plot()` dispatches to `plot.tidyfault_tree()`) with three elements:
 #'       \itemize{
 #'         \item `nodes`: Node coordinates data.frame
 #'         \item `edges`: Edge coordinates data.frame
 #'         \item `gates`: Gate polygon coordinates data.frame with `x`, `y` columns for drawing gate shapes
 #'       }
-#'     \item For `type = "all"`: A named list with four elements: `nodes`, `edges`, `gates`, and `pairwise` (edge data with from/to coordinates)
+#'     \item For `type = "all"`: A named list of class `c("tidyfault_tree", "list")` with four elements: `nodes`, `edges`, `gates`, and `pairwise` (edge data with from/to coordinates)
 #'   }
 #' 
 #' @details This function prepares fault tree data for visualization with ggplot2 by:
@@ -110,12 +110,14 @@ illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), n
       # Bind the nodes and edges together as a list and return them!
       list(gnodes, gedges, ggates) %>% 
         purrr::set_names(nm = c("nodes", "edges", "gates")) %>%
+        structure(class = c("tidyfault_tree", "list")) %>%
         return()
     }else if(type == "all"){
       # Alternatively, if you select "all"
       # then return every version of the data
       list(gnodes, gedges, ggates, gpairs) %>% 
         purrr::set_names(nm = c("nodes", "edges", "gates", "pairwise")) %>%
+        structure(class = c("tidyfault_tree", "list")) %>%
         return()
     }
   }

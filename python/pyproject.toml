@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tidyfault"
+version = "0.0.0.9"
+description = "Tidy fault tree analysis in Python: the twin of the tidyfault R package."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "GPL-3.0-only"
+authors = [{ name = "Timothy Fraser" }, { name = "Jingyao Tong" }]
+dependencies = [
+    "pandas>=2",
+    "numpy>=1.26",
+    "igraph>=0.11",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/timothyfraser/tidyfault"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tidyfault"]
+# data/*.csv sit inside the package directory, so the wheel includes them.
+
+[tool.hatch.build.targets.sdist]
+include = ["src/tidyfault", "tests", "README.md", "pyproject.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

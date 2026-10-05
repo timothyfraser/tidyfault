@@ -37,7 +37,7 @@ not occur), it remains 0. This creates a data frame suitable for probabilistic
 evaluation where only occurring events have probability values.
 }
 \examples{
-library(tidyverse)
+library(dplyr)
 library(tidyfault)
 
 data("db_outcomes_binary")

@@ -35,7 +35,7 @@ The function uses R's arithmetic operators where multiplication (\code{*}) repre
 \examples{
 
 # Load dependencies
-library(tidyverse)
+library(dplyr)
 library(tidyfault)
 
 # Load example data into our environment

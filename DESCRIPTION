@@ -6,7 +6,10 @@ Authors@R:
              comment = c(ORCID = "0000-0002-4509-0244")),
       person("Jingyao", "Tong", , "jingyaotong6@gmail.com", role = c("aut"),
              comment = c(ORCID = "0009-0009-6147-756X")))
-Description: R Package for tidy fault tree analysis! Uses tidygraph and tidyverse packages, among others, to visualize fault trees, identify minimal cutsets, and other quantities of interest.
+Description: Fault tree analysis with tidy data. Represents a fault tree as
+    tables of nodes and edges, uses 'tidygraph' and 'ggraph' to lay out and draw
+    it, and derives minimal cut sets and top event probabilities. Evaluates
+    binary and probabilistic scenarios, and simulates random fault trees.
 URL: https://tidyfault.netlify.app, https://github.com/timothyfraser/tidyfault
 BugReports: https://github.com/timothyfraser/tidyfault/issues
 License: GPL-3 + file LICENSE
@@ -16,15 +19,16 @@ RoxygenNote: 7.3.3
 Depends: 
     R (>= 3.5)
 Imports:
-    admisc,
     dplyr,
     ggplot2,
     ggraph,
+    graphics,
     methods,
     purrr,
     Rcpp,
     rlang,
     scales,
+    stats,
     stringr,
     tibble,
     tidyr,
@@ -33,6 +37,8 @@ LinkingTo:
     Rcpp
 Suggests:
     knitr,
+    litedown,
+    markdown,
     pkgload,
     rmarkdown,
     testthat (>= 3.0.0)

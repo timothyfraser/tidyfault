@@ -33,7 +33,7 @@ The function is designed to work with boolean functions created by \code{formula
 \examples{
 
 # Load dependencies
-library(tidyverse)
+library(dplyr)
 library(tidyfault)
 
 # Load example data into our environment

@@ -14,7 +14,8 @@ knitr::opts_chunk$set(
   warning = FALSE,
   fig.width = 7,
   fig.height = 4.5,
-  fig.align = "center"
+  fig.align = "center",
+  dpi = 300
 )
 ```
 
@@ -32,7 +33,10 @@ data("db_nodes")
 data("db_edges")
 
 gg_db <- illustrate(nodes = db_nodes, edges = db_edges, type = "all")
-plot(gg_db)
+plot(
+  gg_db,
+  gate_fill = c(top = "#382a54", and = "#395d9c", or = "#3eb4ad", "basic event" = "#def5e5")
+)
 ```
 
 ### What `illustrate()` returns
@@ -54,7 +58,10 @@ gg_sec <- illustrate(
   edges = it_security_edges,
   type = "both"
 )
-plot(gg_sec)
+plot(
+  gg_sec,
+  gate_fill = c(top = "#382a54", and = "#395d9c", or = "#3eb4ad", "basic event" = "#def5e5")
+)
 ```
 
 ---
