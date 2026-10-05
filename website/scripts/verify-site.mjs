@@ -134,8 +134,9 @@ try {
     await page.click('button:has-text("R")');
     const r = await page.textContent(".chunk");
     if (!r.includes('[1] "B*C"') || !r.includes("[1] 0.01285")) fail(`${name}: R chunk output missing`);
-    if (!(await page.$eval(".chunk .btn-run", (b) => b.disabled))) fail(`${name}: Run button should be disabled`);
-    ok(`${name}: language toggle and disabled Run button`);
+    // Both tabs run live now (Pyodide RT-01, webR RT-02); the R tab keeps its saved output until run.
+    if (await page.$eval(".chunk .btn-run", (b) => b.disabled)) fail(`${name}: R Run button should be enabled`);
+    ok(`${name}: language toggle; R Run button enabled with the saved output shown`);
 
     // horizontal overflow
     const sw = await page.evaluate(() => document.documentElement.scrollWidth);
