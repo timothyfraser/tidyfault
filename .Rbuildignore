@@ -5,3 +5,5 @@
 ^tidyfault.*\.tgz$
 ^doc$
 ^Meta$
+^python$
+^website$
