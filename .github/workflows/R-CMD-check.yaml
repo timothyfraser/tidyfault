@@ -1,0 +1,80 @@
+# R CMD check on the three desktop platforms, R release.
+# Path-filtered and cancel-in-progress because Actions minutes are scarce.
+name: R-CMD-check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "R/**"
+      - "src/**"
+      - "tests/**"
+      - "man/**"
+      - "vignettes/**"
+      - "data/**"
+      - "DESCRIPTION"
+      - "NAMESPACE"
+      - ".github/workflows/R-CMD-check.yaml"
+  pull_request:
+    # Drafts run no CI (Actions minutes are scarce): the job's `if` skips them,
+    # and ready_for_review triggers the first run when the PR is marked ready.
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "R/**"
+      - "src/**"
+      - "tests/**"
+      - "man/**"
+      - "vignettes/**"
+      - "data/**"
+      - "DESCRIPTION"
+      - "NAMESPACE"
+      - ".github/workflows/R-CMD-check.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+jobs:
+  R-CMD-check:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { os: ubuntu-latest, r: "release" }
+          - { os: macos-latest, r: "release" }
+          - { os: windows-latest, r: "release" }
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      # error-on is "error" for now: the package still has check warnings.
+      # PKG-09 (R CMD check hygiene) will tighten this to '"warning"' so CI
+      # requires 0 errors and 0 warnings.
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          args: 'c("--no-manual","--as-cran")'
+          error-on: '"error"'
+          upload-snapshots: true

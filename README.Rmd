@@ -23,6 +23,11 @@ if (requireNamespace("pkgload", quietly = TRUE) && file.exists("R/plot.R")) {
 
 # tidyfault
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/timothyfraser/tidyfault/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/timothyfraser/tidyfault/actions/workflows/R-CMD-check.yaml)
+[![python-tests](https://github.com/timothyfraser/tidyfault/actions/workflows/python-tests.yaml/badge.svg)](https://github.com/timothyfraser/tidyfault/actions/workflows/python-tests.yaml)
+<!-- badges: end -->
+
 <img src="man/figures/logo.png" align="right" width="120" style="float: right; margin-left: 1rem;" alt="tidyfault logo" />
 
 ## R Package for tidy *Fault Tree Analysis* (FTA)!
