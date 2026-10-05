@@ -50,57 +50,81 @@
 
 
 equate = function(data){
-  
-  # Let's write a function to return the boolean equation
-  # for any data.frame of gates and sets provided
-  
-  # As long as [set] contains any value in gates$event,
-  # continue doing str_replace
-  
-  # Let's write a loop to EVALUATE the total number of gates present in each set
-  present = function(data){
-    gate_present = c()
-    for(i in 1:length(data$gate)){
-      gate_present[i] = str_detect(data$set, pattern = data$gate[i]) %>% sum()
-    }
-    # Tally up total number of gates that have a gate present in their set
-    sum(gate_present) %>% return()
+
+  # Gate names are matched as WHOLE TOKENS only: a gate named `T` must not match
+  # inside the basic event `TO`. Names are regex-escaped first, so metacharacters
+  # in a name (".", "(", "+") are literal.
+  gates = as.character(data$gate)
+  patterns = paste0(
+    "(?<![A-Za-z0-9_.])", escape_regex(gates), "(?![A-Za-z0-9_.])")
+
+  # For each gate, which gates does its set mention?
+  mentions = function(sets) {
+    lapply(sets, function(s) {
+      which(vapply(patterns, function(p) grepl(p, s, perl = TRUE), logical(1)))
+    })
   }
-  
-  # present(df)
-  
-  # Evaluate post-loop how many gates remain present in the set
-  # As long as sum(df$gate_present) remains > 0
-  # Keep running this loop
-  while(present(data = data) > 0){
-    
-    # print("simplifying...")
-    
-    # For each gate,
-    for(i in 1:length(data$gate)){  
-      # Analyze our vector of cells
-      data$set <- data$set %>% 
-        str_replace(
-          # Identify any cells in that vector that 
-          # contain the name of gate 'i'
-          pattern = data$gate[i], 
-          # Replace the name of gate 'i' in that cell 
-          # with the contents of gate 'i''s set.
-          replacement = data$set[i])
+
+  # A gate that expands into itself, directly or through others, would be
+  # substituted forever. Stop and name the gates in the cycle.
+  check_acyclic(gates = gates, refs = mentions(data$set))
+
+  # Number of (gate, set) pairs where the gate name still appears in the set
+  present = function(sets) {
+    sum(vapply(patterns, function(p) sum(grepl(p, sets, perl = TRUE)), numeric(1)))
+  }
+
+  # Replace the first whole-token occurrence of `pattern` in each element of `x`
+  # with `replacement`, literally (no backreferences).
+  replace_first = function(x, pattern, replacement) {
+    m = regexpr(pattern, x, perl = TRUE)
+    regmatches(x, m) <- replacement
+    x
+  }
+
+  # Keep substituting until only basic events remain
+  while(present(data$set) > 0){
+    for(i in seq_along(gates)){
+      data$set <- replace_first(data$set, patterns[i], data$set[i])
     }
   }
-  
-  
+
   # The set for the FIRST gate will be the Boolean expression for the entire fault tree
   equation = data$set[1]
-  
+
   # Defensive cleanup: replace any remaining | characters with + (OR operator)
   # This ensures the equation always uses + for OR operations, even if curate() missed some cases
   equation = equation %>%
     str_replace_all(pattern = "[|]", replacement = " + ")
-  
-  # print("fault tree equation found")
-  
+
   # equation is a character representation of the function.
   return(equation)
+}
+
+# Escape regex metacharacters so a gate name matches literally
+escape_regex = function(x) {
+  gsub("([][{}()+*^$|\\\\?.-])", "\\\\\\1", x)
+}
+
+# Depth-first search for a cycle in the gate reference graph.
+# `refs[[i]]` holds the indices of gates mentioned in gate i's set.
+check_acyclic = function(gates, refs) {
+  state = integer(length(gates)) # 0 = unseen, 1 = on the path, 2 = done
+  visit = function(i, path) {
+    if (state[i] == 1L) {
+      cycle = c(path[match(i, path):length(path)], i)
+      stop(
+        "equate(): gates reference each other in a cycle: ",
+        paste(gates[cycle], collapse = " -> "),
+        ". Remove the loop so every gate bottoms out in basic events.",
+        call. = FALSE)
+    }
+    if (state[i] == 2L) return(invisible())
+    state[i] <<- 1L
+    for (j in refs[[i]]) visit(j, c(path, i))
+    state[i] <<- 2L
+    invisible()
+  }
+  for (i in seq_along(gates)) visit(i, integer())
+  invisible()
 }
