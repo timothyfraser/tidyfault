@@ -15,8 +15,9 @@
 #   4. Ask "which fix buys the most?": cut each failure rate by 5%, one at a
 #      time, and measure how much the top event's probability drops.
 #   5. Sweep four scenarios over 10 years (fix A, fix B, both, neither),
-#      simulating uncertainty in every failure rate, and report the
-#      probability of the top event with 90% intervals.
+#      where a fix removes 90% of a component's failures, simulating
+#      uncertainty in every failure rate, and report the probability of the
+#      top event with 90% intervals.
 #   6. Simulate 10,000 possible worlds for one year, to show the full
 #      distribution of the risk.
 #
@@ -35,7 +36,7 @@ rng = np.random.default_rng(20261012)  # the conference date, so every run gives
 
 horizon = 1        # the time window for a single probability (years)
 cut = 0.05         # step 4: cut each failure rate by 5%
-fix = 0.50         # step 5: a "fix" halves a component's failure rate
+fix = 0.10         # step 5: a "fix" cuts a component's failure rate by 90%
 cv = 0.20          # uncertainty: each failure rate varies by +/- 20% (sd / mean)
 n_sims = 1000      # step 5: simulations per scenario and time step
 n_worlds = 10000   # step 6: simulated worlds for one year
@@ -101,56 +102,39 @@ p_top = float(quantify_top(probs)[0])
 
 # 4. Which fix buys the most? #################################################
 
-# Make one row per "what-if": cut one component's failure rate by 5%, keep
-# the others as they are. Add the unchanged baseline as a final row.
-whatif = pd.concat(
-    [rates.assign(**{e: rates[e] * (1 - cut)}).assign(changed=e) for e in events]
-    + [rates.assign(changed="none")],
-    ignore_index=True,
-)
-# Convert every rate to a probability within the horizon...
-whatif[events] = pexp(horizon, whatif[events])
-# ...and compute the top event's probability for all 11 rows in one call.
-whatif["p_top"] = quantify_top(whatif)
+# quantify_if() asks "what if?" once per component: cut that component's
+# failure rate by 5%, keep the others as they are, turn every rate into a
+# probability within the horizon, and recompute the top event. The baseline
+# and all 10 what-ifs go through the fault tree in one call.
+whatif = tf.quantify_if(f, rates, cut=cut, time=horizon)
 
-# Express each what-if as a percent change from the baseline.
-baseline = whatif.loc[whatif["changed"] == "none", "p_top"].iloc[0]
+# The top event's probability with no cut (the same in every row).
+baseline = whatif["baseline"].iloc[0]
 
+# Each what-if as a change from the baseline, biggest drop first.
 marginal_effects = (
-    whatif[whatif["changed"] != "none"]
-    .assign(change=lambda d: d["p_top"] - baseline,
-            pct_change=lambda d: 100 * (d["p_top"] / baseline - 1))
-    .sort_values("pct_change", kind="stable")
+    whatif.rename(columns={"event": "changed"})
     [["changed", "p_top", "change", "pct_change"]]
-    .reset_index(drop=True)
 )
 
 
 # 5. Scenario sweep over time #################################################
 
 # Four scenarios: fix neither, fix A only, fix B only, or fix both.
-scenarios = pd.DataFrame({
-    "scenario": ["Neither", "Fix A only", "Fix B only", "Fix A and B"],
-    "fix_a": [False, True, False, True],
-    "fix_b": [False, False, True, True],
-})
+# stipulate() writes one row of failure rates per scenario; each fix
+# multiplies that component's rate by `fix` (0.10 keeps 10% of its failures).
+scenarios = tf.stipulate(rates, {
+    "Fix A only": {component_a: fix},
+    "Fix B only": {component_b: fix},
+    "Fix A and B": {component_a: fix, component_b: fix},
+}, baseline="Neither")
 
-# Uncertainty: we don't know each failure rate exactly. Draw n_sims plausible
-# values per component from a Normal around its estimate (sd = cv * lambda),
-# floored at zero. Every scenario reuses the SAME draws (common random
-# numbers), so differences between scenarios come from the fixes, not noise.
-lam = rates.iloc[0].to_numpy()
-draws = pd.DataFrame(np.maximum(rng.normal(loc=lam, scale=cv * lam,
-                                           size=(n_sims, len(events))), 0),
-                     columns=events)
-draws["sim"] = np.arange(1, n_sims + 1)
-
-# One row per scenario and simulation, one column per component's rate.
-sweep = scenarios.merge(draws, how="cross")
-# Apply each scenario's fixes: halve the failure rate of A and/or B.
-sweep[component_a] = np.where(sweep["fix_a"], sweep[component_a] * fix, sweep[component_a])
-sweep[component_b] = np.where(sweep["fix_b"], sweep[component_b] * fix, sweep[component_b])
-sweep = sweep.drop(columns=["fix_a", "fix_b"])
+# Uncertainty: we don't know each failure rate exactly. fluctuate() draws
+# n_sims plausible values per component from a Normal around its estimate
+# (sd = cv * lambda), floored at zero. Every scenario reuses the SAME draws
+# (common random numbers), so differences between scenarios come from the
+# fixes, not noise. Passing rng continues this script's random stream.
+sweep = tf.fluctuate(scenarios, n=n_sims, cv=cv, seed=rng)
 # Repeat every row for each time step from 0 to 10 years...
 sweep = sweep.merge(pd.DataFrame({"years": np.arange(0, 10.5, 0.5)}), how="cross")
 # ...turn rates into probabilities of failing by that time...
@@ -160,7 +144,6 @@ sweep["p_top"] = quantify_top(sweep)
 
 # Summarize each scenario at each time step: the median simulation and the
 # middle 90% of simulations (our interval). Reliability is 1 - P(top event).
-sweep["scenario"] = pd.Categorical(sweep["scenario"], categories=scenarios["scenario"])
 over_time = (
     sweep.groupby(["scenario", "years"], observed=True)["p_top"]
     .agg(lower=lambda x: x.quantile(0.05),
@@ -178,10 +161,8 @@ over_time = (
 
 # Same idea as step 5, for one year and no fixes, with many more draws: each
 # row is one possible world with its own set of failure rates.
-worlds = pd.DataFrame(pexp(horizon, np.maximum(rng.normal(loc=lam, scale=cv * lam,
-                                                          size=(n_worlds, len(events))), 0)),
-                      columns=events)
-worlds.insert(0, "world", np.arange(1, n_worlds + 1))
+worlds = tf.fluctuate(rates, n=n_worlds, cv=cv, seed=rng).rename(columns={"sim": "world"})
+worlds[events] = pexp(horizon, worlds[events])
 
 # All 10,000 worlds through the fault tree.
 worlds["p_top"] = quantify_top(worlds)

@@ -16,12 +16,18 @@
 
 * `equate()` matches gate names only as whole tokens, so a gate named `T` no longer matches inside a basic event named `TO` (which made it loop forever on `ai_nodes`), and it stops with an error naming the gates when a gate references itself directly or through other gates.
 
+* `fluctuate()` is new: it draws `n` plausible values per basic event from a Normal around each rate or probability (`sd = cv * value`, floored at zero), from one row of values or from a `stipulate()` scenario table. Every scenario reuses the same draws (common random numbers), so differences between scenarios come only from the scenarios.
+
 * `illustrate()` returns a `tidyfault_tree` object for `type = "both"` and `type = "all"`, and `plot()` is now its S3 method, so tidyfault no longer masks `base::plot()` (the generic is re-exported, so `tidyfault::plot(x)` works as before); the default palette follows the gate colours and gains an `edge_colour` argument.
 
 * quantify() gains a `fast` argument (default `TRUE`) that dispatches to `quantify_binary_fast()` or `quantify_prob_fast()` instead of the legacy pure-R implementations.
 
 * quantify_binary_fast() evaluates binary scenarios with the same semantics as `quantify_binary()` using streamlined coercion for larger batches.
 
+* `quantify_if()` is new: it cuts each basic event's failure rate (or probability) by `cut` in turn, evaluates the top event for all of them in one `quantify()` call, and returns `event`, `p_top`, `baseline`, `change` and `pct_change`, biggest drop first, answering "which fix buys the most?".
+
 * quantify_prob_fast() computes top-event probabilities with the same exact truth-table method as `quantify_prob()` using a compiled inner loop for faster multi-scenario evaluation.
 
 * `simulate()` gives the top event exactly one gate: with two or more gates (or none) it adds an OR gate `G0`, with the last node id, between the top event and the other gates. No random draw is added, so a seed gives the same gates, basic events and probabilities as before.
+
+* `stipulate()` is new: it builds a scenario table from one row of rates, with an unchanged baseline row first and one row per named scenario of multipliers, such as `stipulate(rates, "Fix A" = c(MN = 0.1))`.

@@ -17,8 +17,8 @@ otherwise.
 | Parity fixtures | JSON written by R | `python/tests/reference/` |
 
 The R suite has one `test-<name>.R` file per area of the package (`equate`,
-`gate`, `illustrate`, `mocus`, `plot`, `populate`, `quantify`, `simulate`,
-`workflow`). It checks fault-tree semantics (gate names match whole tokens, a
+`fluctuate`, `gate`, `illustrate`, `mocus`, `plot`, `populate`, `quantify`,
+`quantify_if`, `simulate`, `stipulate`, `workflow`). It checks fault-tree semantics (gate names match whole tokens, a
 top event is not a gate, cycles are refused), cut sets, probabilities, and the
 error messages users see.
 
