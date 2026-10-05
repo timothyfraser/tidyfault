@@ -49,6 +49,7 @@ fakeedges = tribble(
 # AI Agent Failure Fault Tree
 # Top event: AI agent task failure
 # Gates:
+#   G0 (OR): the top event's one gate (SPEC TF4.2); any branch fails the task
 #   G3 (OR): API failure OR timeout OR rate limit
 
 ai_nodes = tribble(
@@ -58,20 +59,23 @@ ai_nodes = tribble(
   3,  "AF",  "not",      # API failure
   4,  "TO",  "not",      # Timeout
   5,  "RL",  "not",      # Rate limit
-  6,  "CWE", "not") %>%  # Context window exceeded
+  6,  "CWE", "not",       # Context window exceeded
+  7,  "G0",  "or") %>%   # OR gate under the top event: G3 OR context window exceeded
   mutate(type = factor(type, levels = c("top", "and", "or", "not")))
 
 ai_edges = tribble(
   ~from, ~to,
-  1,   2,    # Top -> G3 (OR: API failure or timeout or rate limit)
+  1,   7,    # Top -> G0 (the top event's one gate)
+  7,   2,    # G0 -> G3 (OR: API failure or timeout or rate limit)
   2,   3,    # G3 -> API failure
   2,   4,    # G3 -> Timeout
   2,   5,    # G3 -> Rate limit
-  1,   6)    # Top -> Context window exceeded
+  7,   6)    # G0 -> Context window exceeded
 
 # Security Breach Fault Tree
 # Top event: Security breach detected
 # Gates:
+#   G0 (OR): the top event's one gate (SPEC TF4.2); any attack path is a breach
 #   G2 (AND): Vulnerability exists AND exploit successful
 #   G3 (OR): Phishing OR malware OR unauthorized access
 #   G4 (AND): Weak password AND no 2FA
@@ -88,25 +92,28 @@ security_nodes = tribble(
   8,  "MW",  "not",      # Malware
   9,  "UA",  "not",      # Unauthorized access
   10, "WP",  "not",      # Weak password
-  11, "N2F", "not") %>%  # No 2FA
+  11, "N2F", "not",       # No 2FA
+  12, "G0",  "or") %>%   # OR gate under the top event: G2 OR G3 OR G4
   mutate(type = factor(type, levels = c("top", "and", "or", "not")))
 
 security_edges = tribble(
   ~from, ~to,
-  1,   2,    # Top -> G2 (AND: vulnerability and exploit)
+  1,   12,   # Top -> G0 (the top event's one gate)
+  12,  2,    # G0 -> G2 (AND: vulnerability and exploit)
   2,   5,    # G2 -> Vulnerability exists
   2,   6,    # G2 -> Exploit successful
-  1,   3,    # Top -> G3 (OR: phishing or malware or unauthorized)
+  12,  3,    # G0 -> G3 (OR: phishing or malware or unauthorized)
   3,   7,    # G3 -> Phishing
   3,   8,    # G3 -> Malware
   3,   9,    # G3 -> Unauthorized access
-  1,   4,    # Top -> G4 (AND: weak password and no 2FA)
+  12,  4,    # G0 -> G4 (AND: weak password and no 2FA)
   4,   10,   # G4 -> Weak password
   4,   11)   # G4 -> No 2FA
 
 # Database System Failure Fault Tree
 # Top event: Database system unavailable
 # Gates:
+#   G0 (OR): the top event's one gate (SPEC TF4.2); any failure mode makes it unavailable
 #   G1 (OR): Data corruption OR Access failure
 #   G2 (AND): Storage failure AND Backup failure
 #   G3 (OR): Network failure OR Authentication failure
@@ -126,21 +133,23 @@ db_nodes = tribble(
   10, "NF",  "not",      # Network failure
   11, "AUF", "not",      # Authentication failure
   12, "HF",  "not",      # Hardware failure
-  13, "MF",  "not") %>%  # Monitoring failure
+  13, "MF",  "not",       # Monitoring failure
+  14, "G0",  "or") %>%   # OR gate under the top event: G1 OR G2 OR G3 OR G4
   mutate(type = factor(type, levels = c("top", "and", "or", "not")))
 
 db_edges = tribble(
   ~from, ~to,
-  1,   2,    # Top -> G1 (OR: data corruption or access failure)
+  1,   14,   # Top -> G0 (the top event's one gate)
+  14,  2,    # G0 -> G1 (OR: data corruption or access failure)
   2,   6,    # G1 -> Data corruption
   2,   7,    # G1 -> Access failure
-  1,   3,    # Top -> G2 (AND: storage failure and backup failure)
+  14,  3,    # G0 -> G2 (AND: storage failure and backup failure)
   3,   8,    # G2 -> Storage failure
   3,   9,    # G2 -> Backup failure
-  1,   4,    # Top -> G3 (OR: network failure or authentication failure)
+  14,  4,    # G0 -> G3 (OR: network failure or authentication failure)
   4,   10,   # G3 -> Network failure
   4,   11,   # G3 -> Authentication failure
-  1,   5,    # Top -> G4 (AND: hardware failure and monitoring failure)
+  14,  5,    # G0 -> G4 (AND: hardware failure and monitoring failure)
   5,   12,   # G4 -> Hardware failure
   5,   13)   # G4 -> Monitoring failure
 

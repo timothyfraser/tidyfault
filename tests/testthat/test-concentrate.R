@@ -2,9 +2,10 @@ cutsets_for <- function(nodes, edges, method = "mocus_rcpp") {
   concentrate(curate(nodes, edges), method = method)
 }
 
-test_that("concentrate matches the pre-change cutsets on bundled trees", {
+test_that("concentrate gives the recorded cutsets on bundled trees", {
   data("fakenodes", "fakeedges", package = "tidyfault")
   data("breach_nodes", "breach_edges", package = "tidyfault")
+  data("ai_nodes", "ai_edges", package = "tidyfault")
   data("db_nodes", "db_edges", package = "tidyfault")
   data("security_nodes", "security_edges", package = "tidyfault")
   data("it_security_nodes", "it_security_edges", package = "tidyfault")
@@ -16,15 +17,13 @@ test_that("concentrate matches the pre-change cutsets on bundled trees", {
   )
   expect_identical(
     cutsets_for(db_nodes, db_edges),
-    c(
-      "AF*AUF*BF*HF*MF*SF", "AF*BF*HF*MF*NF*SF",
-      "AUF*BF*DC*HF*MF*SF", "BF*DC*HF*MF*NF*SF"
-    )
+    c("AF", "AUF", "DC", "NF", "BF*SF", "HF*MF")
   )
   expect_identical(
     cutsets_for(security_nodes, security_edges),
-    c("ES*MW*N2F*VE*WP", "ES*N2F*PH*VE*WP", "ES*N2F*UA*VE*WP")
+    c("MW", "PH", "UA", "ES*VE", "N2F*WP")
   )
+  expect_identical(cutsets_for(ai_nodes, ai_edges), c("AF", "CWE", "RL", "TO"))
   expect_identical(
     cutsets_for(it_security_nodes, it_security_edges),
     c("DA*EP*IM", "LR*MN*PM", "MN*PC*PM", "PO*VS*WB")

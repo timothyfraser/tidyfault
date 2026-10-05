@@ -1,5 +1,5 @@
-"""R's simulate(): a random two-level fault tree (top -> AND/OR gates -> basic
-events) with a failure probability for every basic event. Same arguments, same
+"""R's simulate(): a random two-level fault tree (top -> one gate -> AND/OR gates
+-> basic events) with a failure probability for every basic event. Same arguments, same
 checks and the same return shape as R; the random draws come from numpy, so a
 seed reproduces Python runs, not R's stream (README, "Deviations from R")."""
 
@@ -24,7 +24,10 @@ def simulate(n_gates=3, n_basic=8, p_range=(0.01, 0.2), seed=None):
     nodes ``id, event, type`` (top "T", gates "G1".., basic events "E1"..),
     edges ``from, to``, prob ``event, probability`` (uniform in ``p_range``).
     Each gate gets at least two basic events, so at most ``n_basic // 2`` gates
-    are made. ``seed`` makes the result reproducible."""
+    are made. The top event is not a gate (SPEC TF4.2): with one gate, that gate
+    is its only child; otherwise an OR gate "G0", with the last id, sits between
+    the top event and the gates (or the basic events), as in R. G0 adds no
+    random draw. ``seed`` makes the result reproducible."""
     rng = np.random.default_rng(seed)
     p_range = list(p_range)
     if len(p_range) != 2 or not all(np.isfinite(np.asarray(p_range, dtype=float))):
@@ -43,23 +46,31 @@ def simulate(n_gates=3, n_basic=8, p_range=(0.01, 0.2), seed=None):
 
     basic_events = [f"E{i}" for i in range(1, n_basic + 1)]
     n_eff = min(n_gates, n_basic // 2)
-    if n_eff < 1:   # degenerate: the top event sits directly on the basic events
-        nodes = _nodes(["T"] + basic_events, ["top"] + ["not"] * n_basic)
-        edges = pd.DataFrame({"from": np.ones(n_basic, dtype="int64"),
-                              "to": np.arange(2, n_basic + 2, dtype="int64")})
+    if n_eff < 1:   # degenerate: top -> G0 (OR) -> the basic events
+        root = n_basic + 2
+        nodes = _nodes(["T"] + basic_events + ["G0"], ["top"] + ["not"] * n_basic + ["or"])
+        edges = pd.DataFrame({"from": np.concatenate([[1], np.full(n_basic, root)]).astype("int64"),
+                              "to": np.concatenate([[root], np.arange(2, n_basic + 2)]).astype("int64")})
     else:
         gate_types = list(rng.choice(["and", "or"], size=n_eff, replace=True))
-        nodes = _nodes(["T"] + [f"G{i}" for i in range(1, n_eff + 1)] + basic_events,
-                       ["top"] + gate_types + ["not"] * n_basic)
+        add_root = n_eff > 1
+        nodes = _nodes(["T"] + [f"G{i}" for i in range(1, n_eff + 1)] + basic_events
+                       + (["G0"] if add_root else []),
+                       ["top"] + gate_types + ["not"] * n_basic + (["or"] if add_root else []))
         gate_ids = np.arange(2, n_eff + 2)
         basic_ids = np.arange(n_eff + 2, n_eff + 2 + n_basic)
         assignment = np.repeat(np.arange(n_eff), 2)             # two basic events per gate
         extra = n_basic - len(assignment)
         if extra > 0:
             assignment = np.concatenate([assignment, rng.integers(0, n_eff, size=extra)])
+        if add_root:   # top -> G0 -> each gate
+            root = n_eff + 2 + n_basic
+            top_from, top_to = np.concatenate([[1], np.full(n_eff, root)]), np.concatenate([[root], gate_ids])
+        else:          # top -> the one gate
+            top_from, top_to = np.ones(1), gate_ids
         edges = pd.DataFrame({
-            "from": np.concatenate([np.ones(n_eff, dtype="int64"), gate_ids[assignment]]).astype("int64"),
-            "to": np.concatenate([gate_ids, basic_ids]).astype("int64"),
+            "from": np.concatenate([top_from, gate_ids[assignment]]).astype("int64"),
+            "to": np.concatenate([top_to, basic_ids]).astype("int64"),
         })
     prob = pd.DataFrame({"event": basic_events,
                          "probability": rng.uniform(lo, hi, size=n_basic)})

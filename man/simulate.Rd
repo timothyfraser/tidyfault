@@ -18,22 +18,23 @@ simulate(n_gates = 3L, n_basic = 8L, p_range = c(0.01, 0.2), seed = NULL)
 \value{
 A list with three components:
 \itemize{
-\item \code{nodes}: Data frame with columns \code{id}, \code{event}, and \code{type}. Contains one top event (type \code{"top"}), \code{n_gates_eff} internal gates (type \code{"and"} or \code{"or"}), and \code{n_basic} basic events (type \code{"not"}). The \code{type} column is a factor with levels \code{c("top", "and", "or", "not")}.
-\item \code{edges}: Data frame with columns \code{from} and \code{to}, representing connections between nodes. The top event connects to all gates, and gates connect to their assigned basic events.
+\item \code{nodes}: Data frame with columns \code{id}, \code{event}, and \code{type}. Contains one top event (type \code{"top"}), \code{n_gates_eff} internal gates (type \code{"and"} or \code{"or"}), and \code{n_basic} basic events (type \code{"not"}), plus, unless \code{n_gates_eff == 1}, the OR gate \code{G0} with the last id. The \code{type} column is a factor with levels \code{c("top", "and", "or", "not")}.
+\item \code{edges}: Data frame with columns \code{from} and \code{to}, representing connections between nodes. The top event connects to its one gate (\code{G0}, which connects to all other gates, or the only gate \code{G1}), and gates connect to their assigned basic events.
 \item \code{prob}: Data frame with columns \code{event} and \code{probability}, containing probability values for each basic event, sampled uniformly from \code{p_range}.
 }
 }
 \description{
-This function \emph{simulates} a fault tree structure with nodes, edges, and basic event probabilities. Generates a valid fault tree with one top event, multiple gates (AND/OR), and basic events, ensuring each gate has at least two input events.
+This function \emph{simulates} a fault tree structure with nodes, edges, and basic event probabilities. Generates a valid fault tree with one top event, one gate under it, multiple gates (AND/OR), and basic events, ensuring each gate has at least two input events.
 }
 \details{
 This function generates a valid fault tree structure suitable for use with other \code{tidyfault} functions:
 \itemize{
 \item \strong{Gate constraint}: Each gate (AND/OR) is guaranteed to have at least two input events. If \code{n_basic < 2 * n_gates}, the number of gates is automatically reduced to \code{floor(n_basic / 2)}.
-\item \strong{Degenerate case}: If \code{n_basic < 2}, no internal gates are created; the top event connects directly to all basic events.
+\item \strong{Degenerate case}: If \code{n_basic < 2}, no internal gates are created; the top event connects to \code{G0}, which connects directly to all basic events.
 \item \strong{Gate types}: Gate types (AND/OR) are randomly assigned using \code{sample()}.
 \item \strong{Event allocation}: Basic events are allocated to gates such that each gate receives at least two events, with any remaining events randomly distributed.
-\item \strong{Event naming}: Top event is named \code{"T"}, gates are named \code{"G1"}, \code{"G2"}, etc., and basic events are named \code{"E1"}, \code{"E2"}, etc.
+\item \strong{Top event}: The top event is not a gate, so it has exactly one child. With two or more gates (or none) that child is an added OR gate \code{"G0"} (any branch fails the system); with one gate it is that gate. \code{G0} adds no random draw, so a seed reproduces the same gates, events and probabilities.
+\item \strong{Event naming}: Top event is named \code{"T"}, the added OR gate \code{"G0"}, other gates are named \code{"G1"}, \code{"G2"}, etc., and basic events are named \code{"E1"}, \code{"E2"}, etc.
 }
 The generated fault tree can be used directly with \code{curate()}, \code{equate()}, \code{formulate()}, and other \code{tidyfault} workflow functions.
 }

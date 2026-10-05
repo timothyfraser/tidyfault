@@ -6,8 +6,8 @@ test_that("minimal OR-top tree: curate through tabulate", {
     gates,
     c("gate", "type", "class", "n", "set", "items")
   )
-  expect_equal(nrow(gates), 1)
-  expect_equal(as.character(gates$gate[[1]]), "T")
+  expect_equal(nrow(gates), 2)
+  expect_equal(as.character(gates$gate), c("T", "G1"))
 
   eq <- equate(gates)
   expect_type(eq, "character")
@@ -34,7 +34,7 @@ test_that("minimal OR-top tree: curate through tabulate", {
   sig_orig <- cutset_signature(cuts_orig)
   expect_equal(sig_rcpp, sig_r)
   expect_equal(sig_rcpp, sig_orig)
-  expect_length(cuts_rcpp, 1L)
+  expect_equal(cuts_rcpp, c("A", "B"))
   expect_equal(cuts_rcpp, cuts_r)
   expect_equal(cuts_rcpp, cuts_orig)
 

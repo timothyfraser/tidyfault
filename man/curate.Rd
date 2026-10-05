@@ -29,6 +29,7 @@ This function \emph{curates} a \code{data.frame} of N \code{gates} and the \code
 \details{
 This function performs the initial curation step in the fault tree analysis workflow:
 \itemize{
+\item Checks the top event first: \code{nodes} must hold exactly one node of type \code{"top"}, it must have exactly one child, and that child must be an \code{"and"} or \code{"or"} gate. The top event carries no logic of its own, so a top event with several children (or with a basic event as its child) is an error that names the children and asks you to insert an \code{and} or \code{or} gate; no default logic is applied
 \item Filters nodes to only gates and top events (excludes basic events with \code{type == "not"})
 \item Joins edge information to identify which events connect to each gate
 \item Converts gate relationships into boolean expressions: AND gates use \code{*} (multiplication), OR gates use \code{+} (addition)

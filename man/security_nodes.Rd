@@ -7,11 +7,11 @@
 \format{
 \subsection{\code{security_nodes}}{
 
-A data frame with 11 rows and 3 columns:
+A data frame with 12 rows and 3 columns:
 \describe{
-\item{id}{Unique identifier (1 to 11) for each node.}
+\item{id}{Unique identifier (1 to 12) for each node.}
 \item{event}{Name of event. \code{"T"} means top event (Security breach detected).
-\code{"G2"}, \code{"G3"}, etc. mean gates. \code{"VE"} = Vulnerability exists, \code{"ES"} = Exploit successful,
+\code{"G0"}, \code{"G2"}, \code{"G3"}, \code{"G4"} mean gates; \code{"G0"} (id 12) is the top event's one gate. \code{"VE"} = Vulnerability exists, \code{"ES"} = Exploit successful,
 \code{"PH"} = Phishing, \code{"MW"} = Malware, \code{"UA"} = Unauthorized access, \code{"WP"} = Weak password,
 \code{"N2F"} = No 2FA.}
 \item{type}{\code{factor} classification as "top", "and", "or", or "not" (meaning "not" a gate).}
@@ -29,11 +29,15 @@ external attacks, internal threats, vulnerabilities, and authentication failures
 \details{
 The fault tree structure:
 \itemize{
-\item Top event: Security breach detected
+\item Top event: Security breach detected. The top event is not a gate: its one
+child is G0.
+\item G0 (OR): G2 OR G3 OR G4 (any attack path is a breach)
 \item G2 (AND): Vulnerability exists AND Exploit successful
 \item G3 (OR): Phishing OR Malware OR Unauthorized access
 \item G4 (AND): Weak password AND No 2FA
 }
+
+Minimal cut sets: \code{MW}, \code{PH}, \code{UA}, \code{ES*VE}, \code{N2F*WP}.
 }
 \examples{
 data("security_nodes")

@@ -1,6 +1,6 @@
 #' simulate() Function
 #'
-#' This function *simulates* a fault tree structure with nodes, edges, and basic event probabilities. Generates a valid fault tree with one top event, multiple gates (AND/OR), and basic events, ensuring each gate has at least two input events.
+#' This function *simulates* a fault tree structure with nodes, edges, and basic event probabilities. Generates a valid fault tree with one top event, one gate under it, multiple gates (AND/OR), and basic events, ensuring each gate has at least two input events.
 #'
 #' @param n_gates (Optional) Integer specifying the desired number of internal gates. Default is `3L`. The actual number of gates may be reduced if `n_basic` is insufficient to provide at least two basic events per gate.
 #' @param n_basic (Optional) Integer specifying the number of basic events (leaf nodes) in the fault tree. Default is `8L`. Must be at least 1.
@@ -9,18 +9,19 @@
 #'
 #' @return A list with three components:
 #'   \itemize{
-#'     \item `nodes`: Data frame with columns `id`, `event`, and `type`. Contains one top event (type `"top"`), `n_gates_eff` internal gates (type `"and"` or `"or"`), and `n_basic` basic events (type `"not"`). The `type` column is a factor with levels `c("top", "and", "or", "not")`.
-#'     \item `edges`: Data frame with columns `from` and `to`, representing connections between nodes. The top event connects to all gates, and gates connect to their assigned basic events.
+#'     \item `nodes`: Data frame with columns `id`, `event`, and `type`. Contains one top event (type `"top"`), `n_gates_eff` internal gates (type `"and"` or `"or"`), and `n_basic` basic events (type `"not"`), plus, unless `n_gates_eff == 1`, the OR gate `G0` with the last id. The `type` column is a factor with levels `c("top", "and", "or", "not")`.
+#'     \item `edges`: Data frame with columns `from` and `to`, representing connections between nodes. The top event connects to its one gate (`G0`, which connects to all other gates, or the only gate `G1`), and gates connect to their assigned basic events.
 #'     \item `prob`: Data frame with columns `event` and `probability`, containing probability values for each basic event, sampled uniformly from `p_range`.
 #'   }
 #'
 #' @details This function generates a valid fault tree structure suitable for use with other `tidyfault` functions:
 #'   \itemize{
 #'     \item **Gate constraint**: Each gate (AND/OR) is guaranteed to have at least two input events. If `n_basic < 2 * n_gates`, the number of gates is automatically reduced to `floor(n_basic / 2)`.
-#'     \item **Degenerate case**: If `n_basic < 2`, no internal gates are created; the top event connects directly to all basic events.
+#'     \item **Degenerate case**: If `n_basic < 2`, no internal gates are created; the top event connects to `G0`, which connects directly to all basic events.
 #'     \item **Gate types**: Gate types (AND/OR) are randomly assigned using `sample()`.
 #'     \item **Event allocation**: Basic events are allocated to gates such that each gate receives at least two events, with any remaining events randomly distributed.
-#'     \item **Event naming**: Top event is named `"T"`, gates are named `"G1"`, `"G2"`, etc., and basic events are named `"E1"`, `"E2"`, etc.
+#'     \item **Top event**: The top event is not a gate, so it has exactly one child. With two or more gates (or none) that child is an added OR gate `"G0"` (any branch fails the system); with one gate it is that gate. `G0` adds no random draw, so a seed reproduces the same gates, events and probabilities.
+#'     \item **Event naming**: Top event is named `"T"`, the added OR gate `"G0"`, other gates are named `"G1"`, `"G2"`, etc., and basic events are named `"E1"`, `"E2"`, etc.
 #'   }
 #'   The generated fault tree can be used directly with `curate()`, `equate()`, `formulate()`, and other `tidyfault` workflow functions.
 #'
@@ -84,7 +85,8 @@ simulate = function(n_gates = 3L,
   }
 
   if (n_gates_eff == 0L) {
-    # Degenerate case: no internal gates, just top event and basic events
+    # Degenerate case: no internal gates, just top event, its one OR gate
+    # (G0, appended last) and basic events
     total_nodes <- 1L + n_basic
 
     id <- seq_len(total_nodes)
@@ -98,16 +100,18 @@ simulate = function(n_gates = 3L,
     type[basic_ids] <- "not"
     event[basic_ids] <- paste0("E", seq_len(n_basic))
 
+    # The top event is not a gate (SPEC TF4.2): it hands off to one OR gate
+    root_id <- total_nodes + 1L
     nodes <- data.frame(
-      id = id,
-      event = event,
-      type = factor(type, levels = c("top", "and", "or", "not")),
+      id = c(id, root_id),
+      event = c(event, "G0"),
+      type = factor(c(type, "or"), levels = c("top", "and", "or", "not")),
       stringsAsFactors = FALSE
     )
 
     edges <- data.frame(
-      from = rep(1L, n_basic),
-      to = basic_ids,
+      from = c(1L, rep(root_id, n_basic)),
+      to = c(root_id, basic_ids),
       stringsAsFactors = FALSE
     )
 
@@ -141,10 +145,17 @@ simulate = function(n_gates = 3L,
   type[basic_ids] <- "not"
   event[basic_ids] <- paste0("E", seq_len(n_basic))
 
+  # The top event is not a gate (SPEC TF4.2): with two or more gates it hands
+  # off to one OR gate, G0, appended after the basic events so every other id is
+  # unchanged. G0's type is fixed (no random draw), so a seed gives the same
+  # gates, events and probabilities as before G0 existed. With one gate, that
+  # gate is already the top event's only child.
+  add_root <- n_gates_eff > 1L
+  root_id <- total_nodes + 1L
   nodes <- data.frame(
-    id = id,
-    event = event,
-    type = factor(type, levels = c("top", "and", "or", "not")),
+    id = c(id, if (add_root) root_id),
+    event = c(event, if (add_root) "G0"),
+    type = factor(c(type, if (add_root) "or"), levels = c("top", "and", "or", "not")),
     stringsAsFactors = FALSE
   )
 
@@ -160,9 +171,14 @@ simulate = function(n_gates = 3L,
     assignment[remaining] <- sample.int(n_gates_eff, length(remaining), replace = TRUE)
   }
 
-  # Edges: top -> each gate
-  edges_from <- rep(1L, n_gates_eff)
-  edges_to <- gate_ids
+  # Edges: top -> G0 -> each gate (or top -> the one gate)
+  if (add_root) {
+    edges_from <- c(1L, rep(root_id, n_gates_eff))
+    edges_to <- c(root_id, gate_ids)
+  } else {
+    edges_from <- 1L
+    edges_to <- gate_ids
+  }
 
   # Edges: gate -> basic events
   edges_from <- c(edges_from, gate_ids[assignment])

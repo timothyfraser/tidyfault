@@ -35,7 +35,8 @@ List mocus_cpp_impl(IntegerVector gate_ids,
   std::vector<int> ce(child_end.begin(),   child_end.end());
   std::vector<int> gt(gate_types.begin(),  gate_types.end());
 
-  // work queue
+  // work queue, seeded with the top event's one gate (top_id is that gate's
+  // id: the top event itself is not a gate and is never expanded)
   std::deque<std::vector<int>> queue;
   queue.push_back(std::vector<int>(1, top_id));
 
@@ -46,7 +47,7 @@ List mocus_cpp_impl(IntegerVector gate_ids,
     std::vector<int> cutset = std::move(queue.front());
     queue.pop_front();
 
-    // classify positions as AND-type (0) or OR-type (1) gates
+    // classify positions as AND (0) or OR (1) gates
     std::vector<int> and_pos, or_pos;
     for (int p = 0; p < (int)cutset.size(); p++) {
       auto it = id_to_idx.find(cutset[p]);
@@ -67,7 +68,7 @@ List mocus_cpp_impl(IntegerVector gate_ids,
     }
 
     if (!and_pos.empty()) {
-      // expand ALL AND/top gates in a single pass
+      // expand ALL AND gates in a single pass
       std::unordered_set<int> rm(and_pos.begin(), and_pos.end());
       std::vector<int> nc;
       nc.reserve(cutset.size() * 2);

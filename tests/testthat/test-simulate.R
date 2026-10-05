@@ -26,3 +26,15 @@ test_that("simulate(): invalid n_basic", {
     simulate(n_basic = 0L, seed = 1L)
   })
 })
+
+test_that("simulated trees give the top event exactly one gate", {
+  for (k in 1:8) {
+    sim <- simulate(n_gates = k, n_basic = k, seed = 12345)
+    gates <- curate(sim$nodes, sim$edges)
+    expect_equal(gates$n[gates$class == "top"], 1L)
+  }
+  sim <- simulate(n_gates = 3L, n_basic = 8L, seed = 7L)
+  g0 <- sim$nodes$id[sim$nodes$event == "G0"]
+  expect_equal(as.character(sim$nodes$type[sim$nodes$id == g0]), "or")
+  expect_equal(sim$edges$to[sim$edges$from == 1L], g0)
+})

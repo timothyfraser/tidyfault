@@ -10,3 +10,4 @@ id,event,type
 9,UA,not
 10,WP,not
 11,N2F,not
+12,G0,or

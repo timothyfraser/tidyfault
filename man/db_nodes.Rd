@@ -7,11 +7,11 @@
 \format{
 \subsection{\code{db_nodes}}{
 
-A data frame with 13 rows and 3 columns:
+A data frame with 14 rows and 3 columns:
 \describe{
-\item{id}{Unique identifier (1 to 13) for each node.}
+\item{id}{Unique identifier (1 to 14) for each node.}
 \item{event}{Name of event. \code{"T"} means top event (Database system unavailable).
-\code{"G1"}, \code{"G2"}, etc. mean gates. \code{"DC"} = Data corruption, \code{"AF"} = Access failure,
+\code{"G0"}, \code{"G1"}, etc. mean gates; \code{"G0"} (id 14) is the top event's one gate. \code{"DC"} = Data corruption, \code{"AF"} = Access failure,
 \code{"SF"} = Storage failure, \code{"BF"} = Backup failure, \code{"NF"} = Network failure,
 \code{"AUF"} = Authentication failure, \code{"HF"} = Hardware failure, \code{"MF"} = Monitoring failure.}
 \item{type}{\code{factor} classification as "top", "and", "or", or "not" (meaning "not" a gate).}
@@ -30,12 +30,16 @@ storage issues, network problems, and hardware failures.
 \details{
 The fault tree structure:
 \itemize{
-\item Top event: Database system unavailable
+\item Top event: Database system unavailable. The top event is not a gate: its
+one child is G0.
+\item G0 (OR): G1 OR G2 OR G3 OR G4 (any failure mode makes the database unavailable)
 \item G1 (OR): Data corruption OR Access failure
 \item G2 (AND): Storage failure AND Backup failure
 \item G3 (OR): Network failure OR Authentication failure
 \item G4 (AND): Hardware failure AND Monitoring failure
 }
+
+Minimal cut sets: \code{AF}, \code{AUF}, \code{DC}, \code{NF}, \code{BF*SF}, \code{HF*MF}.
 }
 \examples{
 data("db_nodes")
