@@ -7,7 +7,8 @@
 \format{
 \subsection{\code{ai_edges}}{
 
-A data frame with 5 rows and 2 columns:
+A data frame with 6 rows and 2 columns (the top event \code{T}, id 1, links only to
+its one gate \code{G0}, id 7, which links to gate \code{G3} and to \code{CWE}):
 \describe{
 \item{from}{Unique \code{id} of the source/\code{from} node from which edge originates.}
 \item{to}{Unique \code{id} of the destination/\code{to} node that edge connects to.}

@@ -1,12 +1,14 @@
+# The smallest valid tree: the top event T hands off to one OR gate G1 over
+# basic events A and B (the top event is not a gate, SPEC TF4.2).
 minimal_or_top_tree <- function() {
   nodes <- tibble::tibble(
-    id = 1:3,
-    event = c("T", "A", "B"),
-    type = factor(c("top", "not", "not"), levels = c("top", "and", "or", "not"))
+    id = 1:4,
+    event = c("T", "G1", "A", "B"),
+    type = factor(c("top", "or", "not", "not"), levels = c("top", "and", "or", "not"))
   )
   edges <- tibble::tibble(
-    from = c(1L, 1L),
-    to = c(2L, 3L)
+    from = c(1L, 2L, 2L),
+    to = c(2L, 3L, 4L)
   )
   list(nodes = nodes, edges = edges)
 }

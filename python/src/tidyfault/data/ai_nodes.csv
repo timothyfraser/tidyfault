@@ -5,3 +5,4 @@ id,event,type
 4,TO,not
 5,RL,not
 6,CWE,not
+7,G0,or

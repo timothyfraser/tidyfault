@@ -18,6 +18,7 @@
 #' 
 #' @details This function performs the initial curation step in the fault tree analysis workflow:
 #'   \itemize{
+#'     \item Checks the top event first: `nodes` must hold exactly one node of type `"top"`, it must have exactly one child, and that child must be an `"and"` or `"or"` gate. The top event carries no logic of its own, so a top event with several children (or with a basic event as its child) is an error that names the children and asks you to insert an `and` or `or` gate; no default logic is applied
 #'     \item Filters nodes to only gates and top events (excludes basic events with `type == "not"`)
 #'     \item Joins edge information to identify which events connect to each gate
 #'     \item Converts gate relationships into boolean expressions: AND gates use `*` (multiplication), OR gates use `+` (addition)
@@ -56,7 +57,11 @@
 #'    tabulate(formula = formula, method = "mocus_rcpp")
 
 curate = function(nodes, edges){
-  
+
+  # The top event is not a gate (SPEC TF4.2): refuse any tree whose top event
+  # does not hand off to exactly one AND/OR gate. No default logic is applied.
+  check_top(nodes, edges)
+
   # Let's write a function to identify the paths for each gate
   
   # Take our list of nodes
@@ -111,14 +116,9 @@ curate = function(nodes, edges){
       type == "or" ~ set %>% 
         # Replace the "|" divider with an addition sign
         str_replace_all(pattern = "[|]", replacement = " + "),
-      # If the node is the top event, treat multiple children as OR
-      # (though typically top events have only one child gate)
-      type == "top" ~ set %>%
-        # Replace the "|" divider with an addition sign (OR logic)
-        str_replace_all(pattern = "[|]", replacement = " + "),
-      # If the gate is not a gate (this shouldn't happen)
-      # Just keep it as is
-      type == "not" ~ set),
+      # The top event has exactly one child (checked by check_top()), so its
+      # set is that one gate's name: nothing to join, no logic of its own
+      TRUE ~ set),
       # Finally, let's bind them together between parentheses,
       # So as to respect order of operations
       set = paste(" (", set, ") ", sep = "")) %>%
@@ -128,4 +128,60 @@ curate = function(nodes, edges){
     # Return the result
     return()
   
+}
+
+# Validate the top event (SPEC TF4.2): exactly one node of type "top", with
+# exactly one child, and that child an "and" or "or" gate. Stops with a message
+# naming the top event, its children and the fix.
+check_top = function(nodes, edges) {
+  type = as.character(nodes$type)
+  tops = which(type == "top")
+  if (length(tops) != 1L) {
+    stop(
+      "curate(): a fault tree needs exactly one top event (type \"top\"), ",
+      "but found ", length(tops),
+      if (length(tops) > 0L) paste0(": ", paste0("`", nodes$event[tops], "`", collapse = ", ")),
+      ". Give one node type \"top\" and connect it to the tree through one ",
+      "`and` or `or` gate.",
+      call. = FALSE)
+  }
+  top_id = nodes$id[tops]
+  top = as.character(nodes$event[tops])
+  child_ids = edges$to[edges$from == top_id]
+  pos = match(child_ids, nodes$id)
+  children = ifelse(is.na(pos), paste0("id ", child_ids), as.character(nodes$event[pos]))
+  child_types = ifelse(is.na(pos), NA_character_, type[pos])
+  n = length(child_ids)
+  listing = paste0("`", children, "`", collapse = ", ")
+  if (n == 0L) {
+    stop(
+      "curate(): the top event `", top, "` must connect to the tree through ",
+      "exactly one gate, but it has 0 children. ",
+      "Add an edge from `", top, "` to one `and` or `or` gate.",
+      call. = FALSE)
+  }
+  if (n > 1L) {
+    stop(
+      "curate(): the top event `", top, "` must connect to the tree through ",
+      "exactly one gate, but it has ", n, " children: ", listing, ". ",
+      "The top event carries no logic of its own. Insert an `or` gate (any ",
+      "child fails the system) or an `and` gate (all children must fail) ",
+      "between `", top, "` and its ", n, " children.",
+      call. = FALSE)
+  }
+  if (is.na(child_types) || !child_types %in% c("and", "or")) {
+    what = if (is.na(child_types)) {
+      "is not in `nodes`"
+    } else if (child_types == "not") {
+      "is a basic event (type \"not\"), not a gate"
+    } else {
+      paste0("is of type \"", child_types, "\", not a gate")
+    }
+    stop(
+      "curate(): the top event `", top, "` must connect to the tree through ",
+      "exactly one gate, but its only child, ", listing, ", ", what, ". ",
+      "Insert an `or` or `and` gate between `", top, "` and ", listing, ".",
+      call. = FALSE)
+  }
+  invisible(TRUE)
 }

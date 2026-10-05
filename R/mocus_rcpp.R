@@ -41,7 +41,8 @@ mocus_rcpp <- function(data) {
   n <- nrow(data)
   gate_ids <- tok2id[data$gate]
 
-  # type encoding: 0 = and/top, 1 = or
+  # type encoding: 0 = and, 1 = or. The top row is never expanded: the queue
+  # starts at the top event's one gate (SPEC TF4.2).
   gate_types <- ifelse(data$type == "or", 1L, 0L)
 
   # Flatten children into a single vector with start/end offsets
@@ -53,8 +54,8 @@ mocus_rcpp <- function(data) {
   child_start_0 <- child_start
   child_end_0 <- child_end
 
-  # 4. Top gate ID
-  top_id <- tok2id[[data$gate[data$class == "top"][1]]]
+  # 4. Start at the top event's one gate
+  top_id <- tok2id[[mocus_start(data)]]
 
   # 5. Call C++
   impl <- get("mocus_cpp_impl", mode = "function", inherits = TRUE)

@@ -12,3 +12,4 @@ id,event,type
 11,AUF,not
 12,HF,not
 13,MF,not
+14,G0,or

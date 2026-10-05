@@ -58,9 +58,10 @@ mocus_r <- function(data) {
     )
   }
 
-  # ── 2. Initialise queue with the top event ─────────────────────────────────
-  top_gate_name <- data$gate[ data$class == "top" ][1]
-  top_gate_id   <- tok2id[[ top_gate_name ]]
+  # ── 2. Initialise queue with the top event's one gate ──────────────────────
+  # The top event is not a gate (SPEC TF4.2): curate() guarantees it has exactly
+  # one child, an AND/OR gate, and the expansion starts there.
+  top_gate_id   <- tok2id[[ mocus_start(data) ]]
 
   # queue: pre-allocated list; each element is an integer vector (cutset)
   # We over-allocate generously; R will not shrink on assignment.
@@ -91,7 +92,7 @@ mocus_r <- function(data) {
       next
     }
 
-    # ── Expand ALL AND/top gates first (order-independent, safe to batch) ────
+    # ── Expand ALL AND gates first (order-independent, safe to batch) ────────
     # Then handle the first OR gate (must branch, so we re-queue each branch
     # and let the next iteration handle any remaining gates in those branches).
 
@@ -99,7 +100,7 @@ mocus_r <- function(data) {
     types_at_pos <- vapply(cutset[gate_pos], function(id) gate_lookup[[id]]$type,
                            character(1L))
 
-    and_pos <- gate_pos[ types_at_pos %in% c("and", "top") ]
+    and_pos <- gate_pos[ types_at_pos == "and" ]
     or_pos  <- gate_pos[ types_at_pos == "or" ]
 
     if (length(and_pos) > 0L) {

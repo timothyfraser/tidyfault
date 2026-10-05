@@ -18,7 +18,7 @@ This vignette walks through the standard **tidyfault** pipeline from tidy node a
 **tidyfault** represents a fault tree as two tables:
 
 - **`nodes`**: one row per gate or basic event, with columns `id`, `event`, and `type` (`"top"`, `"and"`, `"or"`, or `"not"`).
-- **`edges`**: directed links between node `id` values (`from`, `to`), forming a DAG with a single top event.
+- **`edges`**: directed links between node `id` values (`from`, `to`), forming a DAG with a single top event. The top event has exactly one child, an `and` or `or` gate; `curate()` stops with a message otherwise.
 
 The objects [`db_nodes`](../reference/db_nodes.html) and [`db_edges`](../reference/db_edges.html) model a small database system whose top event is overall system failure. Load them and inspect the first few rows:
 

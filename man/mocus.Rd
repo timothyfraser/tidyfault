@@ -9,8 +9,8 @@ mocus(data, method = c("mocus_rcpp", "mocus_r", "mocus_original"))
 \arguments{
 \item{data}{(Required) data.frame containing gates and their sets, outputted
 by \code{curate()}. Must contain columns \code{gate}, \code{type}, \code{class}, and \code{items}
-(list column of event vectors). The data.frame should have at least one
-row with \code{class == "top"} representing the top event.}
+(list column of event vectors). The data.frame must have exactly one row
+with \code{class == "top"}, whose one item is an AND/OR gate (see \code{curate()}).}
 
 \item{method}{(Optional) Character string specifying which implementation to
 run. Default is \code{"mocus_rcpp"}. Supported values are \code{"mocus_rcpp"},
@@ -34,7 +34,7 @@ This function implements the MOCUS (Method of Obtaining Cutsets)
 algorithm, which systematically expands gates in a fault tree to identify
 all cutsets. The algorithm works as follows:
 \itemize{
-\item \strong{Initialization}: Starts with the top event as the first cutset
+\item \strong{Initialization}: Starts with the top event's one gate as the first cutset (the top event itself carries no logic and is never expanded)
 \item \strong{Iterative Expansion}: For each cutset containing gate references:
 \itemize{
 \item Identifies gates that appear in the current cutset

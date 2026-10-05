@@ -6,8 +6,8 @@
 #'
 #' @param data (Required) data.frame containing gates and their sets, outputted
 #'   by `curate()`. Must contain columns `gate`, `type`, `class`, and `items`
-#'   (list column of event vectors). The data.frame should have at least one
-#'   row with `class == "top"` representing the top event.
+#'   (list column of event vectors). The data.frame must have exactly one row
+#'   with `class == "top"`, whose one item is an AND/OR gate (see `curate()`).
 #' @param method (Optional) Character string specifying which implementation to
 #'   run. Default is `"mocus_rcpp"`. Supported values are `"mocus_rcpp"`,
 #'   `"mocus_r"`, and `"mocus_original"` (same labels as `concentrate()` and
@@ -23,7 +23,7 @@
 #'   algorithm, which systematically expands gates in a fault tree to identify
 #'   all cutsets. The algorithm works as follows:
 #'   \itemize{
-#'     \item \strong{Initialization}: Starts with the top event as the first cutset
+#'     \item \strong{Initialization}: Starts with the top event's one gate as the first cutset (the top event itself carries no logic and is never expanded)
 #'     \item \strong{Iterative Expansion}: For each cutset containing gate references:
 #'       \itemize{
 #'         \item Identifies gates that appear in the current cutset
@@ -70,9 +70,7 @@ mocus <- function(data, method = c("mocus_rcpp", "mocus_r", "mocus_original")) {
 mocus_original_impl <- function(data) {
   m <- list()
 
-  m[[1]] <- data %>%
-    filter(class == "top") %>%
-    with(gate)
+  m[[1]] <- mocus_start(data)
 
   continue <- TRUE
   system.time(
@@ -93,13 +91,16 @@ mocus_original_impl <- function(data) {
             isgatej <- m[[k]] %in% mygates[j]
             notgatej <- m[[k]][!isgatej]
 
-            if (mytype == "and" | mytype == "top") {
+            if (mytype == "and") {
               if (length(notgatej) > 0) {
                 holder <- notgatej %>% matrix(ncol = length(.)) %>%
                   c(myset) %>% list(.)
               } else {
                 holder <- list(myset)
               }
+            } else if (mytype == "or" && length(notgatej) == 0) {
+              # Nothing else in this cutset: one new cutset per input
+              holder <- lapply(myset, function(x) x)
             } else if (mytype == "or") {
               holder <- mapply(FUN = rep, notgatej, length(myset)) %>%
                 cbind(myset) %>%
@@ -123,4 +124,24 @@ mocus_original_impl <- function(data) {
     map(~ unique(.))
 
   m
+}
+
+# The gate MOCUS starts from: the top event's one child (SPEC TF4.2). The top
+# event is not a gate, so it is never expanded. curate() has already refused a
+# top with other than one gate child; this guards hand-built gate tables.
+mocus_start <- function(data) {
+  top <- which(as.character(data$class) == "top")
+  if (length(top) != 1L) {
+    stop("MOCUS needs exactly one top event row (class \"top\"); found ",
+         length(top), ". Build the gate table with curate().", call. = FALSE)
+  }
+  child <- unlist(data$items[[top]])
+  if (length(child) != 1L || !child %in% data$gate[as.character(data$class) == "gate"]) {
+    stop("MOCUS: the top event `", data$gate[[top]], "` must have exactly one ",
+         "child and it must be a gate; found ",
+         paste0("`", child, "`", collapse = ", "),
+         ". Build the gate table with curate(), which explains the fix.",
+         call. = FALSE)
+  }
+  child
 }
