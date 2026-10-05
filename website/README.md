@@ -16,3 +16,18 @@ npm run verify   # Playwright check of the built site (needs chromium under /opt
   that every in-page link resolves, checks for horizontal overflow, and saves screenshots to
   `/tmp/web01-shots/`. Pass `--url` to test a running server.
 - The Run button is disabled for now; live runtimes arrive later.
+
+## Deploying (Netlify)
+
+`netlify.toml` at the repo root builds this folder (`base = "website"`, `publish = "dist"`,
+`command = "npm run build"`). `public/_redirects` maps the old pkgdown URLs that have no
+equivalent here and ends with the single-page-app fallback. GitHub Actions
+(`site-build.yaml`) builds and verifies pull requests but never deploys.
+
+One-time settings in the Netlify UI, set by hand:
+
+- [ ] Site `tidyfault` → Site configuration → Build & deploy → Link repository
+      `timothyfraser/tidyfault` (the settings come from `netlify.toml`).
+- [ ] Production branch: `main`.
+- [ ] Deploy previews: **off**. Branch deploys: **off** (build minutes are limited).
+- [ ] After the first deploy: `node scripts/verify-site.mjs --url https://tidyfault.netlify.app`.
