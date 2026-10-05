@@ -62,6 +62,21 @@ License](https://unsplash.com/license).
 
 ------------------------------------------------------------------------
 
+## Installation
+
+```r
+# R
+remotes::install_github("timothyfraser/tidyfault")
+```
+
+```sh
+# Python
+pip install "git+https://github.com/timothyfraser/tidyfault#subdirectory=python"
+```
+
+On Linux, `igraph` (used through `tidygraph` and `ggraph`) needs the GLPK
+library: `sudo apt-get install libglpk40` on Ubuntu or Debian.
+
 ## Basic Usage
 
 How do we use `tidyfault` to analyze fault trees?

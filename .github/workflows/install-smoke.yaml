@@ -27,6 +27,12 @@ jobs:
           r-version: release
           use-public-rspm: true
 
+      # igraph (via tidygraph/ggraph) links GLPK on Linux; a clean Ubuntu has
+      # no libglpk, and the binary igraph then fails to load (2026-10-05).
+      # README's install section says the same to users.
+      - name: System library igraph needs on Linux
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libglpk40
+
       - name: Install from GitHub and run concentrate()
         run: |
           Rscript -e 'install.packages("remotes"); remotes::install_github("timothyfraser/tidyfault"); library(tidyfault); stopifnot(identical(concentrate(curate(fakenodes, fakeedges)), c("B*C","A*B*D")))'

@@ -43,16 +43,25 @@ jobs:
       - name: Keep the build outputs out of the package tarball
         run: printf '%s\n' '^_webr_repo$' '^_webr_image$' '^_gh-pages$' >> .Rbuildignore
 
-      # r-wasm/actions build-rwasm, v2 (README: build-rwasm/README.md at tag v2).
+      # Same container and calls as r-wasm/actions build-rwasm@v2 (its code.R),
+      # run directly for two reasons found on the first runs (2026-10-05):
+      #  1. the action's `docker run` passes no environment, so GITHUB_PAT never
+      #     reached rwasm and it fell back to a rate-limited shared PAT;
+      #  2. rwasm then resolved its 16 GitHub-hosted overrides (shiny, rigraph,
+      #     ...) and failed. tidyfault is built alone (its dependencies come from
+      #     repo.r-wasm.org at runtime), so `remotes = NULL` skips that lookup.
       # Pinned to the same webR release the site loads (WEBR_BASE in
       # website/src/runtime/webr.js). Bump both together.
       - name: Build tidyfault for WebAssembly
-        uses: r-wasm/actions/build-rwasm@v2
-        with:
-          packages: "local::."
-          repo-path: _webr_repo
-          image-path: _webr_image
-          webr-image: ghcr.io/r-wasm/webr:v0.6.0
+        run: |
+          cat > "$RUNNER_TEMP/build.R" <<'RSCRIPT'
+          pak::pak("r-wasm/rwasm")
+          rwasm::add_pkg("local::.", repo_dir = "_webr_repo", remotes = NULL)
+          RSCRIPT
+          docker run --rm -e GITHUB_PAT \
+            -v "$PWD":/github/workspace -v "$RUNNER_TEMP/build.R":/build.R \
+            --workdir /github/workspace \
+            ghcr.io/r-wasm/webr:v0.6.0 Rscript /build.R
 
       - name: Check the repository holds a tidyfault binary
         run: |
@@ -77,7 +86,8 @@ jobs:
           rm -rf _gh-pages/repo
           mkdir -p _gh-pages/repo
           cp -R _webr_repo/. _gh-pages/repo/
-          git -C _gh-pages add -A repo
+          touch _gh-pages/.nojekyll   # serve files as-is, no Jekyll build
+          git -C _gh-pages add -A repo .nojekyll
           if git -C _gh-pages diff --cached --quiet; then
             echo "repo/ unchanged; nothing to publish"
             exit 0
