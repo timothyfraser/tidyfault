@@ -12,7 +12,7 @@
 
 * `equate()` matches gate names only as whole tokens, so a gate named `T` no longer matches inside a basic event named `TO` (which made it loop forever on `ai_nodes`), and it stops with an error naming the gates when a gate references itself directly or through other gates.
 
-* `illustrate()` returns a `tidyfault_tree` object for `type = "both"` and `type = "all"`, and `plot()` is now its S3 method, so tidyfault no longer masks `base::plot()`; the default palette follows the gate colours and gains an `edge_colour` argument.
+* `illustrate()` returns a `tidyfault_tree` object for `type = "both"` and `type = "all"`, and `plot()` is now its S3 method, so tidyfault no longer masks `base::plot()` (the generic is re-exported, so `tidyfault::plot(x)` works as before); the default palette follows the gate colours and gains an `edge_colour` argument.
 
 * quantify() gains a `fast` argument (default `TRUE`) that dispatches to `quantify_binary_fast()` or `quantify_prob_fast()` instead of the legacy pure-R implementations.
 

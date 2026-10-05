@@ -9,7 +9,7 @@
     "_pkgdown.yml",
     "man/*.Rd"
   ],
-  "source_hash": "eecc185fad30edc5ac9fabd1b44f0cb8",
+  "source_hash": "b2fa1676808b4346717b0bdab98b904f",
   "exports": [
     "calculate",
     "concentrate",
@@ -62,7 +62,7 @@
       "value": "<p>A <code>data.frame</code> (tibble) with one row per gate, containing:</p><ul><li><code>gate</code>: Character vector of gate/event names</li><li><code>type</code>: Factor or character vector indicating gate type (<code>&quot;top&quot;</code>, <code>&quot;and&quot;</code>, or <code>&quot;or&quot;</code>)</li><li><code>class</code>: Factor with levels <code>&quot;top&quot;</code> and <code>&quot;gate&quot;</code>, classifying nodes as top events or intermediate gates</li><li><code>n</code>: Integer count of events immediately connected to this gate</li><li><code>set</code>: Character string containing the boolean expression for this gate's inputs, using <code>*</code> for AND operations and <code>+</code> for OR operations, wrapped in parentheses</li><li><code>items</code>: List column containing character vectors of event names that are inputs to this gate</li></ul><p>Rows are sorted with top events first, followed by gates in alphabetical order.</p>",
       "details": "<p>This function performs the initial curation step in the fault tree analysis workflow:</p><ul><li>Filters nodes to only gates and top events (excludes basic events with <code>type == &quot;not&quot;</code>)</li><li>Joins edge information to identify which events connect to each gate</li><li>Converts gate relationships into boolean expressions: AND gates use <code>*</code> (multiplication), OR gates use <code>+</code> (addition)</li><li>Wraps each gate's set expression in parentheses to preserve order of operations</li><li>Creates both string (<code>set</code>) and list (<code>items</code>) representations of gate inputs for different downstream uses</li></ul><p>The output serves as the foundation for subsequent steps: <code><a href=\"/reference/equate.html\">equate()</a></code> uses the <code>set</code> column to build the complete boolean equation, while <code><a href=\"/reference/mocus.html\">mocus()</a></code> uses the <code>items</code> list column for cutset generation.</p>",
       "sections": [],
-      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build the gate-level representation used by downstream functions\ngates <- curate(nodes = fakenodes, edges = fakeedges)\ngates\n\n# Example downstream workflow from curate() output\nformula <- gates %>%\n   equate() %>%\n   formulate()\ngates %>%\n   concentrate(method = \"mocus_rcpp\") %>%\n   tabulate(formula = formula, method = \"mocus_rcpp\")",
+      "examples": "# Load dependencies\nlibrary(dplyr)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build the gate-level representation used by downstream functions\ngates <- curate(nodes = fakenodes, edges = fakeedges)\ngates\n\n# Example downstream workflow from curate() output\nformula <- gates %>%\n   equate() %>%\n   formulate()\ngates %>%\n   concentrate(method = \"mocus_rcpp\") %>%\n   tabulate(formula = formula, method = \"mocus_rcpp\")",
       "seealso": "<p><code><a href=\"/reference/equate.html\">equate()</a></code> for building the complete boolean equation from curated gates, <code><a href=\"/reference/illustrate.html\">illustrate()</a></code> for visualizing the fault tree structure</p>",
       "source_file": "R/curate.R",
       "group": "Core workflow"
@@ -87,7 +87,7 @@
       "value": "<p>A character string containing the complete boolean equation for the entire fault tree. The equation:</p><ul><li>Uses <code>*</code> (multiplication) to represent AND operations</li><li>Uses <code>+</code> (addition) to represent OR operations</li><li>Contains only basic event names (no gate references)</li><li>Is wrapped in parentheses to preserve order of operations</li><li>Represents the top event's boolean logic in terms of all basic events</li></ul><p>This equation can be passed directly to <code><a href=\"/reference/formulate.html\">formulate()</a></code> to create an executable function.</p>",
       "details": "<p>This function builds the complete boolean equation through an iterative substitution algorithm:</p><ul><li>Starts with the top event's <code>set</code> expression, which may contain references to other gates</li><li>Iteratively replaces each gate name with its corresponding <code>set</code> boolean expression</li><li>Continues until no gate names remain in any expression (only basic events remain)</li><li>Returns the fully expanded equation from the top event (first row of the data.frame)</li></ul><p>The algorithm processes gates in order and handles nested gate structures by repeatedly substituting until convergence. The substitution preserves the boolean operators (<code>*</code> for AND, <code>+</code> for OR) and parentheses structure created by <code><a href=\"/reference/curate.html\">curate()</a></code>.</p>",
       "sections": [],
-      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build gate-level representation and expand to a full boolean equation\ngates <- curate(nodes = fakenodes, edges = fakeedges)\nequation <- equate(gates)\nequation\n\n# Example downstream use of equate() output\nformula <- formulate(equation)\ncalculate(formula)",
+      "examples": "# Load dependencies\nlibrary(dplyr)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build gate-level representation and expand to a full boolean equation\ngates <- curate(nodes = fakenodes, edges = fakeedges)\nequation <- equate(gates)\nequation\n\n# Example downstream use of equate() output\nformula <- formulate(equation)\ncalculate(formula)",
       "seealso": "<p><code><a href=\"/reference/curate.html\">curate()</a></code> for creating the gates data.frame, <code><a href=\"/reference/formulate.html\">formulate()</a></code> for converting the equation string into an executable function</p>",
       "source_file": "R/equate.R",
       "group": "Core workflow"
@@ -112,7 +112,7 @@
       "value": "<p>A function object that:</p><ul><li>Accepts named arguments for each basic event in the formula</li><li>Each argument accepts numeric values (typically 0 or 1 for binary events)</li><li>Returns a numeric value representing the system state (typically 0 for no failure, &gt;= 1 for failure)</li><li>Evaluates the boolean equation using R's arithmetic operators (<code>*</code> for AND, <code>+</code> for OR)</li></ul><p>The function can be called directly with event values or passed to <code><a href=\"/reference/calculate.html\">calculate()</a></code> to generate a complete truth table.</p>",
       "details": "<p>This function converts a boolean equation string into an executable R function through the following process:</p><ul><li>Extracts all unique event names from the formula by splitting on operators (<code>+</code>, <code>*</code>, <code>(</code>, <code>)</code>)</li><li>Creates formal arguments for the function, one for each unique event name</li><li>Sets the function body to parse and evaluate the formula string</li><li>Returns a function that can be called with named arguments for each event</li></ul><p>The function uses R's arithmetic operators where multiplication (<code>*</code>) represents AND logic and addition (<code>+</code>) represents OR logic. When called with binary inputs (0/1), the function returns 0 for no failure and a positive value for failure. The function preserves the order of operations through parentheses in the original formula.</p>",
       "sections": [],
-      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build a boolean equation and convert it to an executable function\nequation <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate()\nformula <- formulate(equation)\nformula\n\n# Evaluate across all combinations of basic events\ncalculate(formula)",
+      "examples": "# Load dependencies\nlibrary(dplyr)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build a boolean equation and convert it to an executable function\nequation <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate()\nformula <- formulate(equation)\nformula\n\n# Evaluate across all combinations of basic events\ncalculate(formula)",
       "seealso": "<p><code><a href=\"/reference/equate.html\">equate()</a></code> for generating the boolean equation string, <code><a href=\"/reference/calculate.html\">calculate()</a></code> for generating truth tables from the function</p>",
       "source_file": "R/formulate.R",
       "group": "Core workflow"
@@ -137,7 +137,7 @@
       "value": "<p>A <code>data.frame</code> containing a truth table with:</p><ul><li>One column for each input event (named according to the function's formal arguments)</li><li>An <code>outcome</code> column indicating system failure (1) or no failure (0)</li></ul><p>Rows are arranged in descending order by <code>outcome</code>, with failure cases listed first. The truth table contains 2^n rows where n is the number of input events, representing all possible combinations of event states.</p>",
       "details": "<p>This function generates a complete truth table by:</p><ul><li>Extracting the formal arguments from the supplied function to identify all input events</li><li>Creating a grid of all possible binary combinations (0/1) for each event using <code>tidyr::expand_grid()</code></li><li>Evaluating the function for each combination to determine system failure</li><li>Converting outcomes to binary: any value &gt;= 1 indicates failure (1), otherwise no failure (0)</li></ul><p>The function is designed to work with boolean functions created by <code><a href=\"/reference/formulate.html\">formulate()</a></code> that represent fault tree logic. The outcome threshold (&gt;= 1) allows for functions that may return counts or probabilities rather than strict boolean values.</p>",
       "sections": [],
-      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build fault tree function and generate full truth table\nformula <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate() %>%\n   formulate()\ntruth_table <- calculate(formula)\ntruth_table\n\n# Optional downstream use with MOCUS minimization\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n   concentrate(method = \"mocus_rcpp\")",
+      "examples": "# Load dependencies\nlibrary(dplyr)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Build fault tree function and generate full truth table\nformula <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate() %>%\n   formulate()\ntruth_table <- calculate(formula)\ntruth_table\n\n# Optional downstream use with MOCUS minimization\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n   concentrate(method = \"mocus_rcpp\")",
       "seealso": "<p><code><a href=\"/reference/formulate.html\">formulate()</a></code> for creating the function from a boolean equation</p>",
       "source_file": "R/calculate.R",
       "group": "Core workflow"
@@ -164,9 +164,9 @@
       ],
       "format": "",
       "value": "<p>A character vector where each element is a minimum cutset represented as a boolean expression (e.g., <code>&quot;A * B&quot;</code> for events A AND B). Each cutset represents a minimal set of events whose simultaneous occurrence causes system failure.</p>",
-      "details": "<p>This function performs boolean minimization to identify the minimum cutsets (minimal failure paths) in a fault tree using the MOCUS algorithm:</p><ul><li><p><strong>Rcpp MOCUS</strong> (<code>method = &quot;mocus_rcpp&quot;</code>):</p><ul><li>Uses the Rcpp-backed MOCUS implementation (<code><a href=\"/reference/mocus_rcpp.html\">mocus_rcpp()</a></code>)</li><li>Recommended default for speed on larger trees</li></ul></li><li><p><strong>Pure-R fast MOCUS</strong> (<code>method = &quot;mocus_r&quot;</code>):</p><ul><li>Uses the optimized pure-R implementation (<code><a href=\"/reference/mocus_r.html\">mocus_r()</a></code>)</li><li>Useful when compiled code is unavailable</li></ul></li><li><p><strong>Original MOCUS</strong> (<code>method = &quot;mocus_original&quot;</code>):</p><ul><li>Uses the original MOCUS implementation (<code><a href=\"/reference/mocus.html\">mocus()</a></code> with <code>method = &quot;mocus_original&quot;</code>) to generate all cutsets</li><li>Converts cutsets to a boolean equation format</li><li>Applies boolean simplification using <code>admisc::simplify()</code> to find minimum cutsets</li><li>Returns simplified cutsets as character strings</li></ul></li></ul><p>Minimum cutsets represent the smallest combinations of basic events that can cause the top event (system failure) to occur.</p>",
+      "details": "<p>This function performs boolean minimization to identify the minimum cutsets (minimal failure paths) in a fault tree using the MOCUS algorithm:</p><ul><li><p><strong>Rcpp MOCUS</strong> (<code>method = &quot;mocus_rcpp&quot;</code>):</p><ul><li>Uses the Rcpp-backed MOCUS implementation (<code><a href=\"/reference/mocus_rcpp.html\">mocus_rcpp()</a></code>)</li><li>Recommended default for speed on larger trees</li></ul></li><li><p><strong>Pure-R fast MOCUS</strong> (<code>method = &quot;mocus_r&quot;</code>):</p><ul><li>Uses the optimized pure-R implementation (<code><a href=\"/reference/mocus_r.html\">mocus_r()</a></code>)</li><li>Useful when compiled code is unavailable</li></ul></li><li><p><strong>Original MOCUS</strong> (<code>method = &quot;mocus_original&quot;</code>):</p><ul><li>Uses the original MOCUS implementation (<code><a href=\"/reference/mocus.html\">mocus()</a></code> with <code>method = &quot;mocus_original&quot;</code>) to generate all cutsets</li><li>Returns the cutsets as character strings</li></ul></li></ul><p>Every method then minimises the MOCUS products by absorption: duplicate cutsets and any cutset containing another cutset are dropped. Cutsets are ordered fewest events first, then by the sorted position of their events. Minimum cutsets represent the smallest combinations of basic events that can cause the top event (system failure) to occur.</p>",
       "sections": [],
-      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Extract minimum cutset from fault tree data\nformula <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate() %>%\n   formulate()\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n   concentrate(method = \"mocus_rcpp\") %>%\n   tabulate(formula = formula, method = \"mocus_rcpp\")",
+      "examples": "# Load dependencies\nlibrary(dplyr)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Extract minimum cutset from fault tree data\nformula <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate() %>%\n   formulate()\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n   concentrate(method = \"mocus_rcpp\") %>%\n   tabulate(formula = formula, method = \"mocus_rcpp\")",
       "seealso": "<p><code><a href=\"/reference/curate.html\">curate()</a></code> for preparing gate data for MOCUS method, <code><a href=\"/reference/mocus_rcpp.html\">mocus_rcpp()</a></code>, <code><a href=\"/reference/mocus_r.html\">mocus_r()</a></code>, and <code><a href=\"/reference/mocus.html\">mocus()</a></code> for MOCUS implementations, <code><a href=\"/reference/tabulate.html\">tabulate()</a></code> for analyzing and summarizing minimum cutsets</p>",
       "source_file": "R/concentrate.R",
       "group": "Core workflow"
@@ -203,7 +203,7 @@
       "value": "<p>A <code>data.frame</code> (tibble) with one row per minimum cutset, containing:</p><ul><li><code>mincut</code>: Character string representing the minimum cutset as a boolean expression (e.g., <code>&quot;A * B&quot;</code> for events A AND B)</li><li><code>query</code>: Character string containing a filter expression that can be used to identify truth table rows matching this cutset (e.g., <code>&quot;filter(A == 1, B == 1, outcome == 1)&quot;</code>) (only included if <code>query = TRUE</code>)</li><li><code>cutsets</code>: Integer count of truth table rows (cutsets) that match this minimum cutset and result in system failure</li><li><code>failures</code>: Integer count of total truth table rows that result in system failure (same for all rows)</li><li><code>coverage</code>: Numeric value (0 to 1) representing the proportion of failure cases covered by this minimum cutset. Calculated as <code>cutsets / failures</code>.</li></ul>",
       "details": "<p>This function analyzes minimum cutsets to quantify their importance in system failure:</p><ul><li><strong>Truth Table Generation</strong>: Uses <code>formula</code> to generate a complete truth table via <code><a href=\"/reference/calculate.html\">calculate()</a></code>.</li><li><strong>Cutset Parsing</strong>: Splits each minimum cutset expression into individual events and determines their required states (1 for occurrence, 0 for non-occurrence)</li><li><strong>Query Construction</strong>: Creates filter expressions that identify truth table rows matching each cutset's event combination</li><li><strong>Coverage Calculation</strong>: Counts how many failure cases (rows with <code>outcome == 1</code>) are covered by each minimum cutset, then calculates coverage as a proportion</li></ul>",
       "sections": [],
-      "examples": "# Load dependencies\nlibrary(tidyverse)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\nformula <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate() %>%\n   formulate()\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n   concentrate(method = \"mocus_rcpp\") %>%\n   tabulate(formula = formula, method = \"mocus_rcpp\")",
+      "examples": "# Load dependencies\nlibrary(dplyr)\nlibrary(tidyfault)\n\n# Load example data into our environment\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\nformula <- curate(nodes = fakenodes, edges = fakeedges) %>%\n   equate() %>%\n   formulate()\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n   concentrate(method = \"mocus_rcpp\") %>%\n   tabulate(formula = formula, method = \"mocus_rcpp\")",
       "seealso": "<p><code><a href=\"/reference/concentrate.html\">concentrate()</a></code> for generating minimum cutsets, <code><a href=\"/reference/formulate.html\">formulate()</a></code> for creating the function used in truth table generation, <code><a href=\"/reference/calculate.html\">calculate()</a></code> for generating truth tables</p>",
       "source_file": "R/tabulate.R",
       "group": "Core workflow"
@@ -312,7 +312,7 @@
       "value": "<p>A tibble with the same structure as <code>binary_outcomes</code>, where:</p><ul><li>Values of 1 are replaced with P(event) from <code>event_probs</code></li><li>Values of 0 remain as 0</li></ul><p>The <code>scenario</code> column (if present) is preserved unchanged.</p>",
       "details": "<p>This function transforms binary event states by replacing occurrences (1s) with their corresponding failure probabilities. For each event column, if the binary value is 1 (event occurred), it is replaced with the failure probability P(event) from <code>event_probs</code>. If the binary value is 0 (event did not occur), it remains 0. This creates a data frame suitable for probabilistic evaluation where only occurring events have probability values.</p>",
       "sections": [],
-      "examples": "library(tidyverse)\nlibrary(tidyfault)\n\ndata(\"db_outcomes_binary\")\ndata(\"db_probs\")\n\n# Convert binary outcomes to probability outcomes\npopulate(db_outcomes_binary, db_probs)\n\n# Compare: binary has 0/1, probability version has P(event) where binary was 1, 0 otherwise\ndb_outcomes_binary\npopulate(db_outcomes_binary, db_probs)",
+      "examples": "library(dplyr)\nlibrary(tidyfault)\n\ndata(\"db_outcomes_binary\")\ndata(\"db_probs\")\n\n# Convert binary outcomes to probability outcomes\npopulate(db_outcomes_binary, db_probs)\n\n# Compare: binary has 0/1, probability version has P(event) where binary was 1, 0 otherwise\ndb_outcomes_binary\npopulate(db_outcomes_binary, db_probs)",
       "seealso": "<p><code><a href=\"/reference/quantify.html\">quantify()</a></code> for evaluating fault trees with binary or probabilistic inputs, <code><a href=\"/reference/quantify_prob.html\">quantify_prob()</a></code> for computing top event failure probability</p>",
       "source_file": "R/populate.R",
       "group": "Core workflow"
@@ -386,7 +386,7 @@
       "value": "<p>A vector of outcomes. The type depends on <code>prob</code>:</p><ul><li>If <code>prob = FALSE</code>: Returns a logical vector (TRUE = system failure, FALSE = no failure). If <code>newdata</code> is a data frame with multiple rows, returns a vector with one outcome per row. If <code>newdata</code> is a single scenario, returns a single logical value.</li><li>If <code>prob = TRUE</code>: Returns a numeric vector of top event failure probabilities. If <code>newdata</code> is a single scenario, returns a single numeric value. If <code>newdata</code> has multiple rows, returns a numeric vector with one probability per scenario.</li></ul><p>Both modes return vectors in <code>predict()</code>-style format.</p>",
       "details": "<p>This function provides a unified interface for both binary and probabilistic fault tree evaluation:</p><ul><li><strong>Binary evaluation</strong> (<code>prob = FALSE</code>): evaluates whether the top event occurs given binary event states.</li><li><strong>Probabilistic evaluation</strong> (<code>prob = TRUE</code>): computes the top event failure probability from basic event failure probabilities.</li><li><strong>Fast mode</strong> (<code>fast = TRUE</code>): uses optimized paths for larger scenario batches while preserving output semantics.</li><li><strong>Legacy mode</strong> (<code>fast = FALSE</code>): uses the original pure-R implementations.</li></ul><p>When <code>prob = FALSE</code>, <code>newdata</code> can be:</p><ul><li>A data frame with one column per basic event (names from <code>formalArgs(f)</code>)</li><li>A single vector/list (unnamed = positional, or named)</li><li>Values are logical (TRUE/FALSE) or numeric (0/1)</li></ul><p>When <code>prob = TRUE</code>, <code>newdata</code> can be:</p><ul><li>A single vector or list (one scenario) with probabilities in <code>[0, 1]</code></li><li>A data frame or matrix with one row per scenario and columns for each basic event (names must match <code>formalArgs(f)</code>)</li><li>Unnamed vectors are interpreted in <code>formalArgs(f)</code> order</li></ul>",
       "sections": [],
-      "examples": "library(tidyverse)\nlibrary(tidyfault)\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\nf <- curate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate()\n\n# Binary evaluation (default): single scenario\nf %>% quantify(c(T, T, T, F))\nf %>% quantify(c(TRUE, FALSE, TRUE, FALSE))\n\n# Binary evaluation: multiple scenarios\nscenarios_tbl <- tibble(\n  A = c(1L, 0L, 1L),\n  B = c(0L, 1L, 1L),\n  C = c(1L, 0L, 0L),\n  D = c(0L, 1L, 1L)\n)\nf %>% quantify(scenarios_tbl)\n\n# Probabilistic evaluation: single scenario\nf %>% quantify(c(0.1, 0.2, 0.05, 0.15), prob = TRUE)\n\n# Legacy mode\nf %>% quantify(c(0.1, 0.2, 0.05, 0.15), prob = TRUE, fast = FALSE)\n\n# Probabilistic evaluation: multiple scenarios\nprobs_df <- as.data.frame(replicate(4, runif(100), simplify = FALSE))\nnames(probs_df) <- formalArgs(f)\nf %>% quantify(probs_df, prob = TRUE)",
+      "examples": "library(dplyr)\nlibrary(tidyfault)\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\nf <- curate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate()\n\n# Binary evaluation (default): single scenario\nf %>% quantify(c(TRUE, TRUE, TRUE, FALSE))\nf %>% quantify(c(TRUE, FALSE, TRUE, FALSE))\n\n# Binary evaluation: multiple scenarios\nscenarios_tbl <- tibble(\n  A = c(1L, 0L, 1L),\n  B = c(0L, 1L, 1L),\n  C = c(1L, 0L, 0L),\n  D = c(0L, 1L, 1L)\n)\nf %>% quantify(scenarios_tbl)\n\n# Probabilistic evaluation: single scenario\nf %>% quantify(c(0.1, 0.2, 0.05, 0.15), prob = TRUE)\n\n# Legacy mode\nf %>% quantify(c(0.1, 0.2, 0.05, 0.15), prob = TRUE, fast = FALSE)\n\n# Probabilistic evaluation: multiple scenarios\nprobs_df <- as.data.frame(replicate(4, runif(100), simplify = FALSE))\nnames(probs_df) <- formalArgs(f)\nf %>% quantify(probs_df, prob = TRUE)",
       "seealso": "<p><code><a href=\"/reference/formulate.html\">formulate()</a></code> for creating the function, <code><a href=\"/reference/calculate.html\">calculate()</a></code> for the full truth table, <code><a href=\"/reference/quantify_binary.html\">quantify_binary()</a></code>, <code><a href=\"/reference/quantify_binary_fast.html\">quantify_binary_fast()</a></code>, <code><a href=\"/reference/quantify_prob.html\">quantify_prob()</a></code>, and <code><a href=\"/reference/quantify_prob_fast.html\">quantify_prob_fast()</a></code></p>",
       "source_file": "R/quantify.R",
       "group": "Quantification"
@@ -408,14 +408,14 @@
         },
         {
           "name": "newdata",
-          "description": "(Required) Binary event states (0/1 or TRUE/FALSE) for each basic event. Either a tibble/data frame with one column per basic event (names from <code>formalArgs(f)</code>), or a single vector/list. A single scenario can be an unnamed vector in <code>formalArgs(f)</code> order (e.g. <code>c(T, T, T, F)</code> or <code>c(1, 1, 0, 1)</code>), or a named vector/list. Values are logical (TRUE/FALSE) or numeric (0/1), where 1/TRUE means the event occurred and 0/FALSE means it did not."
+          "description": "(Required) Binary event states (0/1 or TRUE/FALSE) for each basic event. Either a tibble/data frame with one column per basic event (names from <code>formalArgs(f)</code>), or a single vector/list. A single scenario can be an unnamed vector in <code>formalArgs(f)</code> order (e.g. <code>c(TRUE, TRUE, TRUE, FALSE)</code> or <code>c(1, 1, 0, 1)</code>), or a named vector/list. Values are logical (TRUE/FALSE) or numeric (0/1), where 1/TRUE means the event occurred and 0/FALSE means it did not."
         }
       ],
       "format": "",
       "value": "<p>A logical vector of outcomes (TRUE = system failure, FALSE = no failure). If <code>newdata</code> is a data frame with multiple rows, returns a vector with one outcome per row. If <code>newdata</code> is a single scenario (vector/list), returns a single logical value.</p>",
       "details": "<p>No probabilities are used; the function evaluates the fault tree on the given event states. Outcome is TRUE when <code>f(...) &gt;= 1</code> (system failure). Logical and 0/1 inputs are coerced to 0/1 internally to match <code><a href=\"/reference/calculate.html\">calculate()</a></code> behavior. When <code>newdata</code> is a data frame, evaluation is vectorized: <code>f</code> is called once with vector columns (one element per row), so many scenarios are handled efficiently. Returns only the outcome vector, similar to R's <code>predict()</code> function style.</p>",
       "sections": [],
-      "examples": "library(tidyverse)\nlibrary(tidyfault)\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Pipe-friendly: single scenario in event order (e.g. A, B, C, D)\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate() %>%\n  quantify_binary(c(T, T, T, F))\n\nf <- curate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate()\n\n# Single scenario: unnamed vector in event order\nf %>% quantify_binary(c(TRUE, FALSE, TRUE, FALSE))\n\n# Single scenario: named vector (logical or 0/1)\none_scenario <- setNames(c(TRUE, FALSE, TRUE, FALSE), formalArgs(f))\nf %>% quantify_binary(one_scenario)\n\n# Tibble of scenarios: returns vector of outcomes (vectorized, one call to f for all rows)\nscenarios_tbl <- tibble(\n  A = c(1L, 0L, 1L),\n  B = c(0L, 1L, 1L),\n  C = c(1L, 0L, 0L),\n  D = c(0L, 1L, 1L)\n)\nf %>% quantify_binary(scenarios_tbl)  # Returns logical vector",
+      "examples": "library(dplyr)\nlibrary(tidyfault)\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\n# Pipe-friendly: single scenario in event order (e.g. A, B, C, D)\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate() %>%\n  quantify_binary(c(TRUE, TRUE, TRUE, FALSE))\n\nf <- curate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate()\n\n# Single scenario: unnamed vector in event order\nf %>% quantify_binary(c(TRUE, FALSE, TRUE, FALSE))\n\n# Single scenario: named vector (logical or 0/1)\none_scenario <- setNames(c(TRUE, FALSE, TRUE, FALSE), formalArgs(f))\nf %>% quantify_binary(one_scenario)\n\n# Tibble of scenarios: returns vector of outcomes (vectorized, one call to f for all rows)\nscenarios_tbl <- tibble(\n  A = c(1L, 0L, 1L),\n  B = c(0L, 1L, 1L),\n  C = c(1L, 0L, 0L),\n  D = c(0L, 1L, 1L)\n)\nf %>% quantify_binary(scenarios_tbl)  # Returns logical vector",
       "seealso": "<p><code><a href=\"/reference/formulate.html\">formulate()</a></code> for creating the function, <code><a href=\"/reference/calculate.html\">calculate()</a></code> for the full truth table, <code><a href=\"/reference/quantify_prob.html\">quantify_prob()</a></code> for top event failure probability given basic event probabilities, <code><a href=\"/reference/quantify.html\">quantify()</a></code> for the unified wrapper function.</p>",
       "source_file": "R/quantify_binary.R",
       "group": "Quantification"
@@ -477,7 +477,7 @@
       "value": "<p>A numeric vector of top-event failure probabilities. If <code>newdata</code> is a single scenario (vector/list or single-row data frame), returns a single numeric value. If <code>newdata</code> has multiple rows (one per scenario), returns a numeric vector with one probability per scenario (same order as rows of <code>newdata</code>). Similar to R's <code>predict()</code> function style.</p>",
       "details": "<p>The top event probability is computed exactly via the complete truth table: for each of the 2^n combinations of basic event states, the probability of that combination is the product of <code>newdata[e]</code> for events that occur (1) and <code>1 - newdata[e]</code> for events that do not (0). The function sums these probabilities over all combinations where <code>outcome == 1</code>. This is exact for independent basic events but has complexity O(2^n); for trees with many basic events, consider using minimal cut set approximations elsewhere. When <code>newdata</code> has multiple rows, the truth table is computed once and all scenarios are evaluated in one pass.</p>",
       "sections": [],
-      "examples": "library(tidyverse)\nlibrary(tidyfault)\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\nf <- curate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate()\n# Pipe-friendly: probability vector in event order (e.g. A, B, C, D)\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate() %>%\n  quantify_prob(c(0.1, 0.2, 0.05, 0.15))\n\n# Named probs (names must match event names in the tree)\nprobs <- setNames(c(0.1, 0.2, 0.05, 0.15), formalArgs(f))\nf %>% quantify_prob(probs)\n\n# Reuse an existing truth table to avoid recomputing\ntt <- calculate(f)\nf %>% quantify_prob(probs, truth_table = tt)\n\n# Many scenarios at once (vectorized): pass a data frame, one row per scenario\nprobs_df <- as.data.frame(replicate(4, runif(1000), simplify = FALSE))\nnames(probs_df) <- formalArgs(f)\nf %>% quantify_prob(probs_df, truth_table = tt)  # length-1000 vector",
+      "examples": "library(dplyr)\nlibrary(tidyfault)\ndata(\"fakenodes\")\ndata(\"fakeedges\")\n\nf <- curate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate()\n# Pipe-friendly: probability vector in event order (e.g. A, B, C, D)\ncurate(nodes = fakenodes, edges = fakeedges) %>%\n  equate() %>%\n  formulate() %>%\n  quantify_prob(c(0.1, 0.2, 0.05, 0.15))\n\n# Named probs (names must match event names in the tree)\nprobs <- setNames(c(0.1, 0.2, 0.05, 0.15), formalArgs(f))\nf %>% quantify_prob(probs)\n\n# Reuse an existing truth table to avoid recomputing\ntt <- calculate(f)\nf %>% quantify_prob(probs, truth_table = tt)\n\n# Many scenarios at once (vectorized): pass a data frame, one row per scenario\nprobs_df <- as.data.frame(replicate(4, runif(1000), simplify = FALSE))\nnames(probs_df) <- formalArgs(f)\nf %>% quantify_prob(probs_df, truth_table = tt)  # length-1000 vector",
       "seealso": "<p><code><a href=\"/reference/formulate.html\">formulate()</a></code> for creating the function from a boolean equation, <code><a href=\"/reference/calculate.html\">calculate()</a></code> for generating the truth table, <code><a href=\"/reference/quantify.html\">quantify()</a></code> for evaluating whether the top event occurs given binary (0/1) basic event states. The result matches the FaultTree package when the same tree is built and <code>ftree.calc(DF, use.bdd = TRUE)</code> is used (BDD accounts for repeated basic events; gate-by-gate with <code>use.bdd = FALSE</code> does not).</p>",
       "source_file": "R/quantify_prob.R",
       "group": "Quantification"
@@ -514,6 +514,546 @@
       "seealso": "",
       "source_file": "R/quantify_prob_fast.R",
       "group": "Quantification"
+    },
+    {
+      "name": "fakenodes",
+      "aliases": [
+        "fakenodes"
+      ],
+      "kind": "data",
+      "title": "fakenodes fault tree nodes dataset",
+      "summary": "An example dataset of nodes in a demonstration fault tree.",
+      "description": "<p>An example dataset of nodes in a demonstration fault tree.</p>",
+      "usage": "fakenodes",
+      "arguments": [],
+      "format": "<h4><code>fakenodes</code></h4><p>A data frame with 12 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifer (1 to N) for each node. Some events occur multiple times, but each time they have a unique <code>id</code></dd><dt>event</dt><dd>name of event. <code>&quot;T&quot;</code> mean top event. <code>&quot;G1&quot;</code>, <code>&quot;G2&quot;</code>, etc. mean gates.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"fakenodes\")\nhead(fakenodes)\ndim(fakenodes)",
+      "seealso": "",
+      "source_file": "R/fakenodes.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "fakeedges",
+      "aliases": [
+        "fakeedges"
+      ],
+      "kind": "data",
+      "title": "fakeedges fault tree edge dataset",
+      "summary": "An example dataset of edges (connections) in a demonstration fault tree.",
+      "description": "<p>An example dataset of edges (connections) in a demonstration fault tree.</p>",
+      "usage": "fakeedges",
+      "arguments": [],
+      "format": "<h4><code>fakeedges</code></h4><p>A data frame with 11 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"fakeedges\")\nhead(fakeedges)\ndim(fakeedges)",
+      "seealso": "",
+      "source_file": "R/fakeedges.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "db_nodes",
+      "aliases": [
+        "db_nodes"
+      ],
+      "kind": "data",
+      "title": "db_nodes database system failure fault tree nodes dataset",
+      "summary": "An example dataset of nodes in a database system failure fault tree.",
+      "description": "<p>An example dataset of nodes in a database system failure fault tree. This fault tree models scenarios where a database system becomes unavailable due to various failure modes including data corruption, access failures, storage issues, network problems, and hardware failures.</p>",
+      "usage": "db_nodes",
+      "arguments": [],
+      "format": "<h4><code>db_nodes</code></h4><p>A data frame with 13 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 13) for each node.</dd><dt>event</dt><dd>Name of event. <code>&quot;T&quot;</code> means top event (Database system unavailable). <code>&quot;G1&quot;</code>, <code>&quot;G2&quot;</code>, etc. mean gates. <code>&quot;DC&quot;</code> = Data corruption, <code>&quot;AF&quot;</code> = Access failure, <code>&quot;SF&quot;</code> = Storage failure, <code>&quot;BF&quot;</code> = Backup failure, <code>&quot;NF&quot;</code> = Network failure, <code>&quot;AUF&quot;</code> = Authentication failure, <code>&quot;HF&quot;</code> = Hardware failure, <code>&quot;MF&quot;</code> = Monitoring failure.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
+      "value": "",
+      "details": "<p>The fault tree structure:</p><ul><li>Top event: Database system unavailable</li><li>G1 (OR): Data corruption OR Access failure</li><li>G2 (AND): Storage failure AND Backup failure</li><li>G3 (OR): Network failure OR Authentication failure</li><li>G4 (AND): Hardware failure AND Monitoring failure</li></ul>",
+      "sections": [],
+      "examples": "data(\"db_nodes\")\nhead(db_nodes)\ndim(db_nodes)",
+      "seealso": "<p><code>db_edges</code> for the corresponding edges dataset</p>",
+      "source_file": "R/db_nodes.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "db_edges",
+      "aliases": [
+        "db_edges"
+      ],
+      "kind": "data",
+      "title": "db_edges database system failure fault tree edge dataset",
+      "summary": "An example dataset of edges (connections) in a database system failure fault tree.",
+      "description": "<p>An example dataset of edges (connections) in a database system failure fault tree.</p>",
+      "usage": "db_edges",
+      "arguments": [],
+      "format": "<h4><code>db_edges</code></h4><p>A data frame with 12 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>Unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"db_edges\")\nhead(db_edges)\ndim(db_edges)",
+      "seealso": "<p><code>db_nodes</code> for the corresponding nodes dataset</p>",
+      "source_file": "R/db_edges.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "ai_nodes",
+      "aliases": [
+        "ai_nodes"
+      ],
+      "kind": "data",
+      "title": "ai_nodes AI agent failure fault tree nodes dataset",
+      "summary": "An example dataset of nodes in an AI agent failure fault tree.",
+      "description": "<p>An example dataset of nodes in an AI agent failure fault tree. This fault tree models scenarios where an AI agent fails to complete a task due to model errors, prompt issues, API failures, and context limitations.</p>",
+      "usage": "ai_nodes",
+      "arguments": [],
+      "format": "<h4><code>ai_nodes</code></h4><p>A data frame with 6 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 6) for each node.</dd><dt>event</dt><dd>Name of event. <code>&quot;T&quot;</code> means top event (AI agent task failure). <code>&quot;G3&quot;</code> is a gate. The basic events are <code>&quot;AF&quot;</code> = API failure, <code>&quot;TO&quot;</code> = Timeout, <code>&quot;RL&quot;</code> = Rate limit, and <code>&quot;CWE&quot;</code> = Context window exceeded.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
+      "value": "",
+      "details": "<p>The fault tree structure:</p><ul><li>Top event: AI agent task failure</li><li>T (AND): G3 AND Context window exceeded</li><li>G3 (OR): API failure OR Timeout OR Rate limit</li></ul>",
+      "sections": [],
+      "examples": "data(\"ai_nodes\")\nhead(ai_nodes)\ndim(ai_nodes)",
+      "seealso": "<p><code>ai_edges</code> for the corresponding edges dataset</p>",
+      "source_file": "R/ai_nodes.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "ai_edges",
+      "aliases": [
+        "ai_edges"
+      ],
+      "kind": "data",
+      "title": "ai_edges AI agent failure fault tree edge dataset",
+      "summary": "An example dataset of edges (connections) in an AI agent failure fault tree.",
+      "description": "<p>An example dataset of edges (connections) in an AI agent failure fault tree.</p>",
+      "usage": "ai_edges",
+      "arguments": [],
+      "format": "<h4><code>ai_edges</code></h4><p>A data frame with 5 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>Unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"ai_edges\")\nhead(ai_edges)\ndim(ai_edges)",
+      "seealso": "<p><code>ai_nodes</code> for the corresponding nodes dataset</p>",
+      "source_file": "R/ai_edges.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "security_nodes",
+      "aliases": [
+        "security_nodes"
+      ],
+      "kind": "data",
+      "title": "security_nodes security breach fault tree nodes dataset",
+      "summary": "An example dataset of nodes in a security breach fault tree.",
+      "description": "<p>An example dataset of nodes in a security breach fault tree. This fault tree models scenarios where a security breach occurs due to external attacks, internal threats, vulnerabilities, and authentication failures.</p>",
+      "usage": "security_nodes",
+      "arguments": [],
+      "format": "<h4><code>security_nodes</code></h4><p>A data frame with 11 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 11) for each node.</dd><dt>event</dt><dd>Name of event. <code>&quot;T&quot;</code> means top event (Security breach detected). <code>&quot;G2&quot;</code>, <code>&quot;G3&quot;</code>, etc. mean gates. <code>&quot;VE&quot;</code> = Vulnerability exists, <code>&quot;ES&quot;</code> = Exploit successful, <code>&quot;PH&quot;</code> = Phishing, <code>&quot;MW&quot;</code> = Malware, <code>&quot;UA&quot;</code> = Unauthorized access, <code>&quot;WP&quot;</code> = Weak password, <code>&quot;N2F&quot;</code> = No 2FA.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
+      "value": "",
+      "details": "<p>The fault tree structure:</p><ul><li>Top event: Security breach detected</li><li>G2 (AND): Vulnerability exists AND Exploit successful</li><li>G3 (OR): Phishing OR Malware OR Unauthorized access</li><li>G4 (AND): Weak password AND No 2FA</li></ul>",
+      "sections": [],
+      "examples": "data(\"security_nodes\")\nhead(security_nodes)\ndim(security_nodes)",
+      "seealso": "<p><code>security_edges</code> for the corresponding edges dataset</p>",
+      "source_file": "R/security_nodes.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "security_edges",
+      "aliases": [
+        "security_edges"
+      ],
+      "kind": "data",
+      "title": "security_edges security breach fault tree edge dataset",
+      "summary": "An example dataset of edges (connections) in a security breach fault tree.",
+      "description": "<p>An example dataset of edges (connections) in a security breach fault tree.</p>",
+      "usage": "security_edges",
+      "arguments": [],
+      "format": "<h4><code>security_edges</code></h4><p>A data frame with 10 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>Unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"security_edges\")\nhead(security_edges)\ndim(security_edges)",
+      "seealso": "<p><code>security_nodes</code> for the corresponding nodes dataset</p>",
+      "source_file": "R/security_edges.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "breach_nodes",
+      "aliases": [
+        "breach_nodes"
+      ],
+      "kind": "data",
+      "title": "breach_nodes data breach fault tree nodes dataset",
+      "summary": "An example dataset of nodes in a small data breach fault tree.",
+      "description": "<p>An example dataset of nodes in a small data breach fault tree. A breach occurs if credentials are stolen through phishing, or if an insider or an unauthorized party gets access.</p>",
+      "usage": "breach_nodes",
+      "arguments": [],
+      "format": "<h4><code>breach_nodes</code></h4><p>A data frame with 8 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 8) for each node.</dd><dt>event</dt><dd>Name of event. <code>&quot;Breach&quot;</code> is the top event. <code>&quot;G1&quot;</code>, <code>&quot;G2&quot;</code>, <code>&quot;G3&quot;</code> are gates. The basic events are <code>&quot;Phishing&quot;</code>, <code>&quot;Credential&quot;</code> (credential compromise), <code>&quot;Insider&quot;</code> (insider threat), and <code>&quot;Unauthorized&quot;</code> (unauthorized access).</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
+      "value": "",
+      "details": "<p>The fault tree structure:</p><ul><li>Top event: Breach</li><li>G1 (OR): G2 OR G3</li><li>G2 (AND): Phishing AND Credential</li><li>G3 (OR): Insider OR Unauthorized</li></ul>",
+      "sections": [],
+      "examples": "data(\"breach_nodes\")\nhead(breach_nodes)",
+      "seealso": "<p><a href=\"/reference/breach_edges.html\">breach_edges</a> for the corresponding edges dataset</p>",
+      "source_file": "R/data.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "breach_edges",
+      "aliases": [
+        "breach_edges"
+      ],
+      "kind": "data",
+      "title": "breach_edges data breach fault tree edge dataset",
+      "summary": "An example dataset of edges (connections) in the data breach fault tree described in breach_nodes.",
+      "description": "<p>An example dataset of edges (connections) in the data breach fault tree described in <a href=\"/reference/breach_nodes.html\">breach_nodes</a>.</p>",
+      "usage": "breach_edges",
+      "arguments": [],
+      "format": "<h4><code>breach_edges</code></h4><p>A data frame with 7 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>Unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"breach_edges\")\nhead(breach_edges)",
+      "seealso": "<p><a href=\"/reference/breach_nodes.html\">breach_nodes</a> for the corresponding nodes dataset</p>",
+      "source_file": "R/data.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "it_security_nodes",
+      "aliases": [
+        "it_security_nodes"
+      ],
+      "kind": "data",
+      "title": "it_security_nodes IT security (data leak) fault tree nodes dataset",
+      "summary": "An example dataset of nodes in a fault tree for sensitive data leaving the organization.",
+      "description": "<p>An example dataset of nodes in a fault tree for sensitive data leaving the organization. The tree models three ways a breach can happen: an outsider gets high-level access, an attacker uses a known flaw that was not fixed, or someone inside sends data out.</p>",
+      "usage": "it_security_nodes",
+      "arguments": [],
+      "format": "<h4><code>it_security_nodes</code></h4><p>A data frame with 16 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 16) for each node.</dd><dt>event</dt><dd>Two-letter event code. <code>&quot;DE&quot;</code> = Sensitive data leaves the organization (top). Gates: <code>&quot;BP&quot;</code> = Ways a breach can happen (OR), <code>&quot;EA&quot;</code> = Outsider gets high-level access (AND), <code>&quot;UE&quot;</code> = Attacker uses a known flaw that was not fixed (AND), <code>&quot;IE&quot;</code> = Someone inside sends data out (AND), <code>&quot;CC&quot;</code> = Log-in details stolen or misused (OR). Basic events: <code>&quot;PC&quot;</code> = Passwords obtained via fake email or link, <code>&quot;LR&quot;</code> = Passwords exposed in a breach or reused elsewhere, <code>&quot;MN&quot;</code> = No second login step required, <code>&quot;PM&quot;</code> = Admin-level access set up incorrectly, <code>&quot;VS&quot;</code> = System has a known security hole, <code>&quot;PO&quot;</code> = Security updates not applied on time, <code>&quot;WB&quot;</code> = Web traffic filter missing or bypassed, <code>&quot;IM&quot;</code> = Employee did it on purpose or account was taken over, <code>&quot;DA&quot;</code> = No controls to stop data from being copied out, <code>&quot;EP&quot;</code> = User had more access than needed for their job.</dd><dt>type</dt><dd>Factor classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot;.</dd></dl>",
+      "value": "",
+      "details": "<p>The fault tree structure (event codes):</p><ul><li>Top event: DE (Sensitive data leaves the organization)</li><li>BP (OR): EA OR UE OR IE</li><li>EA (AND): CC AND MN AND PM</li><li>UE (AND): VS AND PO AND WB</li><li>IE (AND): IM AND DA AND EP</li><li>CC (OR): PC OR LR</li></ul>",
+      "sections": [],
+      "examples": "data(\"it_security_nodes\")\nhead(it_security_nodes)\ndim(it_security_nodes)",
+      "seealso": "<p><code>it_security_edges</code> for the corresponding edges dataset</p>",
+      "source_file": "R/it_security_nodes.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "it_security_edges",
+      "aliases": [
+        "it_security_edges"
+      ],
+      "kind": "data",
+      "title": "it_security_edges IT security (data leak) fault tree edge dataset",
+      "summary": "An example dataset of edges (connections) in an IT security fault tree for sensitive data leaving the organization.",
+      "description": "<p>An example dataset of edges (connections) in an IT security fault tree for sensitive data leaving the organization.</p>",
+      "usage": "it_security_edges",
+      "arguments": [],
+      "format": "<h4><code>it_security_edges</code></h4><p>A data frame with 15 rows and 2 columns:</p><dl><dt>from</dt><dd>Source node <code>id</code>.</dd><dt>to</dt><dd>Destination node <code>id</code>.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"it_security_edges\")\nhead(it_security_edges)\ndim(it_security_edges)",
+      "seealso": "<p><code>it_security_nodes</code> for the corresponding nodes dataset</p>",
+      "source_file": "R/it_security_edges.R",
+      "group": "Example fault trees"
+    },
+    {
+      "name": "db_probs",
+      "aliases": [
+        "db_probs"
+      ],
+      "kind": "data",
+      "title": "db_probs database system failure fault tree event probabilities",
+      "summary": "Example failure probabilities for the basic events of the database system failure fault tree (db_nodes, db_edges).",
+      "description": "<p>Example failure probabilities for the basic events of the database system failure fault tree (<code>db_nodes</code>, <code>db_edges</code>). Pass it as <code>event_probs</code> to <code><a href=\"/reference/populate.html\">populate()</a></code>.</p>",
+      "usage": "db_probs",
+      "arguments": [],
+      "format": "<h4><code>db_probs</code></h4><p>A tibble with 8 rows and 2 columns:</p><dl><dt>event</dt><dd>Name of the basic event: <code>&quot;DC&quot;</code> = Data corruption, <code>&quot;AF&quot;</code> = Access failure, <code>&quot;SF&quot;</code> = Storage failure, <code>&quot;BF&quot;</code> = Backup failure, <code>&quot;NF&quot;</code> = Network failure, <code>&quot;AUF&quot;</code> = Authentication failure, <code>&quot;HF&quot;</code> = Hardware failure, <code>&quot;MF&quot;</code> = Monitoring failure.</dd><dt>probability</dt><dd>Probability that the event occurs, between 0 and 1.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"db_probs\")\ndb_probs",
+      "seealso": "<p><a href=\"/reference/db_outcomes_prob.html\">db_outcomes_prob</a>, <a href=\"/reference/db_outcomes_binary.html\">db_outcomes_binary</a>, <code><a href=\"/reference/populate.html\">populate()</a></code></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "db_outcomes_binary",
+      "aliases": [
+        "db_outcomes_binary"
+      ],
+      "kind": "data",
+      "title": "db_outcomes_binary database system failure fault tree binary scenarios",
+      "summary": "Ten example scenarios for the basic events of the database system failure fault tree, coded 1 if the event occurred and 0 if not.",
+      "description": "<p>Ten example scenarios for the basic events of the database system failure fault tree, coded 1 if the event occurred and 0 if not. Use it with <code><a href=\"/reference/quantify.html\">quantify()</a></code> to evaluate whether the top event occurs under each scenario, or with <code><a href=\"/reference/populate.html\">populate()</a></code>.</p>",
+      "usage": "db_outcomes_binary",
+      "arguments": [],
+      "format": "<h4><code>db_outcomes_binary</code></h4><p>A tibble with 10 rows and 9 columns:</p><dl><dt>scenario</dt><dd>Scenario number (1 to 10).</dd><dt>DC, AF, SF, BF, NF, AUF, HF, MF</dt><dd>One 0/1 column per basic event; 1 means the event occurred.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"db_outcomes_binary\")\nhead(db_outcomes_binary)",
+      "seealso": "<p><a href=\"/reference/db_probs.html\">db_probs</a>, <a href=\"/reference/db_outcomes_prob.html\">db_outcomes_prob</a>, <code><a href=\"/reference/quantify.html\">quantify()</a></code>, <code><a href=\"/reference/populate.html\">populate()</a></code></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "db_outcomes_prob",
+      "aliases": [
+        "db_outcomes_prob"
+      ],
+      "kind": "data",
+      "title": "db_outcomes_prob database system failure fault tree outcome probabilities",
+      "summary": "Example failure probabilities for the basic events of the database system failure fault tree, with one row per event.",
+      "description": "<p>Example failure probabilities for the basic events of the database system failure fault tree, with one row per event. It holds the same values as <a href=\"/reference/db_probs.html\">db_probs</a>.</p>",
+      "usage": "db_outcomes_prob",
+      "arguments": [],
+      "format": "<h4><code>db_outcomes_prob</code></h4><p>A tibble with 8 rows and 2 columns:</p><dl><dt>event</dt><dd>Name of the basic event: <code>&quot;DC&quot;</code> = Data corruption, <code>&quot;AF&quot;</code> = Access failure, <code>&quot;SF&quot;</code> = Storage failure, <code>&quot;BF&quot;</code> = Backup failure, <code>&quot;NF&quot;</code> = Network failure, <code>&quot;AUF&quot;</code> = Authentication failure, <code>&quot;HF&quot;</code> = Hardware failure, <code>&quot;MF&quot;</code> = Monitoring failure.</dd><dt>probability</dt><dd>Probability that the event occurs, between 0 and 1.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"db_outcomes_prob\")\ndb_outcomes_prob",
+      "seealso": "<p><a href=\"/reference/db_probs.html\">db_probs</a>, <a href=\"/reference/db_outcomes_binary.html\">db_outcomes_binary</a>, <a href=\"/reference/db_outcomes_rates.html\">db_outcomes_rates</a></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "db_outcomes_rates",
+      "aliases": [
+        "db_outcomes_rates"
+      ],
+      "kind": "data",
+      "title": "db_outcomes_rates database system failure fault tree failure rates",
+      "summary": "Example exponential failure rates for the basic events of the database system failure fault tree, expressed per hour.",
+      "description": "<p>Example exponential failure rates for the basic events of the database system failure fault tree, expressed per hour.</p>",
+      "usage": "db_outcomes_rates",
+      "arguments": [],
+      "format": "<h4><code>db_outcomes_rates</code></h4><p>A tibble with 8 rows and 3 columns:</p><dl><dt>event</dt><dd>Name of the basic event: <code>&quot;DC&quot;</code> = Data corruption, <code>&quot;AF&quot;</code> = Access failure, <code>&quot;SF&quot;</code> = Storage failure, <code>&quot;BF&quot;</code> = Backup failure, <code>&quot;NF&quot;</code> = Network failure, <code>&quot;AUF&quot;</code> = Authentication failure, <code>&quot;HF&quot;</code> = Hardware failure, <code>&quot;MF&quot;</code> = Monitoring failure.</dd><dt>lambda</dt><dd>Failure rate (failures per hour).</dd><dt>time_unit</dt><dd>Unit of time for <code>lambda</code>: <code>&quot;hours&quot;</code>.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"db_outcomes_rates\")\ndb_outcomes_rates",
+      "seealso": "<p><a href=\"/reference/db_probs.html\">db_probs</a>, <a href=\"/reference/db_outcomes_prob.html\">db_outcomes_prob</a></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "ai_probs",
+      "aliases": [
+        "ai_probs"
+      ],
+      "kind": "data",
+      "title": "ai_probs AI agent failure fault tree event probabilities",
+      "summary": "Example failure probabilities for the basic events of the AI agent failure fault tree (ai_nodes, ai_edges).",
+      "description": "<p>Example failure probabilities for the basic events of the AI agent failure fault tree (<code>ai_nodes</code>, <code>ai_edges</code>). Pass it as <code>event_probs</code> to <code><a href=\"/reference/populate.html\">populate()</a></code>.</p>",
+      "usage": "ai_probs",
+      "arguments": [],
+      "format": "<h4><code>ai_probs</code></h4><p>A tibble with 4 rows and 2 columns:</p><dl><dt>event</dt><dd>Name of the basic event: <code>&quot;AF&quot;</code> = API failure, <code>&quot;TO&quot;</code> = Timeout, <code>&quot;RL&quot;</code> = Rate limit, <code>&quot;CWE&quot;</code> = Context window exceeded.</dd><dt>probability</dt><dd>Probability that the event occurs, between 0 and 1.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"ai_probs\")\nai_probs",
+      "seealso": "<p><a href=\"/reference/ai_outcomes_prob.html\">ai_outcomes_prob</a>, <a href=\"/reference/ai_outcomes_binary.html\">ai_outcomes_binary</a>, <code><a href=\"/reference/populate.html\">populate()</a></code></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "ai_outcomes_binary",
+      "aliases": [
+        "ai_outcomes_binary"
+      ],
+      "kind": "data",
+      "title": "ai_outcomes_binary AI agent failure fault tree binary scenarios",
+      "summary": "Ten example scenarios for the basic events of the AI agent failure fault tree, coded 1 if the event occurred and 0 if not.",
+      "description": "<p>Ten example scenarios for the basic events of the AI agent failure fault tree, coded 1 if the event occurred and 0 if not. Use it with <code><a href=\"/reference/quantify.html\">quantify()</a></code> to evaluate whether the top event occurs under each scenario, or with <code><a href=\"/reference/populate.html\">populate()</a></code>.</p>",
+      "usage": "ai_outcomes_binary",
+      "arguments": [],
+      "format": "<h4><code>ai_outcomes_binary</code></h4><p>A tibble with 10 rows and 5 columns:</p><dl><dt>scenario</dt><dd>Scenario number (1 to 10).</dd><dt>AF, TO, RL, CWE</dt><dd>One 0/1 column per basic event; 1 means the event occurred.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"ai_outcomes_binary\")\nhead(ai_outcomes_binary)",
+      "seealso": "<p><a href=\"/reference/ai_probs.html\">ai_probs</a>, <a href=\"/reference/ai_outcomes_prob.html\">ai_outcomes_prob</a>, <code><a href=\"/reference/quantify.html\">quantify()</a></code>, <code><a href=\"/reference/populate.html\">populate()</a></code></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "ai_outcomes_prob",
+      "aliases": [
+        "ai_outcomes_prob"
+      ],
+      "kind": "data",
+      "title": "ai_outcomes_prob AI agent failure fault tree outcome probabilities",
+      "summary": "Example failure probabilities for the basic events of the AI agent failure fault tree, with one row per event.",
+      "description": "<p>Example failure probabilities for the basic events of the AI agent failure fault tree, with one row per event. It holds the same values as <a href=\"/reference/ai_probs.html\">ai_probs</a>.</p>",
+      "usage": "ai_outcomes_prob",
+      "arguments": [],
+      "format": "<h4><code>ai_outcomes_prob</code></h4><p>A tibble with 4 rows and 2 columns:</p><dl><dt>event</dt><dd>Name of the basic event: <code>&quot;AF&quot;</code> = API failure, <code>&quot;TO&quot;</code> = Timeout, <code>&quot;RL&quot;</code> = Rate limit, <code>&quot;CWE&quot;</code> = Context window exceeded.</dd><dt>probability</dt><dd>Probability that the event occurs, between 0 and 1.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"ai_outcomes_prob\")\nai_outcomes_prob",
+      "seealso": "<p><a href=\"/reference/ai_probs.html\">ai_probs</a>, <a href=\"/reference/ai_outcomes_binary.html\">ai_outcomes_binary</a>, <a href=\"/reference/ai_outcomes_rates.html\">ai_outcomes_rates</a></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "ai_outcomes_rates",
+      "aliases": [
+        "ai_outcomes_rates"
+      ],
+      "kind": "data",
+      "title": "ai_outcomes_rates AI agent failure fault tree failure rates",
+      "summary": "Example exponential failure rates for the basic events of the AI agent failure fault tree, expressed per 1000 requests.",
+      "description": "<p>Example exponential failure rates for the basic events of the AI agent failure fault tree, expressed per 1000 requests.</p>",
+      "usage": "ai_outcomes_rates",
+      "arguments": [],
+      "format": "<h4><code>ai_outcomes_rates</code></h4><p>A tibble with 4 rows and 3 columns:</p><dl><dt>event</dt><dd>Name of the basic event: <code>&quot;AF&quot;</code> = API failure, <code>&quot;TO&quot;</code> = Timeout, <code>&quot;RL&quot;</code> = Rate limit, <code>&quot;CWE&quot;</code> = Context window exceeded.</dd><dt>lambda</dt><dd>Failure rate (failures per 1000 requests).</dd><dt>time_unit</dt><dd>Unit of time for <code>lambda</code>: <code>&quot;per_1000_requests&quot;</code>.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"ai_outcomes_rates\")\nai_outcomes_rates",
+      "seealso": "<p><a href=\"/reference/ai_probs.html\">ai_probs</a>, <a href=\"/reference/ai_outcomes_prob.html\">ai_outcomes_prob</a></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "security_probs",
+      "aliases": [
+        "security_probs"
+      ],
+      "kind": "data",
+      "title": "security_probs security breach fault tree event probabilities",
+      "summary": "Example failure probabilities for the basic events of the security breach fault tree (security_nodes, security_edges).",
+      "description": "<p>Example failure probabilities for the basic events of the security breach fault tree (<code>security_nodes</code>, <code>security_edges</code>). Pass it as <code>event_probs</code> to <code><a href=\"/reference/populate.html\">populate()</a></code>.</p>",
+      "usage": "security_probs",
+      "arguments": [],
+      "format": "<h4><code>security_probs</code></h4><p>A tibble with 7 rows and 2 columns:</p><dl><dt>event</dt><dd>Name of the basic event: <code>&quot;VE&quot;</code> = Vulnerability exists, <code>&quot;ES&quot;</code> = Exploit successful, <code>&quot;PH&quot;</code> = Phishing, <code>&quot;MW&quot;</code> = Malware, <code>&quot;UA&quot;</code> = Unauthorized access, <code>&quot;WP&quot;</code> = Weak password, <code>&quot;N2F&quot;</code> = No 2FA.</dd><dt>probability</dt><dd>Probability that the event occurs, between 0 and 1.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"security_probs\")\nsecurity_probs",
+      "seealso": "<p><a href=\"/reference/security_outcomes_prob.html\">security_outcomes_prob</a>, <a href=\"/reference/security_outcomes_binary.html\">security_outcomes_binary</a>, <code><a href=\"/reference/populate.html\">populate()</a></code></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "security_outcomes_binary",
+      "aliases": [
+        "security_outcomes_binary"
+      ],
+      "kind": "data",
+      "title": "security_outcomes_binary security breach fault tree binary scenarios",
+      "summary": "Ten example scenarios for the basic events of the security breach fault tree, coded 1 if the event occurred and 0 if not.",
+      "description": "<p>Ten example scenarios for the basic events of the security breach fault tree, coded 1 if the event occurred and 0 if not. Use it with <code><a href=\"/reference/quantify.html\">quantify()</a></code> to evaluate whether the top event occurs under each scenario, or with <code><a href=\"/reference/populate.html\">populate()</a></code>.</p>",
+      "usage": "security_outcomes_binary",
+      "arguments": [],
+      "format": "<h4><code>security_outcomes_binary</code></h4><p>A tibble with 10 rows and 8 columns:</p><dl><dt>scenario</dt><dd>Scenario number (1 to 10).</dd><dt>VE, ES, PH, MW, UA, WP, N2F</dt><dd>One 0/1 column per basic event; 1 means the event occurred.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"security_outcomes_binary\")\nhead(security_outcomes_binary)",
+      "seealso": "<p><a href=\"/reference/security_probs.html\">security_probs</a>, <a href=\"/reference/security_outcomes_prob.html\">security_outcomes_prob</a>, <code><a href=\"/reference/quantify.html\">quantify()</a></code>, <code><a href=\"/reference/populate.html\">populate()</a></code></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "security_outcomes_prob",
+      "aliases": [
+        "security_outcomes_prob"
+      ],
+      "kind": "data",
+      "title": "security_outcomes_prob security breach fault tree outcome probabilities",
+      "summary": "Example failure probabilities for the basic events of the security breach fault tree, with one row per event.",
+      "description": "<p>Example failure probabilities for the basic events of the security breach fault tree, with one row per event. It holds the same values as <a href=\"/reference/security_probs.html\">security_probs</a>.</p>",
+      "usage": "security_outcomes_prob",
+      "arguments": [],
+      "format": "<h4><code>security_outcomes_prob</code></h4><p>A tibble with 7 rows and 2 columns:</p><dl><dt>event</dt><dd>Name of the basic event: <code>&quot;VE&quot;</code> = Vulnerability exists, <code>&quot;ES&quot;</code> = Exploit successful, <code>&quot;PH&quot;</code> = Phishing, <code>&quot;MW&quot;</code> = Malware, <code>&quot;UA&quot;</code> = Unauthorized access, <code>&quot;WP&quot;</code> = Weak password, <code>&quot;N2F&quot;</code> = No 2FA.</dd><dt>probability</dt><dd>Probability that the event occurs, between 0 and 1.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"security_outcomes_prob\")\nsecurity_outcomes_prob",
+      "seealso": "<p><a href=\"/reference/security_probs.html\">security_probs</a>, <a href=\"/reference/security_outcomes_binary.html\">security_outcomes_binary</a>, <a href=\"/reference/security_outcomes_rates.html\">security_outcomes_rates</a></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "security_outcomes_rates",
+      "aliases": [
+        "security_outcomes_rates"
+      ],
+      "kind": "data",
+      "title": "security_outcomes_rates security breach fault tree failure rates",
+      "summary": "Example exponential failure rates for the basic events of the security breach fault tree, expressed per day.",
+      "description": "<p>Example exponential failure rates for the basic events of the security breach fault tree, expressed per day.</p>",
+      "usage": "security_outcomes_rates",
+      "arguments": [],
+      "format": "<h4><code>security_outcomes_rates</code></h4><p>A tibble with 7 rows and 3 columns:</p><dl><dt>event</dt><dd>Name of the basic event: <code>&quot;VE&quot;</code> = Vulnerability exists, <code>&quot;ES&quot;</code> = Exploit successful, <code>&quot;PH&quot;</code> = Phishing, <code>&quot;MW&quot;</code> = Malware, <code>&quot;UA&quot;</code> = Unauthorized access, <code>&quot;WP&quot;</code> = Weak password, <code>&quot;N2F&quot;</code> = No 2FA.</dd><dt>lambda</dt><dd>Failure rate (failures per day).</dd><dt>time_unit</dt><dd>Unit of time for <code>lambda</code>: <code>&quot;days&quot;</code>.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"security_outcomes_rates\")\nsecurity_outcomes_rates",
+      "seealso": "<p><a href=\"/reference/security_probs.html\">security_probs</a>, <a href=\"/reference/security_outcomes_prob.html\">security_outcomes_prob</a></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "it_security_data",
+      "aliases": [
+        "it_security_data"
+      ],
+      "kind": "data",
+      "title": "it_security_data Binary scenario data for IT security fault tree",
+      "summary": "A small tibble of binary (0/1) scenarios for the 10 basic events in the IT security fault tree (sensitive data leaves the organization).",
+      "description": "<p>A small tibble of binary (0/1) scenarios for the 10 basic events in the IT security fault tree (sensitive data leaves the organization). Used with <code><a href=\"/reference/quantify.html\">quantify()</a></code> to evaluate whether the top event occurs under each scenario.</p>",
+      "usage": "it_security_data",
+      "arguments": [],
+      "format": "<h4><code>it_security_data</code></h4><p>A data frame with 3 rows and 10 columns. Each column is a basic event (two-letter code); 1 indicates the event occurred (condition true), 0 otherwise.</p><dl><dt>DA</dt><dd>No controls to stop data from being copied or sent out.</dd><dt>EP</dt><dd>User had more access than needed for their job.</dd><dt>IM</dt><dd>Employee did it on purpose or account was taken over.</dd><dt>LR</dt><dd>Passwords exposed in a breach or reused elsewhere.</dd><dt>MN</dt><dd>No second login step (e.g. code on phone) required.</dd><dt>PO</dt><dd>Security updates not applied on time.</dd><dt>PC</dt><dd>Passwords obtained via fake email or link (phishing).</dd><dt>PM</dt><dd>Admin-level access set up incorrectly.</dd><dt>VS</dt><dd>System has a known security hole.</dd><dt>WB</dt><dd>Web traffic filter missing or attacker got around it.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"it_security_data\")\nhead(it_security_data)\ndim(it_security_data)",
+      "seealso": "<p><code>it_security_nodes</code>, <code>quantify</code></p>",
+      "source_file": "R/it_security_data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "it_security_probs",
+      "aliases": [
+        "it_security_probs"
+      ],
+      "kind": "data",
+      "title": "it_security_probs IT security (data leak) fault tree event probabilities",
+      "summary": "Example probabilities for the 10 basic events of the IT security fault tree (it_security_nodes, it_security_edges), in wide format: one row and one column per basic event.",
+      "description": "<p>Example probabilities for the 10 basic events of the IT security fault tree (<code>it_security_nodes</code>, <code>it_security_edges</code>), in wide format: one row and one column per basic event. Pass it to <code><a href=\"/reference/quantify.html\">quantify()</a></code> with <code>prob = TRUE</code>.</p>",
+      "usage": "it_security_probs",
+      "arguments": [],
+      "format": "<h4><code>it_security_probs</code></h4><p>A tibble with 1 row and 10 columns. Each column is a basic event (two-letter code, as described in <a href=\"/reference/it_security_data.html\">it_security_data</a>) and holds the probability, between 0 and 1, that the event occurs: <code>DA</code>, <code>EP</code>, <code>IM</code>, <code>LR</code>, <code>MN</code>, <code>PO</code>, <code>PC</code>, <code>PM</code>, <code>VS</code>, <code>WB</code>.</p>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"it_security_probs\")\nit_security_probs",
+      "seealso": "<p><a href=\"/reference/it_security_data.html\">it_security_data</a>, <a href=\"/reference/it_security_outcomes_rates.html\">it_security_outcomes_rates</a>, <code><a href=\"/reference/quantify.html\">quantify()</a></code></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
+    },
+    {
+      "name": "it_security_outcomes_rates",
+      "aliases": [
+        "it_security_outcomes_rates"
+      ],
+      "kind": "data",
+      "title": "it_security_outcomes_rates IT security (data leak) fault tree failure rates",
+      "summary": "Example exponential failure rates for the 10 basic events of the IT security fault tree, expressed per year.",
+      "description": "<p>Example exponential failure rates for the 10 basic events of the IT security fault tree, expressed per year.</p>",
+      "usage": "it_security_outcomes_rates",
+      "arguments": [],
+      "format": "<h4><code>it_security_outcomes_rates</code></h4><p>A tibble with 10 rows and 3 columns:</p><dl><dt>event</dt><dd>Two-letter code of the basic event (<code>&quot;DA&quot;</code>, <code>&quot;EP&quot;</code>, <code>&quot;IM&quot;</code>, <code>&quot;LR&quot;</code>, <code>&quot;MN&quot;</code>, <code>&quot;PO&quot;</code>, <code>&quot;PC&quot;</code>, <code>&quot;PM&quot;</code>, <code>&quot;VS&quot;</code>, <code>&quot;WB&quot;</code>); see <a href=\"/reference/it_security_data.html\">it_security_data</a> for what each code means.</dd><dt>lambda</dt><dd>Failure rate (failures per year).</dd><dt>time_unit</dt><dd>Unit of time for <code>lambda</code>: <code>&quot;years&quot;</code>.</dd></dl>",
+      "value": "",
+      "details": "",
+      "sections": [],
+      "examples": "data(\"it_security_outcomes_rates\")\nit_security_outcomes_rates",
+      "seealso": "<p><a href=\"/reference/it_security_probs.html\">it_security_probs</a>, <a href=\"/reference/it_security_data.html\">it_security_data</a></p>",
+      "source_file": "R/data.R",
+      "group": "Example scenarios and probabilities"
     },
     {
       "name": "illustrate",
@@ -830,226 +1370,6 @@
       "seealso": "<p><code><a href=\"/reference/gate_and.html\">gate_and()</a></code> for AND gate shape generation, <code><a href=\"/reference/gate_or.html\">gate_or()</a></code> for OR gate shape generation, <code><a href=\"/reference/gate_top.html\">gate_top()</a></code> for top event shape generation</p>",
       "source_file": "R/get_gate.R",
       "group": "Visualization"
-    },
-    {
-      "name": "fakenodes",
-      "aliases": [
-        "fakenodes"
-      ],
-      "kind": "data",
-      "title": "fakenodes fault tree nodes dataset",
-      "summary": "An example dataset of nodes in a demonstration fault tree.",
-      "description": "<p>An example dataset of nodes in a demonstration fault tree.</p>",
-      "usage": "fakenodes",
-      "arguments": [],
-      "format": "<h4><code>fakenodes</code></h4><p>A data frame with 12 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifer (1 to N) for each node. Some events occur multiple times, but each time they have a unique <code>id</code></dd><dt>event</dt><dd>name of event. <code>&quot;T&quot;</code> mean top event. <code>&quot;G1&quot;</code>, <code>&quot;G2&quot;</code>, etc. mean gates.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
-      "value": "",
-      "details": "",
-      "sections": [],
-      "examples": "data(\"fakenodes\")\nhead(fakenodes)\ndim(fakenodes)",
-      "seealso": "",
-      "source_file": "R/fakenodes.R",
-      "group": "Data"
-    },
-    {
-      "name": "fakeedges",
-      "aliases": [
-        "fakeedges"
-      ],
-      "kind": "data",
-      "title": "fakeedges fault tree edge dataset",
-      "summary": "An example dataset of edges (connections) in a demonstration fault tree.",
-      "description": "<p>An example dataset of edges (connections) in a demonstration fault tree.</p>",
-      "usage": "fakeedges",
-      "arguments": [],
-      "format": "<h4><code>fakeedges</code></h4><p>A data frame with 11 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
-      "value": "",
-      "details": "",
-      "sections": [],
-      "examples": "data(\"fakeedges\")\nhead(fakeedges)\ndim(fakeedges)",
-      "seealso": "",
-      "source_file": "R/fakeedges.R",
-      "group": "Data"
-    },
-    {
-      "name": "db_nodes",
-      "aliases": [
-        "db_nodes"
-      ],
-      "kind": "data",
-      "title": "db_nodes database system failure fault tree nodes dataset",
-      "summary": "An example dataset of nodes in a database system failure fault tree.",
-      "description": "<p>An example dataset of nodes in a database system failure fault tree. This fault tree models scenarios where a database system becomes unavailable due to various failure modes including data corruption, access failures, storage issues, network problems, and hardware failures.</p>",
-      "usage": "db_nodes",
-      "arguments": [],
-      "format": "<h4><code>db_nodes</code></h4><p>A data frame with 13 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 13) for each node.</dd><dt>event</dt><dd>Name of event. <code>&quot;T&quot;</code> means top event (Database system unavailable). <code>&quot;G1&quot;</code>, <code>&quot;G2&quot;</code>, etc. mean gates. <code>&quot;DC&quot;</code> = Data corruption, <code>&quot;AF&quot;</code> = Access failure, <code>&quot;SF&quot;</code> = Storage failure, <code>&quot;BF&quot;</code> = Backup failure, <code>&quot;NF&quot;</code> = Network failure, <code>&quot;AUF&quot;</code> = Authentication failure, <code>&quot;HF&quot;</code> = Hardware failure, <code>&quot;MF&quot;</code> = Monitoring failure.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
-      "value": "",
-      "details": "<p>The fault tree structure:</p><ul><li>Top event: Database system unavailable</li><li>G1 (OR): Data corruption OR Access failure</li><li>G2 (AND): Storage failure AND Backup failure</li><li>G3 (OR): Network failure OR Authentication failure</li><li>G4 (AND): Hardware failure AND Monitoring failure</li></ul>",
-      "sections": [],
-      "examples": "data(\"db_nodes\")\nhead(db_nodes)\ndim(db_nodes)",
-      "seealso": "<p><code>db_edges</code> for the corresponding edges dataset</p>",
-      "source_file": "R/db_nodes.R",
-      "group": "Data"
-    },
-    {
-      "name": "db_edges",
-      "aliases": [
-        "db_edges"
-      ],
-      "kind": "data",
-      "title": "db_edges database system failure fault tree edge dataset",
-      "summary": "An example dataset of edges (connections) in a database system failure fault tree.",
-      "description": "<p>An example dataset of edges (connections) in a database system failure fault tree.</p>",
-      "usage": "db_edges",
-      "arguments": [],
-      "format": "<h4><code>db_edges</code></h4><p>A data frame with 11 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>Unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
-      "value": "",
-      "details": "",
-      "sections": [],
-      "examples": "data(\"db_edges\")\nhead(db_edges)\ndim(db_edges)",
-      "seealso": "<p><code>db_nodes</code> for the corresponding nodes dataset</p>",
-      "source_file": "R/db_edges.R",
-      "group": "Data"
-    },
-    {
-      "name": "ai_nodes",
-      "aliases": [
-        "ai_nodes"
-      ],
-      "kind": "data",
-      "title": "ai_nodes AI agent failure fault tree nodes dataset",
-      "summary": "An example dataset of nodes in an AI agent failure fault tree.",
-      "description": "<p>An example dataset of nodes in an AI agent failure fault tree. This fault tree models scenarios where an AI agent fails to complete a task due to model errors, prompt issues, API failures, and context limitations.</p>",
-      "usage": "ai_nodes",
-      "arguments": [],
-      "format": "<h4><code>ai_nodes</code></h4><p>A data frame with 14 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 14) for each node.</dd><dt>event</dt><dd>Name of event. <code>&quot;T&quot;</code> means top event (AI agent task failure). <code>&quot;G1&quot;</code>, <code>&quot;G2&quot;</code>, etc. mean gates. <code>&quot;ME&quot;</code> = Model error, <code>&quot;PE&quot;</code> = Prompt error, <code>&quot;TDI&quot;</code> = Training data issue, <code>&quot;VF&quot;</code> = Validation failure, <code>&quot;AF&quot;</code> = API failure, <code>&quot;TO&quot;</code> = Timeout, <code>&quot;RL&quot;</code> = Rate limit, <code>&quot;CWE&quot;</code> = Context window exceeded, <code>&quot;NFB&quot;</code> = No fallback.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
-      "value": "",
-      "details": "<p>The fault tree structure:</p><ul><li>Top event: AI agent task failure</li><li>G1 (OR): Model error OR Prompt error</li><li>G2 (AND): Training data issue AND Validation failure</li><li>G3 (OR): API failure OR Timeout OR Rate limit</li><li>G4 (AND): Context window exceeded AND No fallback</li></ul>",
-      "sections": [],
-      "examples": "data(\"ai_nodes\")\nhead(ai_nodes)\ndim(ai_nodes)",
-      "seealso": "<p><code>ai_edges</code> for the corresponding edges dataset</p>",
-      "source_file": "R/ai_nodes.R",
-      "group": "Data"
-    },
-    {
-      "name": "ai_edges",
-      "aliases": [
-        "ai_edges"
-      ],
-      "kind": "data",
-      "title": "ai_edges AI agent failure fault tree edge dataset",
-      "summary": "An example dataset of edges (connections) in an AI agent failure fault tree.",
-      "description": "<p>An example dataset of edges (connections) in an AI agent failure fault tree.</p>",
-      "usage": "ai_edges",
-      "arguments": [],
-      "format": "<h4><code>ai_edges</code></h4><p>A data frame with 11 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>Unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
-      "value": "",
-      "details": "",
-      "sections": [],
-      "examples": "data(\"ai_edges\")\nhead(ai_edges)\ndim(ai_edges)",
-      "seealso": "<p><code>ai_nodes</code> for the corresponding nodes dataset</p>",
-      "source_file": "R/ai_edges.R",
-      "group": "Data"
-    },
-    {
-      "name": "security_nodes",
-      "aliases": [
-        "security_nodes"
-      ],
-      "kind": "data",
-      "title": "security_nodes security breach fault tree nodes dataset",
-      "summary": "An example dataset of nodes in a security breach fault tree.",
-      "description": "<p>An example dataset of nodes in a security breach fault tree. This fault tree models scenarios where a security breach occurs due to external attacks, internal threats, vulnerabilities, and authentication failures.</p>",
-      "usage": "security_nodes",
-      "arguments": [],
-      "format": "<h4><code>security_nodes</code></h4><p>A data frame with 11 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 11) for each node.</dd><dt>event</dt><dd>Name of event. <code>&quot;T&quot;</code> means top event (Security breach detected). <code>&quot;G2&quot;</code>, <code>&quot;G3&quot;</code>, etc. mean gates. <code>&quot;VE&quot;</code> = Vulnerability exists, <code>&quot;ES&quot;</code> = Exploit successful, <code>&quot;PH&quot;</code> = Phishing, <code>&quot;MW&quot;</code> = Malware, <code>&quot;UA&quot;</code> = Unauthorized access, <code>&quot;WP&quot;</code> = Weak password, <code>&quot;N2F&quot;</code> = No 2FA.</dd><dt>type</dt><dd><code>factor</code> classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot; (meaning &quot;not&quot; a gate).</dd></dl>",
-      "value": "",
-      "details": "<p>The fault tree structure:</p><ul><li>Top event: Security breach detected</li><li>G2 (AND): Vulnerability exists AND Exploit successful</li><li>G3 (OR): Phishing OR Malware OR Unauthorized access</li><li>G4 (AND): Weak password AND No 2FA</li></ul>",
-      "sections": [],
-      "examples": "data(\"security_nodes\")\nhead(security_nodes)\ndim(security_nodes)",
-      "seealso": "<p><code>security_edges</code> for the corresponding edges dataset</p>",
-      "source_file": "R/security_nodes.R",
-      "group": "Data"
-    },
-    {
-      "name": "security_edges",
-      "aliases": [
-        "security_edges"
-      ],
-      "kind": "data",
-      "title": "security_edges security breach fault tree edge dataset",
-      "summary": "An example dataset of edges (connections) in a security breach fault tree.",
-      "description": "<p>An example dataset of edges (connections) in a security breach fault tree.</p>",
-      "usage": "security_edges",
-      "arguments": [],
-      "format": "<h4><code>security_edges</code></h4><p>A data frame with 11 rows and 2 columns:</p><dl><dt>from</dt><dd>Unique <code>id</code> of the source/<code>from</code> node from which edge originates.</dd><dt>to</dt><dd>Unique <code>id</code> of the destination/<code>to</code> node that edge connects to.</dd></dl>",
-      "value": "",
-      "details": "",
-      "sections": [],
-      "examples": "data(\"security_edges\")\nhead(security_edges)\ndim(security_edges)",
-      "seealso": "<p><code>security_nodes</code> for the corresponding nodes dataset</p>",
-      "source_file": "R/security_edges.R",
-      "group": "Data"
-    },
-    {
-      "name": "it_security_nodes",
-      "aliases": [
-        "it_security_nodes"
-      ],
-      "kind": "data",
-      "title": "it_security_nodes IT security (data leak) fault tree nodes dataset",
-      "summary": "An example dataset of nodes in a fault tree for sensitive data leaving the organization.",
-      "description": "<p>An example dataset of nodes in a fault tree for sensitive data leaving the organization. The tree models three ways a breach can happen: an outsider gets high-level access, an attacker uses a known flaw that was not fixed, or someone inside sends data out.</p>",
-      "usage": "it_security_nodes",
-      "arguments": [],
-      "format": "<h4><code>it_security_nodes</code></h4><p>A data frame with 16 rows and 3 columns:</p><dl><dt>id</dt><dd>Unique identifier (1 to 16) for each node.</dd><dt>event</dt><dd>Two-letter event code. <code>&quot;DE&quot;</code> = Sensitive data leaves the organization (top). Gates: <code>&quot;BP&quot;</code> = Ways a breach can happen (OR), <code>&quot;EA&quot;</code> = Outsider gets high-level access (AND), <code>&quot;UE&quot;</code> = Attacker uses a known flaw that was not fixed (AND), <code>&quot;IE&quot;</code> = Someone inside sends data out (AND), <code>&quot;CC&quot;</code> = Log-in details stolen or misused (OR). Basic events: <code>&quot;PC&quot;</code> = Passwords obtained via fake email or link, <code>&quot;LR&quot;</code> = Passwords exposed in a breach or reused elsewhere, <code>&quot;MN&quot;</code> = No second login step required, <code>&quot;PM&quot;</code> = Admin-level access set up incorrectly, <code>&quot;VS&quot;</code> = System has a known security hole, <code>&quot;PO&quot;</code> = Security updates not applied on time, <code>&quot;WB&quot;</code> = Web traffic filter missing or bypassed, <code>&quot;IM&quot;</code> = Employee did it on purpose or account was taken over, <code>&quot;DA&quot;</code> = No controls to stop data from being copied out, <code>&quot;EP&quot;</code> = User had more access than needed for their job.</dd><dt>type</dt><dd>Factor classification as &quot;top&quot;, &quot;and&quot;, &quot;or&quot;, or &quot;not&quot;.</dd></dl>",
-      "value": "",
-      "details": "<p>The fault tree structure (event codes):</p><ul><li>Top event: DE (Sensitive data leaves the organization)</li><li>BP (OR): EA OR UE OR IE</li><li>EA (AND): CC AND MN AND PM</li><li>UE (AND): VS AND PO AND WB</li><li>IE (AND): IM AND DA AND EP</li><li>CC (OR): PC OR LR</li></ul>",
-      "sections": [],
-      "examples": "data(\"it_security_nodes\")\nhead(it_security_nodes)\ndim(it_security_nodes)",
-      "seealso": "<p><code>it_security_edges</code> for the corresponding edges dataset</p>",
-      "source_file": "R/it_security_nodes.R",
-      "group": "Data"
-    },
-    {
-      "name": "it_security_edges",
-      "aliases": [
-        "it_security_edges"
-      ],
-      "kind": "data",
-      "title": "it_security_edges IT security (data leak) fault tree edge dataset",
-      "summary": "An example dataset of edges (connections) in an IT security fault tree for sensitive data leaving the organization.",
-      "description": "<p>An example dataset of edges (connections) in an IT security fault tree for sensitive data leaving the organization.</p>",
-      "usage": "it_security_edges",
-      "arguments": [],
-      "format": "<h4><code>it_security_edges</code></h4><p>A data frame with 15 rows and 2 columns:</p><dl><dt>from</dt><dd>Source node <code>id</code>.</dd><dt>to</dt><dd>Destination node <code>id</code>.</dd></dl>",
-      "value": "",
-      "details": "",
-      "sections": [],
-      "examples": "data(\"it_security_edges\")\nhead(it_security_edges)\ndim(it_security_edges)",
-      "seealso": "<p><code>it_security_nodes</code> for the corresponding nodes dataset</p>",
-      "source_file": "R/it_security_edges.R",
-      "group": "Data"
-    },
-    {
-      "name": "it_security_data",
-      "aliases": [
-        "it_security_data"
-      ],
-      "kind": "data",
-      "title": "it_security_data Binary scenario data for IT security fault tree",
-      "summary": "A small tibble of binary (0/1) scenarios for the 10 basic events in the IT security fault tree (sensitive data leaves the organization).",
-      "description": "<p>A small tibble of binary (0/1) scenarios for the 10 basic events in the IT security fault tree (sensitive data leaves the organization). Used with <code><a href=\"/reference/quantify.html\">quantify()</a></code> to evaluate whether the top event occurs under each scenario.</p>",
-      "usage": "it_security_data",
-      "arguments": [],
-      "format": "<h4><code>it_security_data</code></h4><p>A data frame with 3 rows and 10 columns. Each column is a basic event (two-letter code); 1 indicates the event occurred (condition true), 0 otherwise.</p><dl><dt>DA</dt><dd>No controls to stop data from being copied or sent out.</dd><dt>EP</dt><dd>User had more access than needed for their job.</dd><dt>IM</dt><dd>Employee did it on purpose or account was taken over.</dd><dt>LR</dt><dd>Passwords exposed in a breach or reused elsewhere.</dd><dt>MN</dt><dd>No second login step (e.g. code on phone) required.</dd><dt>PO</dt><dd>Security updates not applied on time.</dd><dt>PC</dt><dd>Passwords obtained via fake email or link (phishing).</dd><dt>PM</dt><dd>Admin-level access set up incorrectly.</dd><dt>VS</dt><dd>System has a known security hole.</dd><dt>WB</dt><dd>Web traffic filter missing or attacker got around it.</dd></dl>",
-      "value": "",
-      "details": "",
-      "sections": [],
-      "examples": "data(\"it_security_data\")\nhead(it_security_data)\ndim(it_security_data)",
-      "seealso": "<p><code>it_security_nodes</code>, <code>quantify</code></p>",
-      "source_file": "R/it_security_data.R",
-      "group": "Data"
     }
   ]
 }

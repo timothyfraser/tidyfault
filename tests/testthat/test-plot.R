@@ -29,8 +29,9 @@ test_that("plot() dispatches to plot.tidyfault_tree and returns a ggplot", {
   expect_s3_class(p_all, "ggplot")
 })
 
-test_that("plot() is no longer exported as a plain function", {
-  expect_false("plot" %in% getNamespaceExports("tidyfault"))
+test_that("the exported plot() is graphics' generic, not a masking function", {
+  expect_true("plot" %in% getNamespaceExports("tidyfault"))
+  expect_identical(body(tidyfault::plot), body(graphics::plot))
 })
 
 test_that("plot() on other objects is base R's", {
@@ -52,4 +53,9 @@ test_that("plot() defaults use the house colours", {
   )
   expect_identical(f$outline_colour, "#0b0405")
   expect_identical(f$edge_colour, "#b7c1cb")
+})
+
+test_that("tidyfault::plot() still works as a namespaced call", {
+  tree <- illustrate(fakenodes, fakeedges, type = "both")
+  expect_s3_class(tidyfault::plot(tree), "ggplot")
 })

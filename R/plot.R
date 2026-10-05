@@ -264,7 +264,7 @@ plot.tidyfault_tree <- function(x,
   if (nrow(gates) > 0 && "id" %in% names(nodes)) {
     gate_labels <- nodes %>%
       dplyr::filter(.data[[type_col]] %in% gate_types) %>%
-      dplyr::select(.data$id, .data$event, .data$x, .data$y)
+      dplyr::select(dplyr::all_of(c("id", "event", "x", "y")))
     if (nrow(gate_labels) > 0) {
       p <- p +
         ggplot2::geom_text(
