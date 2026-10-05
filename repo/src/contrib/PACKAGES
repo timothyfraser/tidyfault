@@ -7,5 +7,5 @@ LinkingTo: Rcpp
 Suggests: knitr, litedown, markdown, pkgload, rmarkdown, testthat (>=
         3.0.0)
 License: GPL-3 + file LICENSE
-MD5sum: 8b6db6b918737732d51cc06126bac4b6
+MD5sum: 6138d9c805b6dacd334634c0631270f3
 NeedsCompilation: yes
