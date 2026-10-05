@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Code from "./Code.jsx";
+import { runPython } from "../runtime/pyodide.js";
 
 const CHUNKS = {
   R: {
@@ -19,7 +20,7 @@ nodes, edges = tf.data.fakenodes, tf.data.fakeedges
 gates = tf.curate(nodes, edges)
 f     = tf.formulate(tf.equate(gates))
 print(tf.concentrate(gates))
-print(tf.quantify(f, [0.10, 0.20, 0.05, 0.15], prob=True))
+print(round(tf.quantify(f, [0.10, 0.20, 0.05, 0.15], prob=True), 5))
 tf.plot(tf.illustrate(nodes, edges, type="both"))`,
     output: `['B*C', 'A*B*D']\n0.01285`,
   },
@@ -52,10 +53,66 @@ function TreeFigure() {
   );
 }
 
+// RT-02 wires webR here. Until then R keeps its static output and the Run
+// button stays disabled for the R tab.
+// eslint-disable-next-line no-unused-vars
+async function runR(code, onStatus) {
+  throw new Error("The R runtime is not wired yet (RT-02).");
+}
+
+const IDLE = { phase: "idle", message: "", result: null, error: null };
+
+const CHIP = {
+  idle: "Python runs in your browser",
+  waiting: "Waiting",
+  loading: "Loading Python…",
+  running: "Running…",
+  done: "Done",
+  error: "Error",
+};
+
+function splitLines(text) {
+  return text ? text.replace(/\s+$/, "").split("\n") : [];
+}
+
 export default function RunChunk() {
   const [lang, setLang] = useState("R");
+  const [py, setPy] = useState(IDLE);
+  const runId = useRef(0);
   const chunk = CHUNKS[lang];
-  const [first, ...rest] = chunk.output.split("\n");
+  const isPy = lang === "Python";
+
+  function onRun() {
+    if (!isPy) return runR(chunk.code);
+    // Only the newest click drives the display; the interpreter itself queues
+    // every click (a second click while one is in flight reports "waiting").
+    const id = ++runId.current;
+    const current = () => id === runId.current;
+    setPy({ phase: "loading", message: "Loading Python…", result: null, error: null });
+    runPython(chunk.code, ({ phase, message }) => {
+      if (current()) setPy((p) => ({ ...p, phase, message }));
+    }).then(
+      (result) => current() && setPy({ phase: "done", message: "", result, error: null }),
+      (e) =>
+        current() &&
+        setPy({
+          phase: "error",
+          message: "",
+          result: { stdout: e.stdout || "", stderr: e.stderr || "", figures: e.figures || [] },
+          error: e.message,
+        })
+    );
+    return undefined;
+  }
+
+  const live = isPy && py.result;
+  const lines = live ? splitLines(py.result.stdout) : chunk.output.split("\n");
+  const stderrLines = live ? splitLines(py.result.stderr) : [];
+  const figure = live && py.result.figures[0];
+  const busy = isPy && ["waiting", "loading", "running"].includes(py.phase);
+  const chipText = isPy ? CHIP[py.phase] : "R runtime coming soon";
+  const detail = isPy && py.phase === "loading" ? py.message : "";
+
   return (
     <div className="chunk">
       <div className="chunk-bar">
@@ -72,26 +129,55 @@ export default function RunChunk() {
             </button>
           ))}
         </div>
-        <span className="chip">
-          <span className="dot" /> Live runtime coming soon
+        <span className="chip" role="status" aria-live="polite" data-phase={isPy ? py.phase : "r-static"}>
+          <span className="dot" /> {chipText}
         </span>
-        <button type="button" className="btn btn-run btn-sm" disabled title="Live runtime coming soon">
-          ▶ Run
+        <button
+          type="button"
+          className="btn btn-run btn-sm"
+          disabled={!isPy}
+          title={isPy ? "Run this code in your browser" : "R runtime coming soon"}
+          onClick={onRun}
+        >
+          {busy ? "▶ Run again" : "▶ Run"}
         </button>
       </div>
       <pre className="code code-flush">
         <Code text={chunk.code} />
       </pre>
-      <div className="chunk-out">
+      {detail && (
+        <div className="muted mono" style={{ padding: "6px var(--space-4)", fontSize: 12 }} data-testid="py-progress">
+          {detail}
+        </div>
+      )}
+      <div className="chunk-out" data-live={live ? "true" : "false"}>
         <div className="out-text mono">
-          {[first, ...rest].map((line) => (
-            <div key={line}>
+          {lines.map((line, i) => (
+            <div key={i}>
               <span className="muted">#&gt;</span> {line}
             </div>
           ))}
+          {stderrLines.map((line, i) => (
+            <div key={`e${i}`} className="muted">
+              {line}
+            </div>
+          ))}
+          {isPy && py.error && (
+            <div style={{ color: "var(--danger)", whiteSpace: "pre-wrap" }} role="alert">
+              Error: {py.error}
+            </div>
+          )}
         </div>
-        <figure className="out-fig">
-          <TreeFigure />
+        <figure className="out-fig" style={figure ? { flexBasis: 420 } : undefined}>
+          {figure ? (
+            <img
+              src={figure}
+              alt="The example fault tree drawn by plot()"
+              style={{ maxWidth: "100%", height: "auto", display: "block" }}
+            />
+          ) : (
+            !(live && py.error) && <TreeFigure />
+          )}
         </figure>
       </div>
     </div>
