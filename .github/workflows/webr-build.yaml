@@ -1,5 +1,5 @@
 # Builds tidyfault for WebAssembly and publishes it as a CRAN-like binary
-# repository at https://timothyfraser.github.io/tidyfault/repo/ so the website's
+# repository at https://timothyfraser.github.io/tidyfault/repo/ so the tidyfault website's
 # R tab can install it in the browser with webR. Only tidyfault is built here;
 # its dependencies come from repo.r-wasm.org. One job, path-filtered and
 # cancel-in-progress because Actions minutes are scarce.
@@ -51,7 +51,7 @@ jobs:
       #     ...) and failed. tidyfault is built alone (its dependencies come from
       #     repo.r-wasm.org at runtime), so `remotes = NULL` skips that lookup.
       # Pinned to the same webR release the site loads (WEBR_BASE in
-      # website/src/runtime/webr.js). Bump both together.
+      # the website's webR runtime, which lives with the website). Bump both together.
       - name: Build tidyfault for WebAssembly
         run: |
           cat > "$RUNNER_TEMP/build.R" <<'RSCRIPT'
