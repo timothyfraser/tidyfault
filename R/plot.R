@@ -1,5 +1,10 @@
 #' Plot a fault tree from illustrate() output
 #'
+#' An S3 method for \code{\link[base]{plot}} on the \code{tidyfault_tree}
+#' objects returned by \code{illustrate(type = "both")} and
+#' \code{illustrate(type = "all")}. Calling \code{plot()} on any other object
+#' dispatches to base R as usual.
+#'
 #' Builds a ggplot of the fault tree using the nodes, edges, and gate polygons
 #' returned by \code{\link{illustrate}}. Gate nodes (and, or, top) are drawn as
 #' polygons with outlines that follow their shape; other nodes (e.g. basic
@@ -7,7 +12,7 @@
 #' their size stays visually consistent relative to the gates. Nodes and gates
 #' are labelled using the \code{event} column from \code{x$nodes}.
 #'
-#' @param x A list returned by \code{illustrate(..., type = "both")} or
+#' @param x A \code{tidyfault_tree} list returned by \code{illustrate(..., type = "both")} or
 #'   \code{illustrate(..., type = "all")}, with elements \code{nodes},
 #'   \code{edges}, and \code{gates}.
 #' @param type_col Character. Name of the column in \code{x$nodes} that holds
@@ -32,8 +37,9 @@
 #'   outlines. Default \code{"black"}.
 #' @param gate_fill Named character vector of fill colours for gate types
 #'   (\code{and}, \code{or}, \code{top}) and optionally \code{"basic event"} for
-#'   leaf nodes. If \code{NULL} (default), the viridis discrete palette is
-#'   used. When provided, \code{scale_fill_manual} is used with these values.
+#'   leaf nodes. Default is \code{c(top = "#382a54", and = "#395d9c",
+#'   or = "#3eb4ad", "basic event" = "#def5e5")}. If \code{NULL}, the viridis
+#'   discrete palette is used instead.
 #' @param coord_fixed Logical. If \code{TRUE} (default), use equal aspect ratio so
 #'   shapes are not stretched.
 #' @param theme_void Logical. If \code{TRUE} (default), remove axes and panel.
@@ -47,7 +53,8 @@
 #'   Basic-event radius is set to this fraction of the median gate extent (each
 #'   gate's extent is half the sum of its x and y span). Default \code{0.18}.
 #'   Larger values give bigger circles; smaller values give smaller circles.
-#' @param ... Ignored (for compatibility with generic \code{plot}).
+#' @param edge_colour Character. Colour for edges. Default \code{"#b7c1cb"}.
+#' @param ... Ignored (for compatibility with the generic \code{plot}).
 #'
 #' @return A \code{ggplot} object.
 #'
@@ -75,8 +82,11 @@
 #' @importFrom dplyr filter group_by left_join mutate select summarise bind_rows
 #' @importFrom ggplot2 ggplot aes geom_line geom_polygon geom_text coord_fixed
 #'   scale_fill_viridis_d scale_fill_manual theme_void
+#' @rdname plot
+#' @aliases plot
+#' @method plot tidyfault_tree
 #' @export
-plot <- function(x,
+plot.tidyfault_tree <- function(x,
                  type_col = "type",
                  gate_types = c("and", "or", "top"),
                  edge_linewidth = 1,
@@ -85,13 +95,19 @@ plot <- function(x,
                  point_radius = NULL,
                  point_n = 100,
                  point_linewidth = 0.8,
-                 outline_colour = "black",
-                 gate_fill = NULL,
+                 outline_colour = "#0b0405",
+                 gate_fill = c(
+                   top = "#382a54",
+                   and = "#395d9c",
+                   or = "#3eb4ad",
+                   "basic event" = "#def5e5"
+                 ),
                  coord_fixed = TRUE,
                  theme_void = TRUE,
                  expand = 0.2,
                  normalize = TRUE,
                  basic_radius_ratio = 0.18,
+                 edge_colour = "#b7c1cb",
                  ...) {
 
   if (!is.list(x) || !all(c("nodes", "edges", "gates") %in% names(x))) {
@@ -213,6 +229,7 @@ plot <- function(x,
     ggplot2::geom_line(
       data = edges,
       ggplot2::aes(x = .data$x, y = .data$y, group = .data$edge_id),
+      colour = edge_colour,
       linewidth = edge_linewidth
     ) +
     ggplot2::geom_polygon(
