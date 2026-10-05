@@ -7,7 +7,7 @@ LinkingTo: Rcpp
 Suggests: knitr, litedown, markdown, pkgload, rmarkdown, testthat (>=
         3.0.0)
 License: GPL-3 + file LICENSE
-MD5sum: dc3d35076cd39a1e06e1ca1570e8083c
-Built: R 4.6.0; wasm32-unknown-emscripten; 2026-10-05 18:48:49 UTC;
+MD5sum: 98b94ed264756f74062fcafe310c832d
+Built: R 4.6.0; wasm32-unknown-emscripten; 2026-10-05 19:29:51 UTC;
         unix
 File: tidyfault_0.0.0.9.tgz
