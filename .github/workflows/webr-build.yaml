@@ -58,10 +58,21 @@ jobs:
           pak::pak("r-wasm/rwasm")
           rwasm::add_pkg("local::.", repo_dir = "_webr_repo", remotes = NULL)
           RSCRIPT
-          docker run --rm -e GITHUB_PAT \
+          # rwasm installs the native (host) dependencies before cross-compiling,
+          # and those binaries need system libraries: igraph -> GLPK, libxml2;
+          # stringi -> ICU; systemfonts -> fontconfig, freetype (pkgdepends
+          # sysreqs for ubuntu-24.04). pak's own sysreqs step ran a hidden
+          # `apt-get update` that failed (third run), so install them here,
+          # as root and with visible output, and switch pak's step off.
+          docker run --rm --user root -e GITHUB_PAT -e PKG_SYSREQS=false \
             -v "$PWD":/github/workspace -v "$RUNNER_TEMP/build.R":/build.R \
             --workdir /github/workspace \
-            ghcr.io/r-wasm/webr:v0.6.0 Rscript /build.R
+            ghcr.io/r-wasm/webr:v0.6.0 bash -c '
+              set -e
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+                libglpk40 libxml2 libicu74 libfontconfig1 libfreetype6
+              Rscript /build.R'
 
       - name: Check the repository holds a tidyfault binary
         run: |
