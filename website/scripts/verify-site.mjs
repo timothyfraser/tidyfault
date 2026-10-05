@@ -1,8 +1,12 @@
-// Playwright check of the built home page. Usage: node scripts/verify-site.mjs [--url http://host:port]
+// Playwright check of the built site. Usage: node scripts/verify-site.mjs [--url http://host:port]
+// Home page at 1280 and 390 px, then every reference page: each R export (NAMESPACE export()
+// and S3method() generics, plus documented datasets) and each name in tidyfault.__all__ must
+// have a reachable page (deep link, as a visitor would land) with zero console errors and no
+// horizontal overflow, and every internal link found on the way must resolve.
 // Starts `vite preview` unless --url is given. Needs a chromium under /opt/pw-browsers (or CHROME_PATH).
 import { chromium } from "playwright-core";
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -35,8 +39,57 @@ async function startPreview() {
 }
 
 const failures = [];
+const internalLinks = new Set();
 const fail = (m) => { failures.push(m); console.error("FAIL", m); };
 const ok = (m) => console.log("ok  ", m);
+
+const realErrors = (errors) =>
+  errors.filter((e) => !/fonts\.(googleapis|gstatic)\.com|ERR_(BLOCKED|TUNNEL|CONNECTION|NAME|INTERNET|PROXY|CERT)/i.test(e) && !/Failed to load resource/.test(e));
+
+function watch(page) {
+  const errors = [];
+  page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+  page.on("pageerror", (e) => errors.push(String(e)));
+  page.on("requestfailed", (r) => {
+    // ERR_ABORTED = the previous page's request cancelled by our own next goto(), not a page error
+    if (/ERR_ABORTED/.test(r.failure()?.errorText ?? "")) return;
+    if (!/fonts\.(googleapis|gstatic)\.com/.test(r.url())) errors.push(`request failed: ${r.url()}`);
+  });
+  return errors;
+}
+
+async function overflow(page, width) {
+  const sw = await page.evaluate(() => document.documentElement.scrollWidth);
+  const over = await page.evaluate((w) => {
+    const out = [];
+    for (const el of document.querySelectorAll("body *")) {
+      if (el.closest("pre")) continue; // code panes scroll inside themselves
+      const rc = el.getBoundingClientRect();
+      if (rc.width && rc.right > w + 1) out.push(`${el.tagName.toLowerCase()}.${String(el.className).slice(0, 30)} right=${Math.round(rc.right)}`);
+    }
+    return out.slice(0, 8);
+  }, width);
+  return sw > width ? [`scrollWidth ${sw}`, ...over] : over;
+}
+
+// What the packages export, read from the sources (not from the generated JSON).
+function rExports() {
+  const ns = readFileSync(join(root, "..", "NAMESPACE"), "utf8").split(/\r?\n/);
+  const out = ns.map((l) => l.match(/^export\("?([^")]+)"?\)$/)?.[1]).filter(Boolean);
+  for (const l of ns) { const m = l.match(/^S3method\(([^,]+),/); if (m) out.push(m[1]); }
+  const gen = JSON.parse(readFileSync(join(root, "src/generated/reference-r.json"), "utf8"));
+  for (const t of gen.topics) if (t.kind === "data") out.push(t.name);
+  return [...new Set(out)];
+}
+function pyExports() {
+  const init = readFileSync(join(root, "..", "python/src/tidyfault/__init__.py"), "utf8").replace(/#[^\n]*/g, "");
+  let all = [];
+  for (const m of init.matchAll(/__all__\s*(\+?=)\s*\[([\s\S]*?)\]/g)) {
+    const names = [...m[2].matchAll(/["']([^"']+)["']/g)].map((x) => x[1]);
+    all = m[1] === "=" ? names : all.concat(names);
+  }
+  return [...new Set(all)];
+}
 
 mkdirSync(shots, { recursive: true });
 let preview = null;
@@ -62,16 +115,17 @@ try {
     const real = errors.filter((e) => !/fonts\.(googleapis|gstatic)\.com|ERR_(BLOCKED|TUNNEL|CONNECTION|NAME|INTERNET|PROXY|CERT)/i.test(e) && !/Failed to load resource/.test(e));
     if (real.length) fail(`${name}: console errors: ${real.join(" | ")}`); else ok(`${name}: zero console errors`);
 
-    // links: hash targets exist; external are absolute https
+    // links: hash targets exist; external are absolute https; internal routes resolved below
     const links = await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")));
     const bad = [];
     for (const href of new Set(links)) {
       if (href.startsWith("#")) {
         const id = href.slice(1);
         if (!id || !(await page.$(`[id="${id}"]`))) bad.push(href);
-      } else if (!/^https:\/\//.test(href)) bad.push(href);
+      } else if (href.startsWith("/") && !href.startsWith("//")) internalLinks.add(href);
+      else if (!/^https:\/\//.test(href)) bad.push(href);
     }
-    if (bad.length) fail(`${name}: unresolved links: ${bad.join(", ")}`); else ok(`${name}: ${new Set(links).size} distinct links resolve`);
+    if (bad.length) fail(`${name}: unresolved links: ${bad.join(", ")}`); else ok(`${name}: ${new Set(links).size} distinct links (in-page and external resolve; internal checked below)`);
 
     // toggle R/Python switches the code and output
     await page.click('button[aria-pressed="false"]:has-text("Python")');
@@ -100,6 +154,82 @@ try {
 
     await page.screenshot({ path: join(shots, `${name}.png`), fullPage: true });
     console.log(`shot ${join(shots, `${name}.png`)}`);
+    await ctx.close();
+  }
+
+  // ---- reference pages ------------------------------------------------------------------
+  const pages = [
+    ...rExports().map((n) => ["R", n, `/reference/${n}.html`]),
+    ...pyExports().map((n) => ["Python", n, `/reference-py/${n}.html`]),
+  ];
+  for (const [name, width, height] of [["desktop", 1280, 900], ["phone", 390, 844]]) {
+    const ctx = await browser.newContext({ viewport: { width, height } });
+    const page = await ctx.newPage();
+    const errors = watch(page);
+    const broken = [];
+    for (const [lang, fn, path] of pages) {
+      errors.length = 0;
+      await page.goto(url + path, { waitUntil: "load" });
+      const h1 = await page.waitForSelector("h1", { timeout: 10000 }).catch(() => null);
+      const missing = await page.$("[data-notfound]");
+      const real = realErrors(errors);
+      const over = await overflow(page, width);
+      if (!h1 || missing) broken.push(`${path} (no page)`);
+      if (real.length) broken.push(`${path} console: ${real.join(" | ")}`);
+      if (over.length) broken.push(`${path} overflow: ${over.join("; ")}`);
+      for (const href of await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")))) {
+        if (href.startsWith("/") && !href.startsWith("//")) internalLinks.add(href);
+        else if (!href.startsWith("#") && !/^https:\/\//.test(href)) broken.push(`${path} bad link ${href}`);
+      }
+      if (lang === "R" && fn === "concentrate") await page.screenshot({ path: join(shots, `ref-concentrate-${name}.png`), fullPage: true });
+    }
+    const nR = pages.filter((p) => p[0] === "R").length;
+    if (broken.length) fail(`${name}: reference pages: ${broken.slice(0, 12).join(" || ")}`);
+    else ok(`${name}: ${pages.length} reference pages (${nR} R, ${pages.length - nR} Python) load with zero console errors and no overflow`);
+
+    // the R | Python toggle switches language and keeps the function; Run stays disabled
+    await page.goto(`${url}/reference/concentrate.html`, { waitUntil: "load" });
+    await page.waitForSelector("#ref-title");
+    await page.click('.ref-head [role="group"] >> text=Python');
+    await page.waitForURL("**/reference-py/concentrate.html");
+    const h1 = await page.textContent("#ref-title");
+    const pyUsage = await page.textContent(".ref-article pre");
+    if (h1 !== "concentrate()" || !pyUsage.includes("top='or'")) fail(`${name}: toggle to Python did not show the Python concentrate() page`);
+    await page.click('.ref-head [role="group"] >> text=R');
+    await page.waitForURL("**/reference/concentrate.html");
+    const runDisabled = await page.$eval(".ref-section .btn-run", (b) => b.disabled);
+    if (!runDisabled) fail(`${name}: reference Run button should be disabled`);
+    ok(`${name}: reference R | Python toggle and disabled Run button`);
+
+    for (const [lang, path] of [["r", "/reference/"], ["py", "/reference-py/"]]) {
+      errors.length = 0;
+      await page.goto(url + path, { waitUntil: "load" });
+      await page.waitForSelector("h1");
+      const n = await page.$$eval(".ref-idx-list a", (as) => as.length);
+      const real = realErrors(errors);
+      const over = await overflow(page, width);
+      if (!n || real.length || over.length) fail(`${name}: ${path} index: ${n} links, errors ${real.join(" | ")}, overflow ${over.join("; ")}`);
+      else ok(`${name}: ${path} index lists ${n} pages`);
+      await page.screenshot({ path: join(shots, `ref-index-${lang}-${name}.png`), fullPage: true });
+    }
+    console.log(`shot ${join(shots, `ref-concentrate-${name}.png`)}`);
+    await ctx.close();
+  }
+
+  // ---- every internal link seen on any page resolves (route renders, #id exists) --------
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const page = await ctx.newPage();
+    const bad = [];
+    for (const href of [...internalLinks].sort()) {
+      const [path, id] = href.split("#");
+      await page.goto(url + path, { waitUntil: "load" });
+      await page.waitForSelector("h1, h2", { timeout: 10000 }).catch(() => null);
+      if (await page.$("[data-notfound]")) bad.push(href);
+      else if (id && !(await page.$(`[id="${id}"]`))) bad.push(href);
+    }
+    if (bad.length) fail(`internal links do not resolve: ${bad.join(", ")}`);
+    else ok(`${internalLinks.size} distinct internal links resolve`);
     await ctx.close();
   }
 } finally {
