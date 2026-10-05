@@ -1,0 +1,22 @@
+{
+  "name": "tidyfault-website",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "tokens": "node scripts/tokens-to-css.mjs",
+    "dev": "npm run tokens && vite",
+    "build": "npm run tokens && vite build",
+    "preview": "vite preview",
+    "verify": "node scripts/verify-site.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "playwright-core": "^1.56.1",
+    "vite": "^5.4.11"
+  }
+}
