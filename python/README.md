@@ -74,9 +74,9 @@ problem it finds, including that one.
 | `quantify(f, newdata, prob, fast)` | `quantify(f, newdata, prob=False, fast=True)` | ported; reproduces R on the `*_outcomes_binary` datasets and on 3 probability scenarios per tree to 1e-9 |
 | `quantify_binary(f, newdata)` | `quantify_binary(f, newdata)` | ported; DataFrame in, bool array out; one scenario in, one bool out |
 | `quantify_binary_fast()`, `quantify_prob_fast()` | same names | aliases of `quantify_binary()` and `quantify_prob()`; R's fast paths return the same values |
-| `quantify_if(f, data, cut, time, events)` | `quantify_if(f, data, cut=0.05, time=None, events=None)` | ported; equals R to 1e-9 on 4 cases (`event, p_top, baseline, change, pct_change`, biggest drop first) |
-| `stipulate(data, ..., baseline)` | `stipulate(data, scenarios=None, /, baseline="Neither", **kwargs)`; scenarios as `{"Fix A": {"MN": 0.1}}` | ported; equals R on 3 cases; `scenario` is a Categorical with R's factor levels |
-| `fluctuate(data, n, cv, seed)` | `fluctuate(data, n=1000, cv=0.2, seed=None)`; `seed` may be a numpy `Generator` | ported; same shape, statistics and common random numbers as R; draws differ from R's (see deviation) |
+| `quantify_if(f, data, cut, time, events, ci, n, cv, level, seed)` | `quantify_if(f, data, cut=0.05, time=None, events=None, ci=False, n=1000, cv=0.2, level=0.90, seed=None)` | ported; equals R to 1e-9 on 4 cases (`event, p_top, baseline, change, pct_change`, biggest drop first); `ci=True` adds `lower`, `upper` from `quantify_ci()` |
+| `quantify_when(f, data, ..., time, baseline, ci, n, cv, level, seed)` | `quantify_when(f, data, /, scenarios=None, time=<0 to 87600 by 4380>, baseline="Neither", ci=True, n=1000, cv=0.2, level=0.90, seed=None, **kwargs)`; scenarios as `{"Fix A": {"MN": 0.1}}` | ported; with `ci=False` equals R to 1e-9 on 3 cases; `scenario` is a Categorical with R's factor levels |
+| `quantify_ci(f, data, n, cv, time, level, seed, draws)` | `quantify_ci(f, data, n=1000, cv=0.2, time=None, level=0.90, seed=None, draws=False)`; `seed` may be a numpy `Generator` | ported; same shape, statistics and common random numbers as R; draws differ from R's (see deviation); evaluates in chunks of 1,000 rows to spare memory |
 | `simulate(n_gates, n_basic, p_range, seed)` | `simulate(n_gates=3, n_basic=8, p_range=(0.01, 0.2), seed=None)` | ported; returns `{"nodes", "edges", "prob"}`, R's list shape; seeded draws differ from R's (see deviation) |
 | `illustrate(nodes, edges, type, node_key, layout = "tree", size, scale_size, res)` | `illustrate(nodes, edges, type="nodes", node_key="id", layout="tree", size=0.25, scale_size=False, res=50)` returns a DataFrame or a dict of `nodes`/`edges`/`gates`(/`pairwise`) | ported (igraph Reingold-Tilford tree layout); coordinates match R to 1e-9 on 5 trees; only `layout="tree"` |
 
@@ -86,12 +86,14 @@ problem it finds, including that one.
    `+` / `*` / parentheses grammar, so a malformed or hostile string raises
    `ValueError` and is never executed. Argument order follows R's `sort()` under
    an English locale: case-insensitive, lowercase first on ties.
-2. **`simulate(seed=)` and `fluctuate(seed=)` draw from numpy, not R's random
-   stream.** Same arguments, checks and return shape; a seed reproduces Python
-   runs but not the tree (or the draws) R makes for the same seed.
-3. **`stipulate()` takes its scenarios as a dict.** R's `...` becomes a
-   positional dict `{"Fix A only": {"MN": 0.1}}` (names with spaces) or keyword
-   arguments (`fix_a={"MN": 0.1}`); the result is the same table.
+2. **`simulate(seed=)` and `quantify_ci(seed=)` draw from numpy, not R's random
+   stream** (and so do `quantify_if(ci=True)` and `quantify_when(ci=True)`).
+   Same arguments, checks and return shape; a seed reproduces Python runs but
+   not the tree (or the draws) R makes for the same seed.
+3. **`quantify_when()` takes its scenarios as a dict.** R's `...` becomes a
+   dict, `quantify_when(f, data, scenarios={"Fix A only": {"MN": 0.1}})`
+   (names with spaces), or keyword arguments (`fix_a={"MN": 0.1}`); the result
+   is the same table.
 
 Whole-number columns in the datasets (ids, 0/1 indicators) load as `int64`. R
 stores them as double, but the values are identical.

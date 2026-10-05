@@ -1,4 +1,4 @@
-"""Shared input checks for quantify_if() and stipulate(): one row of named,
+"""Shared input checks for quantify_if() and quantify_when(): one row of named,
 finite numbers, as R's internal one_row_values()."""
 
 from __future__ import annotations

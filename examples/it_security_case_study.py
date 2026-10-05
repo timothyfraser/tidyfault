@@ -9,7 +9,7 @@
 #
 # What this script does, in order:
 #   1. Build the fault tree from two tidy tables (nodes + edges).
-#   2. Turn each component's failure rate (lambda, per year) into the
+#   2. Turn each component's failure rate (lambda, per hour) into the
 #      probability that it fails within a given time.
 #   3. Find the minimal cut sets and the probability of the top event.
 #   4. Ask "which fix buys the most?": cut each failure rate by 5%, one at a
@@ -20,6 +20,9 @@
 #      top event with 90% intervals.
 #   6. Simulate 10,000 possible worlds for one year, to show the full
 #      distribution of the risk.
+#
+# Time is in hours, the reliability-engineering convention: failure rates are
+# failures per hour, and 8,760 hours is one year (24 * 365).
 #
 # Runs as-is in Python, or in the browser through Pyodide
 # (tidyfault.netlify.app). Its R twin is it_security_case_study.R, in this same
@@ -32,9 +35,10 @@ import numpy as np      # arrays and random draws
 import pandas as pd     # data wrangling
 import tidyfault as tf  # fault tree analysis
 
-rng = np.random.default_rng(20261012)  # the conference date, so every run gives the same draws
+rng = np.random.default_rng(20261012)  # a fixed seed, so every run gives the same draws
 
-horizon = 1        # the time window for a single probability (years)
+horizon = 8760     # the time window for a single probability: one year, in hours
+times = np.arange(0, 87600 + 1, 4380)  # step 5: 0 to 10 years, every half year (hours)
 cut = 0.05         # step 4: cut each failure rate by 5%
 fix = 0.10         # step 5: a "fix" cuts a component's failure rate by 90%
 cv = 0.20          # uncertainty: each failure rate varies by +/- 20% (sd / mean)
@@ -63,7 +67,7 @@ f = tf.formulate(tf.equate(gates))
 
 # 2. Failure rates and probabilities ##########################################
 
-# One failure rate (lambda, events per year) per basic event, in one row.
+# One failure rate (lambda, failures per hour) per basic event, in one row.
 outcomes = tf.data.load_data("it_security_outcomes_rates")[["event", "lambda"]]
 rates = outcomes.set_index("event")["lambda"].to_frame().T.reset_index(drop=True)
 rates.columns.name = None
@@ -79,17 +83,6 @@ def pexp(q, rate):
 probs = pexp(horizon, rates)
 
 
-# quantify() checks every possible state of the tree for every row of newdata.
-# With 10 basic events that is 1,024 states per row, so for tens of thousands of
-# rows we hand it the rows in chunks. The answer is the same, just lighter on
-# memory (this matters in the browser).
-def quantify_top(newdata, chunk=1000):
-    newdata = newdata[events]
-    out = [tf.quantify(f, newdata=newdata.iloc[i:i + chunk], prob=True)
-           for i in range(0, len(newdata), chunk)]
-    return np.concatenate([np.atleast_1d(o) for o in out])
-
-
 # 3. Cut sets and the top event ###############################################
 
 # A minimal cut set is a smallest group of basic events whose joint failure
@@ -97,7 +90,7 @@ def quantify_top(newdata, chunk=1000):
 cutsets = tf.concentrate(gates)
 
 # The probability that sensitive data leaks within one year.
-p_top = float(quantify_top(probs)[0])
+p_top = float(tf.quantify(f, newdata=probs, prob=True))
 
 
 # 4. Which fix buys the most? #################################################
@@ -120,52 +113,38 @@ marginal_effects = (
 
 # 5. Scenario sweep over time #################################################
 
-# Four scenarios: fix neither, fix A only, fix B only, or fix both.
-# stipulate() writes one row of failure rates per scenario; each fix
-# multiplies that component's rate by `fix` (0.10 keeps 10% of its failures).
-scenarios = tf.stipulate(rates, {
+# Four scenarios: fix neither, fix A only, fix B only, or fix both. Each fix
+# multiplies that component's failure rate by `fix` (0.10 keeps 10% of its
+# failures).
+#
+# quantify_when() builds one row of failure rates per scenario, repeats it for
+# every time step from 0 to 87,600 hours (10 years), turns each rate into the
+# probability of failing by that time, and evaluates the fault tree for every
+# row. (R passes the scenarios as named arguments; Python takes a dict.)
+#
+# Uncertainty (ci=True): we don't know each failure rate exactly, so it draws
+# n_sims plausible values per component from a Normal around its estimate
+# (sd = cv * lambda), floored at zero. Every scenario and time step reuses the
+# SAME draws (common random numbers), so differences between scenarios come
+# from the fixes, not noise. Passing rng continues this script's random stream.
+#
+# The result has one row per scenario and time step: p_top is the median
+# simulation, lower and upper bound the middle 90% of simulations (our
+# interval), and reliability is 1 - p_top.
+over_time = tf.quantify_when(f, rates, {
     "Fix A only": {component_a: fix},
     "Fix B only": {component_b: fix},
     "Fix A and B": {component_a: fix, component_b: fix},
-}, baseline="Neither")
-
-# Uncertainty: we don't know each failure rate exactly. fluctuate() draws
-# n_sims plausible values per component from a Normal around its estimate
-# (sd = cv * lambda), floored at zero. Every scenario reuses the SAME draws
-# (common random numbers), so differences between scenarios come from the
-# fixes, not noise. Passing rng continues this script's random stream.
-sweep = tf.fluctuate(scenarios, n=n_sims, cv=cv, seed=rng)
-# Repeat every row for each time step from 0 to 10 years...
-sweep = sweep.merge(pd.DataFrame({"years": np.arange(0, 10.5, 0.5)}), how="cross")
-# ...turn rates into probabilities of failing by that time...
-sweep[events] = pexp(sweep[["years"]].to_numpy(), sweep[events].to_numpy())
-# ...and evaluate the fault tree for every row.
-sweep["p_top"] = quantify_top(sweep)
-
-# Summarize each scenario at each time step: the median simulation and the
-# middle 90% of simulations (our interval). Reliability is 1 - P(top event).
-over_time = (
-    sweep.groupby(["scenario", "years"], observed=True)["p_top"]
-    .agg(lower=lambda x: x.quantile(0.05),
-         upper=lambda x: x.quantile(0.95),
-         p_top="median")
-    .reset_index()
-    .assign(reliability=lambda d: 1 - d["p_top"])
-    [["scenario", "years", "lower", "upper", "p_top", "reliability"]]
-    .sort_values(["scenario", "years"])
-    .reset_index(drop=True)
-)
+}, time=times, baseline="Neither", ci=True, n=n_sims, cv=cv, level=0.90, seed=rng)
 
 
 # 6. Ten thousand possible worlds #############################################
 
 # Same idea as step 5, for one year and no fixes, with many more draws: each
-# row is one possible world with its own set of failure rates.
-worlds = tf.fluctuate(rates, n=n_worlds, cv=cv, seed=rng).rename(columns={"sim": "world"})
-worlds[events] = pexp(horizon, worlds[events])
-
-# All 10,000 worlds through the fault tree.
-worlds["p_top"] = quantify_top(worlds)
+# row is one possible world with its own set of failure rates, sent through the
+# fault tree. draws=True keeps every world instead of summarizing them.
+worlds = tf.quantify_ci(f, rates, n=n_worlds, cv=cv, time=horizon, seed=rng,
+                        draws=True).rename(columns={"sim": "world"})
 
 uncertainty = pd.DataFrame({
     "median": [worlds["p_top"].median()],
@@ -182,8 +161,8 @@ print("\np_top (P(data leaks within one year))")
 print(p_top)
 print("\nmarginal_effects (which 5% cut lowers that the most)")
 print(marginal_effects)
-print("\nover_time (the four scenarios, 3 horizons)")
-print(over_time[over_time["years"].isin([1, 5, 10])].to_string(index=False))
+print("\nover_time (the four scenarios at 1, 5 and 10 years)")
+print(over_time[over_time["time"].isin([8760, 43800, 87600])].to_string(index=False))
 print("\nuncertainty (the spread across 10,000 worlds)")
 print(uncertainty)
 
@@ -193,9 +172,11 @@ print(uncertainty)
 # import matplotlib.pyplot as plt
 # fig, ax = plt.subplots()
 # for name, d in over_time.groupby("scenario", observed=True):
-#     ax.fill_between(d["years"], d["lower"], d["upper"], alpha=0.2)
-#     ax.plot(d["years"], d["p_top"], label=name)
-# ax.set_xlabel("Years")
-# ax.set_ylabel("P(sensitive data leaks by year t)")
+#     ax.fill_between(d["time"], d["lower"], d["upper"], alpha=0.2)
+#     ax.plot(d["time"], d["p_top"], label=name)
+# ax.set_xticks(range(0, 87601, 17520))
+# ax.set_xticklabels([f"{h:,} h\n({h // 8760} y)" for h in range(0, 87601, 17520)])
+# ax.set_xlabel("Hours")
+# ax.set_ylabel("P(sensitive data leaks by time t)")
 # ax.legend()
 # plt.show()

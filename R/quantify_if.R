@@ -10,17 +10,28 @@
 #' @param data (Required) One row of values, one column per basic event of
 #'   \code{f} (extra columns are ignored): a one-row data frame or tibble, or a
 #'   named numeric vector. With \code{time}, the values are failure rates
-#'   (events per unit of time); without it, they are failure probabilities.
+#'   (events per hour, by default); without it, they are failure
+#'   probabilities.
 #' @param cut (Optional) The share to cut each value by, in \code{(0, 1]}: each
 #'   event's value is multiplied by \code{1 - cut}. Default \code{0.05} (a 5\%
 #'   cut). \code{cut = 1} removes the event entirely.
-#' @param time (Optional) A single positive number. If given, \code{data} holds
-#'   failure rates, and each (cut) rate becomes the probability of failing by
-#'   \code{time}, \code{pexp(time, rate)}. If \code{NULL} (default),
+#' @param time (Optional) A single positive number, in the same unit as the
+#'   rates (hours, the reliability-engineering convention; 8,760 hours is one
+#'   year). If given, \code{data} holds failure rates, and each (cut) rate
+#'   becomes the probability of failing by \code{time}, \code{pexp(time, rate)}. If \code{NULL} (default),
 #'   \code{data} holds probabilities and is used as is.
 #' @param events (Optional) Character vector naming the basic events to cut.
 #'   Default \code{NULL} cuts every basic event of \code{f}, in
 #'   \code{formalArgs(f)} order.
+#' @param ci (Optional) \code{FALSE} (default) returns the exact values only.
+#'   \code{TRUE} adds an uncertainty interval per row from
+#'   \code{\link{quantify_ci}}.
+#' @param n,cv,level,seed (Optional) Passed to \code{\link{quantify_ci}} when
+#'   \code{ci = TRUE}: the number of draws (default \code{1000}), the
+#'   coefficient of variation of each value (default \code{0.2}), the
+#'   coverage of the interval (default \code{0.90}) and a seed for
+#'   \code{set.seed()} (default \code{NULL}, the current random stream).
+#'   Ignored when \code{ci = FALSE}.
 #'
 #' @return A tibble with one row per cut event, sorted by \code{pct_change}
 #'   from the biggest drop to the smallest (ties keep the order of
@@ -33,6 +44,10 @@
 #'     \item \code{change}: \code{p_top - baseline}.
 #'     \item \code{pct_change}: the percent change from the baseline,
 #'       \code{100 * (p_top / baseline - 1)}.
+#'     \item \code{lower}, \code{upper}: only with \code{ci = TRUE}, the
+#'       central \code{level} interval of the top event's probability after
+#'       the cut, from \code{\link{quantify_ci}}. \code{p_top} stays the exact
+#'       value.
 #'   }
 #'
 #' @details The baseline and every what-if go through \code{quantify(f, prob =
@@ -41,9 +56,13 @@
 #'   conversion: with \code{time}, the rate is cut and then turned into a
 #'   probability, which is what a fix to a component does.
 #'
+#'   With \code{ci = TRUE}, the baseline and every what-if share the same
+#'   random draws (common random numbers), so the intervals can be compared
+#'   row to row.
+#'
 #' @seealso \code{\link{quantify}} for the top event probability,
-#'   \code{\link{stipulate}} and \code{\link{fluctuate}} for scenarios with
-#'   uncertainty.
+#'   \code{\link{quantify_when}} for scenarios over time,
+#'   \code{\link{quantify_ci}} for uncertainty intervals.
 #'
 #' @keywords fault tree sensitivity
 #' @importFrom methods formalArgs
@@ -59,21 +78,24 @@
 #'   equate() %>%
 #'   formulate()
 #'
-#' # One row of failure rates (events per year), one column per basic event
+#' # One row of failure rates (events per hour), one column per basic event
 #' rates <- it_security_outcomes_rates %>%
 #'   select(event, lambda) %>%
 #'   pivot_wider(names_from = event, values_from = lambda)
 #'
 #' # Cut each failure rate by 5%, one at a time: which fix lowers the chance
-#' # that data leaks within one year the most?
-#' quantify_if(f, rates, cut = 0.05, time = 1)
+#' # that data leaks within one year (8,760 hours) the most?
+#' quantify_if(f, rates, cut = 0.05, time = 8760)
 #'
-#' # Only two candidate fixes, each removing 90% of the failures
-#' quantify_if(f, rates, cut = 0.9, time = 1, events = c("MN", "PO"))
+#' # Only two candidate fixes, each removing 90% of the failures, with 90%
+#' # uncertainty intervals (each rate +/- 20%)
+#' quantify_if(f, rates, cut = 0.9, time = 8760, events = c("MN", "PO"),
+#'             ci = TRUE, n = 200, seed = 1)
 #'
 #' # With probabilities instead of rates, leave out `time`
 #' quantify_if(f, it_security_probs)
-quantify_if = function(f, data, cut = 0.05, time = NULL, events = NULL) {
+quantify_if = function(f, data, cut = 0.05, time = NULL, events = NULL, ci = FALSE,
+                       n = 1000, cv = 0.2, level = 0.90, seed = NULL) {
   if (!is.function(f))
     stop("`f` must be a function from formulate().", call. = FALSE)
   fargs = methods::formalArgs(f)
@@ -85,8 +107,10 @@ quantify_if = function(f, data, cut = 0.05, time = NULL, events = NULL) {
   if (length(missing) > 0)
     stop("`data` must have a column for every basic event of `f`. Missing: ",
          paste(missing, collapse = ", "), ".", call. = FALSE)
-  # Extra columns (an id, a label) are ignored.
-  values = one_row_values(data[fargs], arg = "data", fun = "quantify_if")
+  # Extra columns (an id, a label) are ignored. Keep data's column order: it
+  # fixes the order of the random draws when ci = TRUE.
+  values = one_row_values(data[names(data)[names(data) %in% fargs]],
+                          arg = "data", fun = "quantify_if")
 
   if (is.null(events)) {
     events = fargs
@@ -121,10 +145,17 @@ quantify_if = function(f, data, cut = 0.05, time = NULL, events = NULL) {
          paste(names(values)[values > 1], collapse = ", "),
          ". If these are failure rates, pass `time`.", call. = FALSE)
 
+  if (!is.logical(ci) || length(ci) != 1 || is.na(ci))
+    stop("`ci` must be TRUE or FALSE.", call. = FALSE)
+
   # Row 1 is the baseline; row i + 1 cuts events[i] alone.
-  m = matrix(values, nrow = length(events) + 1, ncol = length(fargs), byrow = TRUE,
-             dimnames = list(NULL, fargs))
+  m = matrix(values, nrow = length(events) + 1, ncol = length(values), byrow = TRUE,
+             dimnames = list(NULL, names(values)))
   for (i in seq_along(events)) m[i + 1, events[i]] = m[i + 1, events[i]] * (1 - cut)
+  # The interval is drawn on the values before any conversion, as the cut is.
+  if (ci)
+    interval = quantify_ci(f = f, data = as.data.frame(m), n = n, cv = cv, time = time,
+                           level = level, seed = seed)
   if (!is.null(time)) m[] = stats::pexp(q = time, rate = m)
 
   p = quantify(f = f, newdata = as.data.frame(m), prob = TRUE)
@@ -137,11 +168,15 @@ quantify_if = function(f, data, cut = 0.05, time = NULL, events = NULL) {
     change = p[-1] - baseline,
     pct_change = 100 * (p[-1] / baseline - 1)
   )
+  if (ci) {
+    out$lower = interval$lower[-1]
+    out$upper = interval$upper[-1]
+  }
   out[order(out$pct_change, method = "radix"), , drop = FALSE]
 }
 
 # One row of named, finite numbers from a one-row data frame or a named numeric
-# vector. Shared by quantify_if() and stipulate().
+# vector. Shared by quantify_if() and quantify_when().
 one_row_values = function(data, arg, fun) {
   if (is.data.frame(data)) {
     if (nrow(data) != 1)

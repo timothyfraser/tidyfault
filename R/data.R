@@ -305,7 +305,9 @@
 #' `it_security_outcomes_rates` IT security (data leak) fault tree failure rates
 #'
 #' Example exponential failure rates for the 10 basic events of the IT security
-#' fault tree, expressed per year.
+#' fault tree, expressed per hour (the reliability-engineering convention): a
+#' rate of 0.25 failures per year is stored as 0.25 / 8760 failures per hour,
+#' so `pexp(8760, lambda)` is the chance of failing within one year.
 #'
 #' @format ## `it_security_outcomes_rates`
 #' A tibble with 10 rows and 3 columns:
@@ -313,8 +315,8 @@
 #'   \item{event}{Two-letter code of the basic event (`"DA"`, `"EP"`, `"IM"`,
 #'   `"LR"`, `"MN"`, `"PO"`, `"PC"`, `"PM"`, `"VS"`, `"WB"`); see
 #'   [it_security_data] for what each code means.}
-#'   \item{lambda}{Failure rate (failures per year).}
-#'   \item{time_unit}{Unit of time for `lambda`: `"years"`.}
+#'   \item{lambda}{Failure rate (failures per hour).}
+#'   \item{time_unit}{Unit of time for `lambda`: `"hours"`.}
 #' }
 #'
 #' @examples
