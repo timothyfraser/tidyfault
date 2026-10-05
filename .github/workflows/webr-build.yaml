@@ -31,6 +31,11 @@ jobs:
     name: build and publish the webR repository
     permissions:
       contents: write # push the repository to the gh-pages branch
+    env:
+      # rwasm resolves its GitHub-hosted package overrides through the GitHub
+      # API; without a token it uses a shared, rate-limited PAT and resolution
+      # fails (first run, 2026-10-05).
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
