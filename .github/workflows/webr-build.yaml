@@ -1,0 +1,81 @@
+# Builds tidyfault for WebAssembly and publishes it as a CRAN-like binary
+# repository at https://timothyfraser.github.io/tidyfault/repo/ so the website's
+# R tab can install it in the browser with webR. Only tidyfault is built here;
+# its dependencies come from repo.r-wasm.org. One job, path-filtered and
+# cancel-in-progress because Actions minutes are scarce.
+name: webr-build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "R/**"
+      - "src/**"
+      - "DESCRIPTION"
+      - "NAMESPACE"
+      - ".github/workflows/webr-build.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+jobs:
+  webr-repo:
+    # Same guard as the other workflows: draft PRs run nothing (this workflow
+    # has no pull_request trigger today; the guard keeps it so if one is added).
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    name: build and publish the webR repository
+    permissions:
+      contents: write # push the repository to the gh-pages branch
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Keep the build outputs out of the package tarball
+        run: printf '%s\n' '^_webr_repo$' '^_webr_image$' '^_gh-pages$' >> .Rbuildignore
+
+      # r-wasm/actions build-rwasm, v2 (README: build-rwasm/README.md at tag v2).
+      # Pinned to the same webR release the site loads (WEBR_BASE in
+      # website/src/runtime/webr.js). Bump both together.
+      - name: Build tidyfault for WebAssembly
+        uses: r-wasm/actions/build-rwasm@v2
+        with:
+          packages: "local::."
+          repo-path: _webr_repo
+          image-path: _webr_image
+          webr-image: ghcr.io/r-wasm/webr:v0.6.0
+
+      - name: Check the repository holds a tidyfault binary
+        run: |
+          grep -q '^Package: tidyfault$' _webr_repo/src/contrib/PACKAGES
+          ls _webr_repo/bin/emscripten/contrib/*/tidyfault_*.tgz
+          ls _webr_repo/bin/emscripten/contrib/*/PACKAGES
+
+      # Replace only /repo/ on gh-pages; everything else on the branch is kept.
+      - name: Publish to gh-pages under /repo/
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
+            git fetch --depth 1 origin gh-pages
+            git worktree add --detach _gh-pages FETCH_HEAD
+          else
+            git worktree add --detach _gh-pages
+            git -C _gh-pages checkout --orphan gh-pages
+            git -C _gh-pages rm -rf --quiet .
+          fi
+          rm -rf _gh-pages/repo
+          mkdir -p _gh-pages/repo
+          cp -R _webr_repo/. _gh-pages/repo/
+          git -C _gh-pages add -A repo
+          if git -C _gh-pages diff --cached --quiet; then
+            echo "repo/ unchanged; nothing to publish"
+            exit 0
+          fi
+          git -C _gh-pages commit --quiet -m "webR repository: tidyfault at ${GITHUB_SHA::7}"
+          git -C _gh-pages push origin HEAD:refs/heads/gh-pages
