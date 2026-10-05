@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import NavBar from "../components/NavBar.jsx";
 import Footer from "../components/Footer.jsx";
+import CopyMarkdown from "../components/CopyMarkdown.jsx";
 import articles from "../generated/articles/index.json";
 
 // Fragments are loaded lazily (one chunk per article); figure URLs are resolved
@@ -113,6 +114,9 @@ export default function Article({ name: nameProp }) {
                   <Link to="/articles/">Articles</Link>
                 </span>
                 <h1>{meta.title}</h1>
+                <div>
+                  <CopyMarkdown href={`/articles/${meta.name}.md`} />
+                </div>
               </header>
             ) : (
               <header className="article-head">

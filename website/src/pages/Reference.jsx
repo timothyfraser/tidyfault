@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import NavBar from "../components/NavBar.jsx";
 import Footer from "../components/Footer.jsx";
 import Code from "../components/Code.jsx";
+import CopyMarkdown from "../components/CopyMarkdown.jsx";
 import R from "../generated/reference-r.json";
 import PY from "../generated/reference-py.json";
 
@@ -203,6 +204,7 @@ export function TopicPage({ lang, topic }) {
     <article className="ref-article" aria-labelledby="ref-title">
       <div className="ref-head">
         <h1 id="ref-title">{displayName(topic)}</h1>
+        <CopyMarkdown href={`${LANGS[lang].base}/${topic.name}.md`} />
         <LangToggle lang={lang} targets={targets} />
       </div>
       {topic.description ? <Html html={topic.description} /> : null}

@@ -254,6 +254,87 @@ try {
     await ctx.close();
   }
 
+  // ---- agent-facing content (WEB-06): /llms.txt, /llms-full.txt, per-page .md, Copy as Markdown ----
+  {
+    const bad = [];
+    const getText = async (path) => {
+      const res = await fetch(url + path);
+      const body = await res.text();
+      const ct = res.headers.get("content-type") ?? "";
+      if (res.status !== 200) bad.push(`${path}: HTTP ${res.status}`);
+      else if (!body.trim()) bad.push(`${path}: empty`);
+      else if (/html/i.test(ct) || /^\s*<(!doctype|html)/i.test(body)) bad.push(`${path}: answers HTML (${ct}), not text`);
+      return body;
+    };
+    const llms = await getText("/llms.txt");
+    const full = await getText("/llms-full.txt");
+    if (!llms.startsWith("# tidyfault")) bad.push("/llms.txt: does not start with '# tidyfault'");
+    if (!/^> /m.test(llms)) bad.push("/llms.txt: no '> ' summary line");
+    for (const needle of ['remotes::install_github("timothyfraser/tidyfault")', 'pip install "git+https://github.com/timothyfraser/tidyfault#subdirectory=python"'])
+      if (!llms.includes(needle)) bad.push(`/llms.txt: missing install line ${needle}`);
+    if (!full.includes("# concentrate()") || full.length < llms.length * 5) bad.push("/llms-full.txt: does not concatenate the pages");
+    // every Markdown link in llms.txt answers 200 with text (the site's own paths)
+    const mdLinks = [...llms.matchAll(/\]\((https:\/\/tidyfault\.netlify\.app(\/[^)\s]+\.md))\)/g)].map((m) => m[2]);
+    for (const path of new Set(mdLinks)) await getText(path);
+    if (mdLinks.length < 20) bad.push(`/llms.txt: only ${mdLinks.length} Markdown links`);
+    const idx = JSON.parse(readFileSync(new URL("../src/generated/articles/index.json", import.meta.url), "utf8"));
+    const art0 = idx[0];
+    const refMd = await getText("/reference/concentrate.md");
+    const pyMd = await getText("/reference-py/concentrate.md");
+    const artMd = await getText(`/articles/${art0.name}.md`);
+    if (!refMd.startsWith("# concentrate()")) bad.push("/reference/concentrate.md: wrong heading");
+    if (!pyMd.startsWith("# concentrate()")) bad.push("/reference-py/concentrate.md: wrong heading");
+    if (!artMd.startsWith(`# ${art0.title}`)) bad.push(`/articles/${art0.name}.md: wrong heading`);
+    if (bad.length) fail(`llms/markdown: ${bad.join(" | ")}`);
+    else ok(`/llms.txt and /llms-full.txt answer 200 as text; ${new Set(mdLinks).size} Markdown links in llms.txt answer 200; reference, reference-py and article .md answer 200`);
+
+    // the Copy as Markdown button copies exactly that page's Markdown
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    await ctx.grantPermissions(["clipboard-read", "clipboard-write"], { origin: url });
+    const page = await ctx.newPage();
+    const errors = watch(page);
+    const copyBad = [];
+    for (const [path, md] of [
+      ["/reference/concentrate.html", refMd],
+      ["/reference-py/concentrate.html", pyMd],
+      [`/articles/${art0.name}.html`, artMd],
+    ]) {
+      errors.length = 0;
+      await page.goto(url + path, { waitUntil: "load" });
+      const btn = page.locator("button", { hasText: "Copy as Markdown" });
+      await page.waitForSelector("h1", { timeout: 10000 }).catch(() => null);
+      await btn.first().waitFor({ timeout: 5000 }).catch(() => null);
+      if (!(await btn.count())) { copyBad.push(`${path}: no Copy as Markdown button`); continue; }
+      const h1 = (await page.textContent("h1")).trim();
+      await btn.first().click();
+      await page.locator("button", { hasText: /^Copied$/ }).waitFor({ timeout: 5000 }).catch(() => copyBad.push(`${path}: button never said Copied`));
+      const clip = await page.evaluate(() => navigator.clipboard.readText());
+      if (!clip.startsWith(`# ${h1}`)) copyBad.push(`${path}: clipboard starts ${JSON.stringify(clip.slice(0, 40))}, wanted "# ${h1}"`);
+      else if (clip.trim() !== md.trim()) copyBad.push(`${path}: clipboard text differs from the .md file`);
+      const real = realErrors(errors);
+      if (real.length) copyBad.push(`${path}: console ${real.join(" | ")}`);
+    }
+    await page.waitForTimeout(2300);
+    if (!(await page.locator("button", { hasText: "Copy as Markdown" }).count())) copyBad.push("label did not return to 'Copy as Markdown' after 2 s");
+    if (copyBad.length) fail(`copy as markdown: ${copyBad.join(" | ")}`);
+    else ok("Copy as Markdown on a reference page (R and Python) and an article page puts that page's Markdown on the clipboard");
+    await ctx.close();
+  }
+
+  // ---- home page: the reference links route in-app (WEB-06) ----
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const page = await ctx.newPage();
+    await page.goto(url + "/", { waitUntil: "load" });
+    const hrefs = await page.$$eval("#reference a", (as) => as.map((a) => a.getAttribute("href")));
+    const want = ["/reference/", "/reference-py/", "/reference/curate.html", "/reference/illustrate.html"];
+    const miss = want.filter((h) => !hrefs.includes(h));
+    if (miss.length || hrefs.includes("#reference")) fail(`home reference section links: missing ${miss.join(", ")}; hrefs ${hrefs.join(" ")}`);
+    else ok(`home reference section: ${hrefs.length} links point at /reference/ routes, none at #reference`);
+    for (const h of hrefs) internalLinks.add(h);
+    await ctx.close();
+  }
+
   // ---- the published deck (ADR in the private repo; public copy in public/slides/) ----
   {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
