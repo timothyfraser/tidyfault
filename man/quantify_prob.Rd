@@ -47,7 +47,7 @@ cut set approximations elsewhere. When \code{newdata} has multiple rows, the
 truth table is computed once and all scenarios are evaluated in one pass.
 }
 \examples{
-library(tidyverse)
+library(dplyr)
 library(tidyfault)
 data("fakenodes")
 data("fakeedges")

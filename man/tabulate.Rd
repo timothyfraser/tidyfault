@@ -44,7 +44,7 @@ This function analyzes minimum cutsets to quantify their importance in system fa
 }
 \examples{
 # Load dependencies
-library(tidyverse)
+library(dplyr)
 library(tidyfault)
 
 # Load example data into our environment

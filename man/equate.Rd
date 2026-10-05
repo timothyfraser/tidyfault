@@ -36,7 +36,7 @@ The algorithm processes gates in order and handles nested gate structures by rep
 \examples{
 
 # Load dependencies
-library(tidyverse)
+library(dplyr)
 library(tidyfault)
 
 # Load example data into our environment

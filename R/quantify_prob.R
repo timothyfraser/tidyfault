@@ -46,7 +46,7 @@
 #' @importFrom dplyr %>%
 #' @importFrom methods formalArgs
 #' @examples
-#' library(tidyverse)
+#' library(dplyr)
 #' library(tidyfault)
 #' data("fakenodes")
 #' data("fakeedges")

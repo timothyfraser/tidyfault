@@ -40,7 +40,7 @@ The output serves as the foundation for subsequent steps: \code{equate()} uses t
 \examples{
 
 # Load dependencies
-library(tidyverse)
+library(dplyr)
 library(tidyfault)
 
 # Load example data into our environment

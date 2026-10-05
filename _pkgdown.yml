@@ -94,7 +94,8 @@ reference:
       - quantify_binary_fast
       - quantify_prob
       - quantify_prob_fast
-  - title: Data
+  - title: Example fault trees
+    desc: Node and edge tables for the bundled example fault trees.
     contents:
       - fakenodes
       - fakeedges
@@ -104,9 +105,28 @@ reference:
       - ai_edges
       - security_nodes
       - security_edges
+      - breach_nodes
+      - breach_edges
       - it_security_nodes
       - it_security_edges
+  - title: Example scenarios and probabilities
+    desc: Binary scenarios, probabilities, and failure rates for the example trees.
+    contents:
+      - db_probs
+      - db_outcomes_binary
+      - db_outcomes_prob
+      - db_outcomes_rates
+      - ai_probs
+      - ai_outcomes_binary
+      - ai_outcomes_prob
+      - ai_outcomes_rates
+      - security_probs
+      - security_outcomes_binary
+      - security_outcomes_prob
+      - security_outcomes_rates
       - it_security_data
+      - it_security_probs
+      - it_security_outcomes_rates
   - title: Visualization
     contents:
       - illustrate
