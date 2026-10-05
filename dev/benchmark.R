@@ -31,7 +31,7 @@ result = purrr::map2_dfr(
  )
 # Write result to file
 # Tim
-# write_csv(result, path = "C:/Users/tmf77/tidyfault_paper/tidyfault/dev/benchmark_results.csv")
+# write_csv(result, path = "dev/benchmark_results.csv")  # run from the package root
 # Jingyao
 out_file <- file.path("tidyfault", "dev", "benchmark_results_new.csv")
 write_csv(result, file = out_file)

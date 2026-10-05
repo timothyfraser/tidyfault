@@ -4,7 +4,9 @@ library(roxygen2)
 library(tidyverse)
 # setwd("/cloud/project")  # RStudio Cloud (Tim)
 # Jingyao (Mac): set package root so use_data() and data/ exist
-if (dir.exists("tidyfault")) setwd("tidyfault") else if (basename(getwd()) != "tidyfault") setwd("/Users/jingyaotong/Documents/GitHub/tidyfault_paper/tidyfault")
+# Run from the package root (the folder holding DESCRIPTION), or from its parent.
+if (!file.exists("DESCRIPTION") && dir.exists("tidyfault")) setwd("tidyfault")
+stopifnot(file.exists("DESCRIPTION"))
 getwd()
 
 # Let's make a data.frame of nodes!
