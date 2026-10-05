@@ -37,13 +37,13 @@ The return type depends on the \code{type} parameter:
 \itemize{
 \item For \code{type = "nodes"}: A data.frame with node coordinates (\code{x}, \code{y}) and all original columns from \code{nodes}
 \item For \code{type = "edges"}: A data.frame with edge coordinates formatted for \code{geom_line()}, containing columns \code{direction}, \code{id}, \code{x}, \code{y}, \code{edge_id}
-\item For \code{type = "both"} (default): A named list with three elements:
+\item For \code{type = "both"} (default): A named list of class \code{c("tidyfault_tree", "list")} (so \code{plot()} dispatches to \code{plot.tidyfault_tree()}) with three elements:
 \itemize{
 \item \code{nodes}: Node coordinates data.frame
 \item \code{edges}: Edge coordinates data.frame
 \item \code{gates}: Gate polygon coordinates data.frame with \code{x}, \code{y} columns for drawing gate shapes
 }
-\item For \code{type = "all"}: A named list with four elements: \code{nodes}, \code{edges}, \code{gates}, and \code{pairwise} (edge data with from/to coordinates)
+\item For \code{type = "all"}: A named list of class \code{c("tidyfault_tree", "list")} with four elements: \code{nodes}, \code{edges}, \code{gates}, and \code{pairwise} (edge data with from/to coordinates)
 }
 }
 \description{
