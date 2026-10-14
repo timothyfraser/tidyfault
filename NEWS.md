@@ -1,5 +1,9 @@
 # tidyfault 0.1.0
 
+* First CRAN release.
+
+* tidyfault now declares `R (>= 4.1)`; its dependencies (purrr, scales, stringr) already required it, so the earlier `R (>= 3.5)` was never true.
+
 * tidyfault now ships a Python twin in `python/` with the same function names, arguments and return shapes, tested against R's own output; install it with `pip install "git+https://github.com/timothyfraser/tidyfault#subdirectory=python"`.
 
 * Figures in the README and the vignettes now render at 300 dpi (the README tree figure is 1800x1200 px) with the gate palette.
