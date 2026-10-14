@@ -3,7 +3,7 @@ title: "Simulating uncertainty"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Simulating uncertainty}
-  %\VignetteEngine{knitr::knitr}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 

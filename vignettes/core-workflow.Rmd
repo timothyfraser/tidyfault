@@ -3,7 +3,7 @@ title: "Core workflow"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Core workflow}
-  %\VignetteEngine{knitr::knitr}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 

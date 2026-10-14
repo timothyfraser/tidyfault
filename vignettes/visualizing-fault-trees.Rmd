@@ -3,7 +3,7 @@ title: "Visualizing fault trees"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Visualizing fault trees}
-  %\VignetteEngine{knitr::knitr}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 

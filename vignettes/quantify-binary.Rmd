@@ -3,7 +3,7 @@ title: "quantify()-ing binary outcomes"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{quantify()-ing binary outcomes}
-  %\VignetteEngine{knitr::knitr}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 

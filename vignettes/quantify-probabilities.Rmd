@@ -3,7 +3,7 @@ title: "quantify()-ing probabilities"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{quantify()-ing probabilities}
-  %\VignetteEngine{knitr::knitr}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
