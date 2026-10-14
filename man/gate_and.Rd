@@ -2,7 +2,7 @@
 % Please edit documentation in R/gate_and.R
 \name{gate_and}
 \alias{gate_and}
-\title{gate_and() Function}
+\title{Polygon for an AND gate}
 \usage{
 gate_and(size = 2, res)
 }
@@ -26,6 +26,11 @@ This function generates the geometric shape for AND gates in fault tree visualiz
 \item The shape follows standard fault tree analysis conventions where AND gates are represented as rounded rectangles
 }
 The AND gate shape is generated using mathematical curves: the left side uses \code{sqrt(x)} and the right side uses \code{sqrt(size - x)} to create symmetric rounded edges. The shape is then centered vertically and horizontally.
+}
+\examples{
+# Polygon of an AND gate: one row per vertex, columns x and y
+head(gate_and(size = 1, res = 12))
+
 }
 \keyword{fault}
 \keyword{gate}

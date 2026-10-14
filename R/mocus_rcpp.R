@@ -1,5 +1,5 @@
 #' @name mocus_rcpp
-#' @title `mocus_rcpp()` - Rcpp-Backed MOCUS Implementation
+#' @title MOCUS with the C++ backend
 #' @description
 #' Drop-in replacement for mocus() that delegates the inner expansion loop to
 #' compiled C++ via Rcpp. The R layer handles encoding/decoding; C++ handles
@@ -12,12 +12,20 @@
 #'   - Gate children are stored in a flat integer vector with per-gate start/end
 #'     offsets, giving cache-friendly sequential access.
 #'   - After C++ returns a list of integer-vector cutsets, R decodes them back
-#'     to character vectors in one vectorised pass.
+#'     to character vectors in one vectorized pass.
 #'
 #' @param data data.frame produced by curate(). Must have columns:
 #'   gate (chr), type (chr/fct), class (chr/fct), items (list of chr vectors).
 #' @return Named list where each element is a character vector of basic events
 #'   forming one cutset. Identical structure to mocus() / mocus_r() output.
+#' @examples
+#' data(db_nodes, db_edges, package = "tidyfault")
+#' gates <- curate(db_nodes, db_edges)
+#'
+#' # mocus(), mocus_r() and mocus_rcpp() return the same cut sets;
+#' # concentrate() then minimizes them.
+#' mocus_rcpp(gates)
+#'
 #' @export
 mocus_rcpp <- function(data) {
   if (!exists("mocus_cpp_impl", mode = "function")) {

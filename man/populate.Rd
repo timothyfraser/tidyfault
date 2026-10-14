@@ -2,7 +2,7 @@
 % Please edit documentation in R/populate.R
 \name{populate}
 \alias{populate}
-\title{populate() Function}
+\title{Fill a binary scenario table with event probabilities}
 \usage{
 populate(binary_outcomes, event_probs)
 }

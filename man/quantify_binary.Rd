@@ -2,7 +2,7 @@
 % Please edit documentation in R/quantify_binary.R
 \name{quantify_binary}
 \alias{quantify_binary}
-\title{quantify_binary() Function}
+\title{Evaluate binary scenarios}
 \usage{
 quantify_binary(f, newdata)
 }

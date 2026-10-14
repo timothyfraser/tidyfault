@@ -1,4 +1,4 @@
-#' mocus() Function
+#' Cut sets by the MOCUS algorithm
 #'
 #' This function *simplifies* a `data.frame` of gates and their sets identified
 #' by `curate()`, generating each cutset in the fault tree using the MOCUS
@@ -43,6 +43,14 @@
 #'   The default method (`"mocus_rcpp"`) uses the compiled implementation for
 #'   speed. Use `"mocus_r"` for a pure-R queue-based variant, or `"mocus_original"`
 #'   for the historical R loop used in early versions of the package.
+#'
+#' @examples
+#' data(db_nodes, db_edges, package = "tidyfault")
+#' gates <- curate(db_nodes, db_edges)
+#'
+#' # mocus(), mocus_r() and mocus_rcpp() return the same cut sets;
+#' # concentrate() then minimizes them.
+#' mocus(gates)
 #'
 #' @seealso [curate()] for preparing the gates data.frame, [concentrate()] for
 #'   finding minimum cutsets from the generated cutsets, [mocus_rcpp()],

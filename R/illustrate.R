@@ -1,4 +1,4 @@
-#' illustrate() Function
+#' Lay out a fault tree for plotting
 #'
 #' This function takes nodes and edges from a fault tree, computes a **tree** layout using `tidygraph` and `ggraph`, and returns ggplot-friendly data.frames of nodes, edges, and gate polygons. 
 #' 
@@ -34,6 +34,16 @@
 #'   }
 #'   The output is designed to work seamlessly with ggplot2. Nodes can be plotted with `geom_point()`, edges with `geom_line()`, and gates with `geom_polygon()`. The tree layout algorithm positions nodes hierarchically, making fault tree structure easy to visualize.
 #' 
+#' @examples
+#' data(db_nodes, db_edges, package = "tidyfault")
+#'
+#' # A tibble of laid-out nodes, with x and y coordinates added
+#' illustrate(db_nodes, db_edges, type = "nodes")
+#'
+#' # A list of nodes, edges and gate polygons; plot() draws it
+#' ill <- illustrate(db_nodes, db_edges, type = "both")
+#' plot(ill)
+#'
 #' @seealso \code{\link{gate}} for generating gate polygons, \code{\link[tidygraph]{tbl_graph}} for creating graph objects, \code{\link[ggraph]{create_layout}} for layout algorithms
 #' 
 #' @keywords ggplot visualize network

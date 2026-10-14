@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulate.R
 \name{simulate}
 \alias{simulate}
-\title{simulate() Function}
+\title{Simulate a random fault tree}
 \usage{
 simulate(n_gates = 3L, n_basic = 8L, p_range = c(0.01, 0.2), seed = NULL)
 }

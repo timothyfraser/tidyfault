@@ -2,7 +2,7 @@
 % Please edit documentation in R/gate_or.R
 \name{gate_or}
 \alias{gate_or}
-\title{gate_or() Function}
+\title{Polygon for an OR gate}
 \usage{
 gate_or(size = 2, res)
 }
@@ -27,6 +27,11 @@ This function generates the geometric shape for OR gates in fault tree visualiza
 \item The shape follows standard fault tree analysis conventions where OR gates are represented as curved shapes
 }
 The OR gate shape uses different mathematical curves for the top (concave, using \code{1/size * sqrt(x)}) and bottom (convex, using \code{size * sqrt(x)}) to create the distinctive curved appearance. The two curve segments are combined and centered to form the final polygon.
+}
+\examples{
+# Polygon of an OR gate: one row per vertex, columns x and y
+head(gate_or(size = 1, res = 12))
+
 }
 \keyword{fault}
 \keyword{gate}

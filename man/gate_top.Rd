@@ -2,7 +2,7 @@
 % Please edit documentation in R/gate_top.R
 \name{gate_top}
 \alias{gate_top}
-\title{gate_top() Function}
+\title{Polygon for a top-event gate}
 \usage{
 gate_top(size = 2, res)
 }
@@ -26,6 +26,11 @@ This function generates the geometric shape for top events in fault tree visuali
 \item The shape follows standard fault tree analysis conventions where top events are represented as rectangles
 }
 The top event shape is the simplest gate shape, consisting of a square defined by four corner points. The rectangle is created by specifying the four corners in order, then centering the shape by offsetting coordinates by \code{size/2} in both x and y directions. Unlike AND and OR gates, the top event shape does not use curved edges, so the \code{res} parameter is included for consistency but doesn't affect the output.
+}
+\examples{
+# Polygon of a top event: the four corners of a square, columns x and y
+head(gate_top(size = 2, res = 12))
+
 }
 \keyword{fault}
 \keyword{gate}

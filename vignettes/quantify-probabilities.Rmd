@@ -3,7 +3,7 @@ title: "quantify()-ing probabilities"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{quantify()-ing probabilities}
-  %\VignetteEngine{knitr::knitr}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -19,16 +19,16 @@ knitr::opts_chunk$set(
 )
 ```
 
-With `prob = TRUE`, [`quantify()`](../reference/quantify.html) treats each column as a **failure probability** for that basic event and returns the **top-event probability** for each row (assuming independence in the fast implementation).
+With `prob = TRUE`, [`quantify()`](https://tidyfault.netlify.app/reference/quantify.html) treats each column as a **failure probability** for that basic event and returns the **top-event probability** for each row (assuming independence in the fast implementation).
 
 This vignette shows:
 
-1. Turning binary scenario tables into probability tables with [`populate()`](../reference/populate.html).
+1. Turning binary scenario tables into probability tables with [`populate()`](https://tidyfault.netlify.app/reference/populate.html).
 2. Projecting probabilities over time from hourly rates (IT security example).
 
 ## Database example: `populate()` then `quantify()`
 
-[`db_probs`](../reference/db_probs.html) is in long form (`event`, `probability`). [`populate()`](../reference/populate.html) replaces 1s in a binary scenario with those probabilities (0 stays 0):
+[`db_probs`](https://tidyfault.netlify.app/reference/db_probs.html) is in long form (`event`, `probability`). [`populate()`](https://tidyfault.netlify.app/reference/populate.html) replaces 1s in a binary scenario with those probabilities (0 stays 0):
 
 ```{r}
 library(tidyfault)
@@ -121,4 +121,4 @@ ggplot(it_security_projections, aes(x = t, y = outcome)) +
 | Direct probability scenarios | Data frame of probabilities + `quantify(..., prob = TRUE)` |
 | Time profiles | Build rows of $P(\text{event})$ at each $t$, then same call |
 
-Uncertainty simulation is covered in [Simulating uncertainty](simulating-uncertainty.html).
+Uncertainty simulation is covered in [Simulating uncertainty](https://tidyfault.netlify.app/articles/simulating-uncertainty).

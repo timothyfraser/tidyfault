@@ -1,4 +1,4 @@
-#' equate() Function
+#' Write the Boolean equation of the top event
 #'
 #' This function extracts the equation for a fault tree from a `data.frame` of `gate`s and `set`s, outputted by `curate()`.
 #' 

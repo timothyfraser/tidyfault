@@ -1,4 +1,4 @@
-#' get_gate() Function
+#' Place one gate polygon at x, y
 #'
 #' This function produces the gate polygons for a set of supplied gate types and their x and y coordinates.
 #' 
@@ -19,6 +19,10 @@
 #'   }
 #'   The function handles coordinate transformation using `scales::rescale()` to position the gate shape correctly. Each gate type has a distinct visual representation following standard fault tree analysis conventions.
 #' 
+#' @examples
+#' # An AND gate polygon centered at (0, 0); columns x and y
+#' head(get_gate(0, 0, gate = "and", size = 1, res = 10))
+#'
 #' @seealso \code{\link{gate_and}} for AND gate shape generation, \code{\link{gate_or}} for OR gate shape generation, \code{\link{gate_top}} for top event shape generation
 #' 
 #' @keywords fault tree gate polygon maker

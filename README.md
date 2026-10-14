@@ -11,7 +11,7 @@
 
 <img src="man/figures/logo.png" align="right" width="120" style="float: right; margin-left: 1rem;" alt="tidyfault logo" />
 
-## R Package for tidy *Fault Tree Analysis* (FTA)!
+## Tidy *Fault Tree Analysis* (FTA) for R
 
 **`tidyfault`** uses `tidyverse`, `tidygraph`, and related tools to
 visualize fault trees, identify minimal cutsets, and evaluate failure
@@ -64,18 +64,21 @@ License](https://unsplash.com/license).
 
 ## Installation
 
-```r
-# R
+``` r
+# R, from CRAN (once accepted)
+install.packages("tidyfault")
+
+# R, development version from GitHub
 remotes::install_github("timothyfraser/tidyfault")
 ```
 
-```sh
+``` sh
 # Python
 pip install "git+https://github.com/timothyfraser/tidyfault#subdirectory=python"
 ```
 
-On Linux, `igraph` (used through `tidygraph` and `ggraph`) needs the GLPK
-library: `sudo apt-get install libglpk40` on Ubuntu or Debian.
+On Linux, `igraph` (used through `tidygraph` and `ggraph`) needs the
+GLPK library: `sudo apt-get install libglpk40` on Ubuntu or Debian.
 
 ## Basic Usage
 
@@ -111,7 +114,7 @@ First, we…
 ``` r
 mygates = curate(nodes = fakenodes, edges = fakeedges)
 mygates
-#> # A tibble: 6 × 6
+#> # A tibble: 6 x 6
 #>   gate  type  class     n set           items    
 #>   <chr> <fct> <fct> <int> <chr>         <list>   
 #> 1 T     top   top       1 " (G1) "      <chr [1]>
@@ -137,7 +140,7 @@ myfunction = myequation %>% formulate()
 myfunction
 #> function (A, B, C, D) 
 #> (((B * (C + D)) * (A + (B * C))))
-#> <environment: 0x558fc1cd8538>
+#> <environment: 0x560048da9200>
 ```
 
 4.  `calculate()` the full truth table of all possible combinations of
@@ -146,7 +149,7 @@ myfunction
 ``` r
 mycombos = myfunction %>% calculate()
 head(mycombos)
-#> # A tibble: 6 × 5
+#> # A tibble: 6 x 5
 #>       A     B     C     D outcome
 #>   <dbl> <dbl> <dbl> <dbl>   <dbl>
 #> 1     0     1     1     0       1
@@ -159,7 +162,7 @@ head(mycombos)
 
 5.  `concentrate()` our gate structure into the minimum cutsets, the
     smallest sets of events necessary to cause system failure. This
-    function uses boolean minimalization to find the minimum cutsets.
+    function uses Boolean minimization to find the minimum cutsets.
 
 ``` r
 mymin = mygates %>% concentrate()
@@ -175,7 +178,7 @@ mymin
 ``` r
 mytable = tabulate(mymin, formula = myfunction)
 mytable
-#> # A tibble: 2 × 4
+#> # A tibble: 2 x 4
 #>   mincut cutsets failures coverage
 #>   <chr>    <int>    <int>    <dbl>
 #> 1 A*B*D        2        5      0.4
@@ -231,9 +234,11 @@ mytable = mygates %>%
 
 ## Credits and license
 
-- **Software:** [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) (see
-  the `LICENSE` file in the repository). The documentation site is built
-  with [pkgdown](https://pkgdown.r-lib.org/).
+- **Software:** [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) (full
+  text in
+  [LICENSE.md](https://github.com/timothyfraser/tidyfault/blob/main/LICENSE.md)).
+  The documentation site is built with
+  [pkgdown](https://pkgdown.r-lib.org/).
 - **Images above:** Unsplash-hosted stock photos; see the [Unsplash
   License](https://unsplash.com/license). When redistributing or
   cropping, follow Unsplash attribution guidance.
@@ -245,4 +250,4 @@ mytable = mygates %>%
 
 ## Questions?
 
-Contact: Timothy Fraser, PhD (<timothy.fraser.1@gmail.com>)
+Contact: Timothy Fraser, PhD (<tmf77@cornell.edu>)

@@ -1,4 +1,4 @@
-#' simulate() Function
+#' Simulate a random fault tree
 #'
 #' This function *simulates* a fault tree structure with nodes, edges, and basic event probabilities. Generates a valid fault tree with one top event, one gate under it, multiple gates (AND/OR), and basic events, ensuring each gate has at least two input events.
 #'

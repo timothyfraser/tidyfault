@@ -1,4 +1,4 @@
-#' quantify() Function
+#' Evaluate the top event for many scenarios
 #'
 #' Unified wrapper function for evaluating fault trees. Evaluates whether the top
 #' event occurs (binary evaluation) or computes top event failure probability

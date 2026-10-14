@@ -1,4 +1,4 @@
-#' populate() Function
+#' Fill a binary scenario table with event probabilities
 #'
 #' Converts binary outcomes (0/1) to probability outcomes by replacing 1s with
 #' event failure probabilities. The output has the same structure as the input

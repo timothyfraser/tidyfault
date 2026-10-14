@@ -2,7 +2,7 @@
 % Please edit documentation in R/illustrate.R
 \name{illustrate}
 \alias{illustrate}
-\title{illustrate() Function}
+\title{Lay out a fault tree for plotting}
 \usage{
 illustrate(
   nodes,
@@ -59,6 +59,17 @@ This function prepares fault tree data for visualization with ggplot2 by:
 \item Generating gate polygon shapes for AND, OR, and top event gates using the \code{gate()} function
 }
 The output is designed to work seamlessly with ggplot2. Nodes can be plotted with \code{geom_point()}, edges with \code{geom_line()}, and gates with \code{geom_polygon()}. The tree layout algorithm positions nodes hierarchically, making fault tree structure easy to visualize.
+}
+\examples{
+data(db_nodes, db_edges, package = "tidyfault")
+
+# A tibble of laid-out nodes, with x and y coordinates added
+illustrate(db_nodes, db_edges, type = "nodes")
+
+# A list of nodes, edges and gate polygons; plot() draws it
+ill <- illustrate(db_nodes, db_edges, type = "both")
+plot(ill)
+
 }
 \seealso{
 \code{\link{gate}} for generating gate polygons, \code{\link[tidygraph]{tbl_graph}} for creating graph objects, \code{\link[ggraph]{create_layout}} for layout algorithms

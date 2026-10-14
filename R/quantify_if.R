@@ -1,4 +1,4 @@
-#' quantify_if() Function
+#' Which fix buys the most
 #'
 #' Asks "which fix buys the most?". Cuts the failure rate (or probability) of
 #' each basic event in turn by the same share, keeps every other event as it

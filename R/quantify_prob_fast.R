@@ -1,4 +1,4 @@
-#' quantify_prob_fast() Function
+#' Top-event probability in one vectorized pass
 #'
 #' Computes top-event failure probability using the same exact truth-table
 #' approach as \code{quantify_prob()}, but with a compiled inner loop for faster
@@ -13,6 +13,14 @@
 #'
 #' @return Numeric vector of top-event failure probabilities (length 1 for a
 #'   single scenario).
+#'
+#' @examples
+#' data(db_nodes, db_edges, db_outcomes_prob, package = "tidyfault")
+#' f <- formulate(equate(curate(db_nodes, db_edges)))
+#'
+#' # One named probability per basic event, in the order f expects
+#' probs <- stats::setNames(db_outcomes_prob$probability, db_outcomes_prob$event)
+#' quantify_prob_fast(f, probs[methods::formalArgs(f)])
 #'
 #' @keywords fault tree probability quantification
 #' @importFrom methods formalArgs

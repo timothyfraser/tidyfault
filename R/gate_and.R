@@ -1,4 +1,4 @@
-#' gate_and() Function
+#' Polygon for an AND gate
 #'
 #' This function produces the AND gate polygons for fault trees.
 #' 
@@ -16,6 +16,10 @@
 #'   }
 #'   The AND gate shape is generated using mathematical curves: the left side uses `sqrt(x)` and the right side uses `sqrt(size - x)` to create symmetric rounded edges. The shape is then centered vertically and horizontally.
 #' 
+#' @examples
+#' # Polygon of an AND gate: one row per vertex, columns x and y
+#' head(gate_and(size = 1, res = 12))
+#'
 #' @keywords fault tree gate polygon maker
 #' @importFrom dplyr %>% tibble bind_rows mutate case_when
 #' @export

@@ -1,4 +1,4 @@
-#' calculate() Function
+#' Enumerate the truth table of a fault tree
 #'
 #' This function takes a supplied function `f` and computes the system failure outcomes (1 = failure vs. 0 = not) given every possible combination of input events failing (1) or not failing (0). Outputs a `data.frame`.
 #' 

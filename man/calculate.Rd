@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate.R
 \name{calculate}
 \alias{calculate}
-\title{calculate() Function}
+\title{Enumerate the truth table of a fault tree}
 \usage{
 calculate(f)
 }

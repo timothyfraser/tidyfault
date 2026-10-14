@@ -1,4 +1,4 @@
-#' gate_or() Function
+#' Polygon for an OR gate
 #'
 #' This function produces the OR gate polygons for fault trees.
 #' 
@@ -17,6 +17,10 @@
 #'   }
 #'   The OR gate shape uses different mathematical curves for the top (concave, using `1/size * sqrt(x)`) and bottom (convex, using `size * sqrt(x)`) to create the distinctive curved appearance. The two curve segments are combined and centered to form the final polygon.
 #' 
+#' @examples
+#' # Polygon of an OR gate: one row per vertex, columns x and y
+#' head(gate_or(size = 1, res = 12))
+#'
 #' @keywords fault tree gate polygon maker
 #' @importFrom dplyr %>% tibble bind_rows mutate case_when
 #' @export

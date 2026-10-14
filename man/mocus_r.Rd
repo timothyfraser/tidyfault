@@ -2,7 +2,7 @@
 % Please edit documentation in R/mocus_fast_r.R
 \name{mocus_r}
 \alias{mocus_r}
-\title{mocus_r() — Fast Pure-R MOCUS Implementation}
+\title{MOCUS in pure R}
 \usage{
 mocus_r(data)
 }
@@ -33,4 +33,13 @@ per outer-loop iteration.
 \item Convergence is tracked with a simple counter, not by re-flattening
 the entire list every iteration.
 }
+}
+\examples{
+data(db_nodes, db_edges, package = "tidyfault")
+gates <- curate(db_nodes, db_edges)
+
+# mocus(), mocus_r() and mocus_rcpp() return the same cut sets;
+# concentrate() then minimizes them.
+mocus_r(gates)
+
 }

@@ -4,11 +4,11 @@
 \name{tidyfault-package}
 \alias{tidyfault}
 \alias{tidyfault-package}
-\title{tidyfault: Fault Tree Analysis in R with Tidyverse Coding}
+\title{tidyfault: Tidy Fault Tree Analysis}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Fault tree analysis with tidy data. Represents a fault tree as tables of nodes and edges, uses 'tidygraph' and 'ggraph' to lay out and draw it, and derives minimal cut sets and top event probabilities. Evaluates binary and probabilistic scenarios, and simulates random fault trees.
+Fault tree analysis with tidy data. Represent a fault tree as two tables, one of nodes (the top event, gates and basic events) and one of edges, so the whole workflow stays in ordinary data frames. Derive the Boolean equation of the top event, enumerate the truth table, and find minimal cut sets with the Method of Obtaining Cut Sets (MOCUS) algorithm of Fussell and Vesely (1972), implemented in 'R' and, by default, in C++ through 'Rcpp'. Evaluate thousands of binary or probabilistic scenarios in one vectorized call, put uncertainty intervals around the top-event probability, follow it over time, and rank which component fix lowers it most. Lay out and draw the tree with 'tidygraph', 'ggraph' and 'ggplot2'. Methods follow the "Fault Tree Handbook" of Vesely, Goldberg, Roberts and Haasl (1981) \url{https://www.nrc.gov/docs/ML1007/ML100780465.pdf}. A 'Python' port with the same functions ships in the same repository.
 }
 \seealso{
 Useful links:
@@ -20,11 +20,17 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Timothy Fraser \email{timothy.fraser.1@gmail.com} (\href{https://orcid.org/0000-0002-4509-0244}{ORCID})
+\strong{Maintainer}: Timothy Fraser \email{tmf77@cornell.edu} (\href{https://orcid.org/0000-0002-4509-0244}{ORCID}) [copyright holder]
 
 Authors:
 \itemize{
-  \item Jingyao Tong \email{jingyaotong6@gmail.com} (\href{https://orcid.org/0009-0009-6147-756X}{ORCID})
+  \item Timothy Fraser \email{tmf77@cornell.edu} (\href{https://orcid.org/0000-0002-4509-0244}{ORCID}) [copyright holder]
+  \item Jingyao Tong \email{jingyaotong6@gmail.com} (\href{https://orcid.org/0009-0009-6147-756X}{ORCID}) [copyright holder]
+}
+
+Other contributors:
+\itemize{
+  \item Cornell University [copyright holder]
 }
 
 }

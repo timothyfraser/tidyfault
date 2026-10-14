@@ -1,4 +1,4 @@
-#' quantify_binary_fast() Function
+#' Evaluate binary scenarios in one vectorized pass
 #'
 #' Evaluates top-event outcomes for binary scenarios using the same semantics as
 #' \code{quantify_binary()}, with streamlined coercion for larger batches.
@@ -10,6 +10,13 @@
 #'   vector/list.
 #'
 #' @return Logical vector of outcomes (TRUE = system failure, FALSE = no failure).
+#'
+#' @examples
+#' data(db_nodes, db_edges, db_outcomes_binary, package = "tidyfault")
+#' f <- formulate(equate(curate(db_nodes, db_edges)))
+#'
+#' # One logical value per scenario: TRUE means the top event occurs
+#' quantify_binary_fast(f, db_outcomes_binary)
 #'
 #' @keywords fault tree binary evaluation internal
 #' @importFrom methods formalArgs
