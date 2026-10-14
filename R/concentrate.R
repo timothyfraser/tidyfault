@@ -1,4 +1,4 @@
-#' concentrate() Function
+#' Find the minimal cut sets
 #'
 #' This function *concentrates* the boolean equation of a fault tree to find the minimum cutsets in the fault tree. It takes a data.frame outputted by the `curate()` function and applies one of the available MOCUS implementations to perform boolean minimization.
 #' 
@@ -25,7 +25,7 @@
 #'         \item Returns the cutsets as character strings
 #'       }
 #'   }
-#'   Every method then minimises the MOCUS products by absorption: duplicate cutsets and any cutset containing another cutset are dropped. Cutsets are ordered fewest events first, then by the sorted position of their events.
+#'   Every method then minimizes the MOCUS products by absorption: duplicate cutsets and any cutset containing another cutset are dropped. Cutsets are ordered fewest events first, then by the sorted position of their events.
 #'   Minimum cutsets represent the smallest combinations of basic events that can cause the top event (system failure) to occur.
 #' 
 #' @seealso \code{\link{curate}} for preparing gate data for MOCUS method, \code{\link{mocus_rcpp}}, \code{\link{mocus_r}}, and \code{\link{mocus}} for MOCUS implementations, \code{\link{tabulate}} for analyzing and summarizing minimum cutsets

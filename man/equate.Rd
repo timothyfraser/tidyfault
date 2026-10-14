@@ -2,7 +2,7 @@
 % Please edit documentation in R/equate.R
 \name{equate}
 \alias{equate}
-\title{equate() Function}
+\title{Write the Boolean equation of the top event}
 \usage{
 equate(data)
 }

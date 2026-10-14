@@ -1,4 +1,4 @@
-#' quantify_binary() Function
+#' Evaluate binary scenarios
 #'
 #' Evaluates whether the top event occurs (system fails) when given whether each
 #' basic event occurs or not. Inputs are binary: each event is 0 (did not occur)

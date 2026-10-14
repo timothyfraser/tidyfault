@@ -2,7 +2,7 @@
 % Please edit documentation in R/quantify.R
 \name{quantify}
 \alias{quantify}
-\title{quantify() Function}
+\title{Evaluate the top event for many scenarios}
 \usage{
 quantify(f, newdata, prob = FALSE, fast = TRUE)
 }

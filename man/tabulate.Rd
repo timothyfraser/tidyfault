@@ -2,7 +2,7 @@
 % Please edit documentation in R/tabulate.R
 \name{tabulate}
 \alias{tabulate}
-\title{tabulate() Function}
+\title{Coverage of each minimal cut set}
 \usage{
 tabulate(
   data,

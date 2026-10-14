@@ -1,4 +1,4 @@
-#' mocus_r() — Fast Pure-R MOCUS Implementation
+#' MOCUS in pure R
 #'
 #' Drop-in replacement for mocus() using a queue-based expansion, pre-indexed
 #' gate lookup, and integer-encoded events. Same inputs/outputs as mocus().
@@ -20,6 +20,14 @@
 #'   gate (chr), type (chr/fct), class (chr/fct), items (list of chr vectors).
 #' @return Named list where each element is a character vector of basic events
 #'   forming one cutset. Identical structure to mocus() output.
+#' @examples
+#' data(db_nodes, db_edges, package = "tidyfault")
+#' gates <- curate(db_nodes, db_edges)
+#'
+#' # mocus(), mocus_r() and mocus_rcpp() return the same cut sets;
+#' # concentrate() then minimizes them.
+#' mocus_r(gates)
+#'
 #' @importFrom purrr map
 #' @export
 mocus_r <- function(data) {

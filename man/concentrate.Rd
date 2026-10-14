@@ -2,7 +2,7 @@
 % Please edit documentation in R/concentrate.R
 \name{concentrate}
 \alias{concentrate}
-\title{concentrate() Function}
+\title{Find the minimal cut sets}
 \usage{
 concentrate(data, method = c("mocus_rcpp", "mocus_r", "mocus_original"))
 }
@@ -36,7 +36,7 @@ This function performs boolean minimization to identify the minimum cutsets (min
 \item Returns the cutsets as character strings
 }
 }
-Every method then minimises the MOCUS products by absorption: duplicate cutsets and any cutset containing another cutset are dropped. Cutsets are ordered fewest events first, then by the sorted position of their events.
+Every method then minimizes the MOCUS products by absorption: duplicate cutsets and any cutset containing another cutset are dropped. Cutsets are ordered fewest events first, then by the sorted position of their events.
 Minimum cutsets represent the smallest combinations of basic events that can cause the top event (system failure) to occur.
 }
 \examples{

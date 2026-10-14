@@ -2,7 +2,7 @@
 % Please edit documentation in R/mocus.R
 \name{mocus}
 \alias{mocus}
-\title{mocus() Function}
+\title{Cut sets by the MOCUS algorithm}
 \usage{
 mocus(data, method = c("mocus_rcpp", "mocus_r", "mocus_original"))
 }
@@ -54,6 +54,15 @@ boolean algebra (e.g., via \code{concentrate()} with \code{method = "mocus_origi
 The default method (\code{"mocus_rcpp"}) uses the compiled implementation for
 speed. Use \code{"mocus_r"} for a pure-R queue-based variant, or \code{"mocus_original"}
 for the historical R loop used in early versions of the package.
+}
+\examples{
+data(db_nodes, db_edges, package = "tidyfault")
+gates <- curate(db_nodes, db_edges)
+
+# mocus(), mocus_r() and mocus_rcpp() return the same cut sets;
+# concentrate() then minimizes them.
+mocus(gates)
+
 }
 \seealso{
 \code{\link[=curate]{curate()}} for preparing the gates data.frame, \code{\link[=concentrate]{concentrate()}} for

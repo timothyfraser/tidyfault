@@ -2,7 +2,7 @@
 % Please edit documentation in R/quantify_when.R
 \name{quantify_when}
 \alias{quantify_when}
-\title{quantify_when() Function}
+\title{Top-event probability over time}
 \usage{
 quantify_when(
   f,

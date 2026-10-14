@@ -2,7 +2,7 @@
 % Please edit documentation in R/quantify_prob.R
 \name{quantify_prob}
 \alias{quantify_prob}
-\title{quantify_prob() Function}
+\title{Top-event probability from event probabilities}
 \usage{
 quantify_prob(f, newdata, truth_table = NULL)
 }

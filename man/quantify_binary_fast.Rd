@@ -2,7 +2,7 @@
 % Please edit documentation in R/quantify_binary_fast.R
 \name{quantify_binary_fast}
 \alias{quantify_binary_fast}
-\title{quantify_binary_fast() Function}
+\title{Evaluate binary scenarios in one vectorized pass}
 \usage{
 quantify_binary_fast(f, newdata)
 }
@@ -20,6 +20,14 @@ Logical vector of outcomes (TRUE = system failure, FALSE = no failure).
 \description{
 Evaluates top-event outcomes for binary scenarios using the same semantics as
 \code{quantify_binary()}, with streamlined coercion for larger batches.
+}
+\examples{
+data(db_nodes, db_edges, db_outcomes_binary, package = "tidyfault")
+f <- formulate(equate(curate(db_nodes, db_edges)))
+
+# One logical value per scenario: TRUE means the top event occurs
+quantify_binary_fast(f, db_outcomes_binary)
+
 }
 \keyword{binary}
 \keyword{evaluation}

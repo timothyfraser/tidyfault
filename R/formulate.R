@@ -1,4 +1,4 @@
-#' formulate() Function
+#' Turn the Boolean equation into an R function
 #'
 #' This function *formulates* a character string (the boolean equation of a fault tree) into an R \code{function} that evaluates system failure. Handles AND and OR operations.
 #' 

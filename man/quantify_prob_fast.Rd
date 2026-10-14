@@ -2,7 +2,7 @@
 % Please edit documentation in R/quantify_prob_fast.R
 \name{quantify_prob_fast}
 \alias{quantify_prob_fast}
-\title{quantify_prob_fast() Function}
+\title{Top-event probability in one vectorized pass}
 \usage{
 quantify_prob_fast(f, newdata, truth_table = NULL)
 }
@@ -24,6 +24,15 @@ single scenario).
 Computes top-event failure probability using the same exact truth-table
 approach as \code{quantify_prob()}, but with a compiled inner loop for faster
 evaluation across many scenarios.
+}
+\examples{
+data(db_nodes, db_edges, db_outcomes_prob, package = "tidyfault")
+f <- formulate(equate(curate(db_nodes, db_edges)))
+
+# One named probability per basic event, in the order f expects
+probs <- stats::setNames(db_outcomes_prob$probability, db_outcomes_prob$event)
+quantify_prob_fast(f, probs[methods::formalArgs(f)])
+
 }
 \keyword{fault}
 \keyword{probability}

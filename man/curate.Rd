@@ -2,12 +2,12 @@
 % Please edit documentation in R/curate.R
 \name{curate}
 \alias{curate}
-\title{curate() Function}
+\title{Build the gates table from nodes and edges}
 \usage{
 curate(nodes, edges)
 }
 \arguments{
-\item{nodes}{(Required) data.frame of N \code{nodes} (1 to N rows), with a unique \code{id} for each node, an \code{event} name describing the node (some events occur multiple times), and a \code{type} vector categorizing nodes as \code{"and"} | \code{"or"} gates, \code{"top"} nodes, or \code{"not"} a gate or top node (ie. a normal node)}
+\item{nodes}{(Required) data.frame of N \code{nodes} (1 to N rows), with a unique \code{id} for each node, an \code{event} name describing the node (some events occur multiple times), and a \code{type} vector categorizing nodes as \code{"and"} | \code{"or"} gates, \code{"top"} nodes, or \code{"not"} a gate or top node (i.e. a normal node)}
 
 \item{edges}{(Required) data.frame of N \code{edges} (1 to N rows), showing ties between the \code{from} node's \code{id} to the \code{to} node's \code{id}.}
 }

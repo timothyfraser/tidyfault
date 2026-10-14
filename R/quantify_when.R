@@ -1,4 +1,4 @@
-#' quantify_when() Function
+#' Top-event probability over time
 #'
 #' Asks "when does it fail, and what if we fix something?". Builds what-if
 #' scenarios from one row of failure rates, each scenario multiplying the rates

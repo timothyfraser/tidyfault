@@ -1,8 +1,8 @@
-#' curate() Function
+#' Build the gates table from nodes and edges
 #'
 #' This function *curates* a `data.frame` of N `gates` and the `sets` of events immediately linked to those gates.
 #' 
-#' @param nodes (Required) data.frame of N `nodes` (1 to N rows), with a unique `id` for each node, an `event` name describing the node (some events occur multiple times), and a `type` vector categorizing nodes as `"and"` | `"or"` gates, `"top"` nodes, or `"not"` a gate or top node (ie. a normal node)
+#' @param nodes (Required) data.frame of N `nodes` (1 to N rows), with a unique `id` for each node, an `event` name describing the node (some events occur multiple times), and a `type` vector categorizing nodes as `"and"` | `"or"` gates, `"top"` nodes, or `"not"` a gate or top node (i.e. a normal node)
 #' @param edges (Required) data.frame of N `edges` (1 to N rows), showing ties between the `from` node's `id` to the `to` node's `id`.
 #' 
 #' @return A `data.frame` (tibble) with one row per gate, containing:

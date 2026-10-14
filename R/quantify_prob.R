@@ -1,4 +1,4 @@
-#' quantify_prob() Function
+#' Top-event probability from event probabilities
 #'
 #' Computes the top event failure probability from a fault tree when given
 #' basic event failure probabilities. Assumes independent basic events; uses

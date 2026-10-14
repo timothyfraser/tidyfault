@@ -3,7 +3,7 @@
 \name{mocus_rcpp}
 \alias{mocus_rcpp}
 \alias{mocus_cpp}
-\title{\code{mocus_rcpp()} - Rcpp-Backed MOCUS Implementation}
+\title{MOCUS with the C++ backend}
 \usage{
 mocus_rcpp(data)
 
@@ -30,6 +30,15 @@ positive integer ID once. All C++ operations work on ints.
 \item Gate children are stored in a flat integer vector with per-gate start/end
 offsets, giving cache-friendly sequential access.
 \item After C++ returns a list of integer-vector cutsets, R decodes them back
-to character vectors in one vectorised pass.
+to character vectors in one vectorized pass.
 }
+}
+\examples{
+data(db_nodes, db_edges, package = "tidyfault")
+gates <- curate(db_nodes, db_edges)
+
+# mocus(), mocus_r() and mocus_rcpp() return the same cut sets;
+# concentrate() then minimizes them.
+mocus_rcpp(gates)
+
 }

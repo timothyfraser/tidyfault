@@ -1,8 +1,8 @@
-#' quantify_ci() Function
+#' Uncertainty interval for the top-event probability
 #'
 #' Puts an uncertainty interval around the probability of the top event. We
 #' rarely know a failure rate exactly, so \code{quantify_ci()} draws \code{n}
-#' plausible values for each basic event from a Normal distribution centred on
+#' plausible values for each basic event from a Normal distribution centered on
 #' its estimate (standard deviation \code{cv} times the estimate, floored at
 #' zero), evaluates the top event for every draw, and reports the median and
 #' the central \code{level} interval. It is the uncertainty engine behind

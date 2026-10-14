@@ -58,13 +58,13 @@ circle polygon. Default \code{100}.}
 \item{point_linewidth}{Numeric. Outline width for basic-event circles.
 Default \code{0.8}.}
 
-\item{outline_colour}{Character. Colour for gate polygon and basic-event
+\item{outline_colour}{Character. Color for gate polygon and basic-event
 outlines. Default \code{"black"}.}
 
-\item{gate_fill}{Named character vector of fill colours for gate types
+\item{gate_fill}{Named character vector of fill colors for gate types
 (\code{and}, \code{or}, \code{top}) and optionally \code{"basic event"} for
 leaf nodes. Default is \code{c(top = "#382a54", and = "#395d9c",
-  or = "#3eb4ad", "basic event" = "#def5e5")}. If \code{NULL}, the viridis
+or = "#3eb4ad", "basic event" = "#def5e5")}. If \code{NULL}, the viridis
 discrete palette is used instead.}
 
 \item{coord_fixed}{Logical. If \code{TRUE} (default), use equal aspect ratio so
@@ -85,7 +85,7 @@ Basic-event radius is set to this fraction of the median gate extent (each
 gate's extent is half the sum of its x and y span). Default \code{0.18}.
 Larger values give bigger circles; smaller values give smaller circles.}
 
-\item{edge_colour}{Character. Colour for edges. Default \code{"#b7c1cb"}.}
+\item{edge_colour}{Character. Color for edges. Default \code{"#b7c1cb"}.}
 
 \item{...}{Ignored (for compatibility with the generic \code{plot}).}
 }
@@ -104,7 +104,7 @@ returned by \code{\link{illustrate}}. Gate nodes (and, or, top) are drawn as
 polygons with outlines that follow their shape; other nodes (e.g. basic
 events) are drawn as circle polygons in the same data coordinate system, so
 their size stays visually consistent relative to the gates. Nodes and gates
-are labelled using the \code{event} column from \code{x$nodes}.
+are labeled using the \code{event} column from \code{x$nodes}.
 
 To avoid pixelated output when saving, use \code{ggsave()} with an
 explicit \code{dpi} (e.g. \code{ggsave("plot.png", p, dpi = 300)}). Saving
@@ -124,7 +124,7 @@ or when the layout is very compact or very spread out. In those cases, set
 data(it_security_nodes, it_security_edges, package = "tidyfault")
 ill <- illustrate(nodes = it_security_nodes, edges = it_security_edges, type = "both")
 p <- plot(ill)
-\dontrun{ ggsave("fault_tree.png", p, dpi = 300) }
+ggplot2::ggsave(tempfile(fileext = ".png"), p, dpi = 300)
 
 }
 \keyword{fault}

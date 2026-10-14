@@ -2,7 +2,7 @@
 % Please edit documentation in R/quantify_if.R
 \name{quantify_if}
 \alias{quantify_if}
-\title{quantify_if() Function}
+\title{Which fix buys the most}
 \usage{
 quantify_if(
   f,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/formulate.R
 \name{formulate}
 \alias{formulate}
-\title{formulate() Function}
+\title{Turn the Boolean equation into an R function}
 \usage{
 formulate(formula)
 }

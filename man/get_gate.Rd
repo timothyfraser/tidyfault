@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_gate.R
 \name{get_gate}
 \alias{get_gate}
-\title{get_gate() Function}
+\title{Place one gate polygon at x, y}
 \usage{
 get_gate(x, y, gate, size = 1, res = 50)
 }
@@ -32,6 +32,11 @@ This function is a wrapper that selects and generates the appropriate gate shape
 \item Returns coordinates ready for use with \code{geom_polygon()} in ggplot2
 }
 The function handles coordinate transformation using \code{scales::rescale()} to position the gate shape correctly. Each gate type has a distinct visual representation following standard fault tree analysis conventions.
+}
+\examples{
+# An AND gate polygon centered at (0, 0); columns x and y
+head(get_gate(0, 0, gate = "and", size = 1, res = 10))
+
 }
 \seealso{
 \code{\link{gate_and}} for AND gate shape generation, \code{\link{gate_or}} for OR gate shape generation, \code{\link{gate_top}} for top event shape generation
