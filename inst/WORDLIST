@@ -6,6 +6,7 @@ CMD
 Cutset
 Cutsets
 Deduplication
+EP
 FTA
 FaultTree
 Favicons
@@ -30,11 +31,15 @@ S3
 UE
 Unsplash
 Vesely
+WB
 admisc
+ai
 chr
+curation
 cutset
 cutset's
 cutsets
+dplyr
 fct
 ggplot
 ggplot2
@@ -52,6 +57,7 @@ probs
 purrr
 px
 stringr
+th
 tibble
 tidygraph
 vectorize
