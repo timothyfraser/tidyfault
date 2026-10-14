@@ -9,3 +9,16 @@
 ^\.github$
 ^TESTING\.md$
 ^examples$
+^EXTERNAL_FUNCTIONS\.md$
+^README\.Rmd$
+^README\.html$
+^_pkgdown\.yml$
+^pkgdown$
+^dev$
+^project\.Rproj$
+^LICENSE\.md$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+^revdep$
+^\.DS_Store$
+^\.Rhistory$
