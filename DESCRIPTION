@@ -17,7 +17,7 @@ Description: Fault tree analysis with tidy data. Represent a fault tree as two
     through 'Rcpp'. Evaluate thousands of binary or probabilistic scenarios in
     one vectorized call, put uncertainty intervals around the top-event
     probability, follow it over time, and rank which component fix lowers it
-    most. Lay out and draw the tree with 'tidygraph', 'ggraph' and 'ggplot2'.
+    most. Lay out and draw the tree with 'tidygraph', 'igraph' and 'ggplot2'.
     Methods follow the "Fault Tree Handbook" of Vesely, Goldberg, Roberts and
     Haasl (1981) <https://www.nrc.gov/docs/ML1007/ML100780465.pdf>. A 'Python'
     port with the same functions ships in the same repository.
@@ -32,8 +32,8 @@ Depends:
 Imports:
     dplyr,
     ggplot2,
-    ggraph,
     graphics,
+    igraph,
     methods,
     purrr,
     Rcpp,
@@ -47,6 +47,7 @@ Imports:
 LinkingTo:
     Rcpp
 Suggests:
+    ggraph,
     knitr,
     rmarkdown,
     spelling,
@@ -55,3 +56,4 @@ VignetteBuilder: knitr
 Config/testthat/edition: 3
 LazyData: true
 Config/roxygen2/version: 8.1.0
+RoxygenNote: 7.3.3

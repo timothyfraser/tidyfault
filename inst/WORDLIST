@@ -27,7 +27,9 @@ README
 RStudio
 Rcpp
 RealFaviconGenerator
+Reingold
 S3
+Tilford
 UE
 Unsplash
 Vesely
@@ -41,9 +43,11 @@ cutset's
 cutsets
 dplyr
 fct
+ggforce
 ggplot
 ggplot2
 ggraph
+igraph
 ing
 ints
 le

@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-**tidyfault** builds fault-tree plots on top of **ggplot2** and **ggraph**. The workhorse is [`illustrate()`](https://tidyfault.netlify.app/reference/illustrate.html), which lays out nodes and edges; the [`plot()`](https://tidyfault.netlify.app/reference/plot.html) method returns a ggplot object you can extend.
+**tidyfault** builds fault-tree plots on top of **ggplot2** and **igraph**. The workhorse is [`illustrate()`](https://tidyfault.netlify.app/reference/illustrate.html), which lays out nodes and edges; the [`plot()`](https://tidyfault.netlify.app/reference/plot.html) method returns a ggplot object you can extend.
 
 ## Database example
 
