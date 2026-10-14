@@ -24,6 +24,8 @@
 
 * `illustrate()` returns a `tidyfault_tree` object for `type = "both"` and `type = "all"`, and `plot()` is now its S3 method, so tidyfault no longer masks `base::plot()` (the generic is re-exported, so `tidyfault::plot(x)` works as before); the default palette follows the gate colors and gains an `edge_colour` argument.
 
+* `illustrate()` computes its layout with igraph directly instead of `ggraph::create_layout()`, so tidyfault no longer imports ggraph (or, through it, ggforce); coordinates are unchanged for every layout, and `type = "nodes"` now returns a plain tibble. Layouts only ggraph provides, such as `"dendrogram"`, still work when ggraph is installed (it moves to Suggests).
+
 * quantify() gains a `fast` argument (default `TRUE`) that dispatches to `quantify_binary_fast()` or `quantify_prob_fast()` instead of the legacy pure-R implementations.
 
 * quantify_binary_fast() evaluates binary scenarios with the same semantics as `quantify_binary()` using streamlined coercion for larger batches.

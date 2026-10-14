@@ -24,7 +24,7 @@ illustrate(
 
 \item{node_key}{(Optional) Character string naming the column in \code{nodes} that contains unique node identifiers. Default is \code{"id"}.}
 
-\item{layout}{(Optional) Character string specifying the graph layout algorithm. Default is \code{"tree"}. \code{"dendrogram"} also works well. See \code{ggraph::create_layout()} for more layout options (e.g., \code{"fr"}, \code{"kk"}, \code{"nicely"}).}
+\item{layout}{(Optional) Character string specifying the graph layout algorithm. Default is \code{"tree"}, the Reingold-Tilford tree layout of \code{igraph}. Other igraph layouts work by short name (e.g., \code{"fr"}, \code{"kk"}, \code{"nicely"}, \code{"sugiyama"}). Layouts that only \code{ggraph} provides, such as \code{"dendrogram"}, need \code{ggraph} installed.}
 
 \item{size}{(Optional) Numeric value passed to \code{gate()} function for constructing polygons. Controls the diameter of gate shapes. Defaults to \code{0.25}. When \code{scale_size = TRUE}, this is scaled by the layout extent.}
 
@@ -47,13 +47,13 @@ The return type depends on the \code{type} parameter:
 }
 }
 \description{
-This function takes nodes and edges from a fault tree, computes a \strong{tree} layout using \code{tidygraph} and \code{ggraph}, and returns ggplot-friendly data.frames of nodes, edges, and gate polygons.
+This function takes nodes and edges from a fault tree, computes a \strong{tree} layout using \code{tidygraph} and \code{igraph}, and returns ggplot-friendly data.frames of nodes, edges, and gate polygons.
 }
 \details{
 This function prepares fault tree data for visualization with ggplot2 by:
 \itemize{
 \item Creating a \code{tidygraph} object from nodes and edges
-\item Computing graph layout coordinates using \code{ggraph::create_layout()} with the specified layout algorithm
+\item Computing graph layout coordinates with the specified \code{igraph} layout algorithm, as \code{ggraph::create_layout()} does
 \item Extracting node coordinates and preserving original node attributes
 \item Computing edge coordinates by joining node positions to edge endpoints
 \item Generating gate polygon shapes for AND, OR, and top event gates using the \code{gate()} function
@@ -72,7 +72,7 @@ plot(ill)
 
 }
 \seealso{
-\code{\link{gate}} for generating gate polygons, \code{\link[tidygraph]{tbl_graph}} for creating graph objects, \code{\link[ggraph]{create_layout}} for layout algorithms
+\code{\link{gate}} for generating gate polygons, \code{\link[tidygraph]{tbl_graph}} for creating graph objects, \code{\link[igraph]{layout_as_tree}} for the tree layout
 }
 \keyword{ggplot}
 \keyword{network}

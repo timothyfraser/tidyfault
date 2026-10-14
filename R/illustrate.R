@@ -1,12 +1,12 @@
 #' Lay out a fault tree for plotting
 #'
-#' This function takes nodes and edges from a fault tree, computes a **tree** layout using `tidygraph` and `ggraph`, and returns ggplot-friendly data.frames of nodes, edges, and gate polygons. 
+#' This function takes nodes and edges from a fault tree, computes a **tree** layout using `tidygraph` and `igraph`, and returns ggplot-friendly data.frames of nodes, edges, and gate polygons. 
 #' 
 #' @param nodes (Required) dataset of nodes, including an `id` field (or whatever is written in `node_key`)
 #' @param edges (Required) dataset of edges, including `from` and `to` fields corresponding to the `id` of each node
 #' @param type (Optional) Character string specifying output format. Default is `"both"`, which returns a list with `"nodes"`, `"edges"`, and `"gates"`. Other options: `"nodes"` returns only node coordinates, `"edges"` returns only edge coordinates, `"all"` returns nodes, edges, gates, and pairwise edge data.
 #' @param node_key (Optional) Character string naming the column in `nodes` that contains unique node identifiers. Default is `"id"`.
-#' @param layout (Optional) Character string specifying the graph layout algorithm. Default is `"tree"`. `"dendrogram"` also works well. See `ggraph::create_layout()` for more layout options (e.g., `"fr"`, `"kk"`, `"nicely"`).
+#' @param layout (Optional) Character string specifying the graph layout algorithm. Default is `"tree"`, the Reingold-Tilford tree layout of `igraph`. Other igraph layouts work by short name (e.g., `"fr"`, `"kk"`, `"nicely"`, `"sugiyama"`). Layouts that only `ggraph` provides, such as `"dendrogram"`, need `ggraph` installed.
 #' @param size (Optional) Numeric value passed to `gate()` function for constructing polygons. Controls the diameter of gate shapes. Defaults to `0.25`. When \code{scale_size = TRUE}, this is scaled by the layout extent.
 #' @param scale_size (Optional) Logical. If \code{TRUE}, scale gate size to the layout extent. Default is \code{FALSE}; set to \code{TRUE} to try consistent proportions across very different trees.
 #' @param res (Optional) Numeric value passed to `gate()` function for constructing polygons. Controls the number of line segments used to draw curved gate shapes. Defaults to `50`.
@@ -27,7 +27,7 @@
 #' @details This function prepares fault tree data for visualization with ggplot2 by:
 #'   \itemize{
 #'     \item Creating a `tidygraph` object from nodes and edges
-#'     \item Computing graph layout coordinates using `ggraph::create_layout()` with the specified layout algorithm
+#'     \item Computing graph layout coordinates with the specified `igraph` layout algorithm, as `ggraph::create_layout()` does
 #'     \item Extracting node coordinates and preserving original node attributes
 #'     \item Computing edge coordinates by joining node positions to edge endpoints
 #'     \item Generating gate polygon shapes for AND, OR, and top event gates using the `gate()` function
@@ -44,12 +44,11 @@
 #' ill <- illustrate(db_nodes, db_edges, type = "both")
 #' plot(ill)
 #'
-#' @seealso \code{\link{gate}} for generating gate polygons, \code{\link[tidygraph]{tbl_graph}} for creating graph objects, \code{\link[ggraph]{create_layout}} for layout algorithms
+#' @seealso \code{\link{gate}} for generating gate polygons, \code{\link[tidygraph]{tbl_graph}} for creating graph objects, \code{\link[igraph]{layout_as_tree}} for the tree layout
 #' 
 #' @keywords ggplot visualize network
 #' @importFrom dplyr %>% select left_join mutate group_by reframe any_of n
 #' @importFrom tidygraph tbl_graph
-#' @importFrom ggraph create_layout
 #' @importFrom purrr set_names
 #' @importFrom rlang sym
 #' @export
@@ -66,7 +65,7 @@ illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), n
   
   # Get graph layout data
   gnodes = g %>%
-    create_layout(layout = layout) %>%
+    layout_nodes(layout = layout) %>%
     # Keep any columns that match x and y plus the names from nodes
     select(any_of(c("x", "y", names(nodes))))
   
@@ -131,4 +130,40 @@ illustrate = function(nodes, edges, type = c("nodes", "edges", "both", "all"), n
         return()
     }
   }
+}
+# Node coordinates for a tbl_graph, computed the way ggraph::create_layout()
+# computes them for igraph layouts, so drawing a tree needs neither ggraph nor
+# its ggforce dependency. Ported from ggraph (MIT licence, Thomas Lin Pedersen):
+# the short layout names, the sugiyama unpacking, and the tree layout's shift of
+# each connected component along x. Layouts only ggraph has (e.g. "dendrogram")
+# still go through ggraph when it is installed.
+igraph_layouts = c(
+  "as_bipartite", "as_star", "as_tree", "in_circle", "nicely", "with_dh",
+  "with_drl", "with_gem", "with_graphopt", "on_grid", "with_mds",
+  "with_sugiyama", "on_sphere", "randomly", "with_fr", "with_kk", "with_lgl")
+
+layout_nodes = function(g, layout = "tree"){
+  # Resolve a short name ("tree", "kk") to its igraph layout ("as_tree", "with_kk")
+  algorithm = c(layout, paste0(c("as_", "in_", "with_", "on_"), layout))
+  algorithm = algorithm[algorithm %in% igraph_layouts][1]
+
+  if (is.na(algorithm)) {
+    if (!requireNamespace("ggraph", quietly = TRUE)) {
+      stop(
+        "illustrate(): layout \"", layout, "\" is not an igraph layout; ",
+        "install the ggraph package to use it, or use layout = \"tree\".",
+        call. = FALSE)
+    }
+    return(ggraph::create_layout(g, layout = layout))
+  }
+
+  xy = getExportedValue("igraph", paste0("layout_", algorithm))(g)
+  if (algorithm == "with_sugiyama") xy = xy$layout
+  # Place separate trees side by side rather than on top of each other
+  if (algorithm == "as_tree") xy[, 1] = xy[, 1] + igraph::components(g)$membership - 1
+
+  node_data = tibble::as_tibble(g, active = "nodes")
+  dplyr::bind_cols(
+    tibble::tibble(x = xy[, 1], y = xy[, 2]),
+    node_data[, !names(node_data) %in% c("x", "y"), drop = FALSE])
 }

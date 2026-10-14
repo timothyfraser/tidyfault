@@ -65,7 +65,6 @@ importFrom(ggplot2,
   scale_fill_viridis_d,
   theme_void
 )
-importFrom(ggraph,create_layout)
 importFrom(graphics,plot)
 importFrom(methods,formalArgs)
 importFrom(purrr,
