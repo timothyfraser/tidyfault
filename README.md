@@ -162,7 +162,7 @@ head(mycombos)
 
 5.  `concentrate()` our gate structure into the minimum cutsets, the
     smallest sets of events necessary to cause system failure. This
-    function uses boolean minimalization to find the minimum cutsets.
+    function uses Boolean minimization to find the minimum cutsets.
 
 ``` r
 mymin = mygates %>% concentrate()

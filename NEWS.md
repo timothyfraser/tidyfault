@@ -16,13 +16,13 @@
 
 * The compiled `src/*.o` and `src/*.dll` files are no longer tracked; they were Windows build objects that broke `devtools::load_all()` on Linux and macOS.
 
-* `concentrate()` minimises the MOCUS cut sets by absorption (dropping duplicate and superset cut sets, fewest events first, then by sorted event position). This fixes empty results when a variable named `outcome` exists in the session, removes an undeclared runtime dependency on QCA, and lets `concentrate()` finish on `it_security_nodes`.
+* `concentrate()` minimizes the MOCUS cut sets by absorption (dropping duplicate and superset cut sets, fewest events first, then by sorted event position). This fixes empty results when a variable named `outcome` exists in the session, removes an undeclared runtime dependency on QCA, and lets `concentrate()` finish on `it_security_nodes`.
 
 * `curate()` now stops when the tree does not have exactly one top event, or when the top event does not have exactly one child that is an `and` or `or` gate. The top event carries no logic of its own: a top event with several children used to be read as OR by `curate()`/`equate()` but as AND by MOCUS, so `concentrate()` and the equation disagreed. The error names the top event and its children and asks you to insert an `or` or `and` gate between them; MOCUS now starts from the top event's one gate.
 
 * `equate()` matches gate names only as whole tokens, so a gate named `T` no longer matches inside a basic event named `TO` (which made it loop forever on `ai_nodes`), and it stops with an error naming the gates when a gate references itself directly or through other gates.
 
-* `illustrate()` returns a `tidyfault_tree` object for `type = "both"` and `type = "all"`, and `plot()` is now its S3 method, so tidyfault no longer masks `base::plot()` (the generic is re-exported, so `tidyfault::plot(x)` works as before); the default palette follows the gate colours and gains an `edge_colour` argument.
+* `illustrate()` returns a `tidyfault_tree` object for `type = "both"` and `type = "all"`, and `plot()` is now its S3 method, so tidyfault no longer masks `base::plot()` (the generic is re-exported, so `tidyfault::plot(x)` works as before); the default palette follows the gate colors and gains an `edge_colour` argument.
 
 * quantify() gains a `fast` argument (default `TRUE`) that dispatches to `quantify_binary_fast()` or `quantify_prob_fast()` instead of the legacy pure-R implementations.
 
