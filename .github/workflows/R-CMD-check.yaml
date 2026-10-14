@@ -40,11 +40,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # ubuntu always; macOS and Windows only on a v* tag push or a manual run.
+        # ubuntu release always; R-devel and R-oldrel (CRAN checks both), macOS and
+        # Windows only on a v* tag push or a manual run (CRAN evidence, CI-03).
         # (`a && b || c` is Actions' ternary; both branches are non-empty strings.)
         config: ${{ fromJSON(
           (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')))
-          && '[{"os":"ubuntu-latest","r":"release"},{"os":"macos-latest","r":"release"},{"os":"windows-latest","r":"release"}]'
+          && '[{"os":"ubuntu-latest","r":"release"},{"os":"ubuntu-latest","r":"devel","http-user-agent":"release"},{"os":"ubuntu-latest","r":"oldrel-1"},{"os":"macos-latest","r":"release"},{"os":"windows-latest","r":"release"}]'
           || '[{"os":"ubuntu-latest","r":"release"}]') }}
 
     env:
@@ -59,6 +60,7 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
