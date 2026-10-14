@@ -30,7 +30,7 @@ if (requireNamespace("pkgload", quietly = TRUE) && file.exists("R/plot.R")) {
 
 <img src="man/figures/logo.png" align="right" width="120" style="float: right; margin-left: 1rem;" alt="tidyfault logo" />
 
-## R Package for tidy *Fault Tree Analysis* (FTA)!
+## Tidy *Fault Tree Analysis* (FTA) for R
 
 **`tidyfault`** uses `tidyverse`, `tidygraph`, and related tools to visualize fault trees, identify minimal cutsets, and evaluate failure outcomes.
 
@@ -75,7 +75,10 @@ Fault tree methods are used in aerospace, energy, safety, and security contexts.
 ## Installation
 
 ```r
-# R
+# R, from CRAN (once accepted)
+install.packages("tidyfault")
+
+# R, development version from GitHub
 remotes::install_github("timothyfraser/tidyfault")
 ```
 
@@ -201,7 +204,7 @@ mytable = mygates %>%
 
 ## Credits and license
 
-- **Software:** [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) (see the `LICENSE` file in the repository). The documentation site is built with [pkgdown](https://pkgdown.r-lib.org/).
+- **Software:** [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) (full text in [LICENSE.md](https://github.com/timothyfraser/tidyfault/blob/main/LICENSE.md)). The documentation site is built with [pkgdown](https://pkgdown.r-lib.org/).
 - **Images above:** Unsplash-hosted stock photos; see the [Unsplash License](https://unsplash.com/license). When redistributing or cropping, follow Unsplash attribution guidance.
 - **Favicons:** Generated with [RealFaviconGenerator](https://realfavicongenerator.net/) from the package logo.
 
@@ -209,4 +212,4 @@ mytable = mygates %>%
 
 ## Questions?
 
-Contact: Timothy Fraser, PhD (timothy.fraser.1@gmail.com)
+Contact: Timothy Fraser, PhD (tmf77@cornell.edu)
