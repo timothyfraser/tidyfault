@@ -1,11 +1,10 @@
 Package: tidyfault
 Version: 0.1.0
-Depends: R (>= 3.5)
+Depends: R (>= 4.1)
 Imports: dplyr, ggplot2, ggraph, graphics, methods, purrr, Rcpp, rlang,
         scales, stats, stringr, tibble, tidyr, tidygraph
 LinkingTo: Rcpp
-Suggests: knitr, litedown, markdown, pkgload, rmarkdown, testthat (>=
-        3.0.0)
-License: GPL-3 + file LICENSE
-MD5sum: 7ed84d1f3bfd60f276610a9664f919b2
+Suggests: knitr, rmarkdown, spelling, testthat (>= 3.0.0)
+License: GPL-3
+MD5sum: dd44880cff1fee06977fb8615f632b89
 NeedsCompilation: yes
