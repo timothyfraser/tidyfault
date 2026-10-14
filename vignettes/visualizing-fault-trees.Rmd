@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-**tidyfault** builds fault-tree plots on top of **ggplot2** and **ggraph**. The workhorse is [`illustrate()`](../reference/illustrate.html), which lays out nodes and edges; the [`plot()`](../reference/plot.html) method returns a ggplot object you can extend.
+**tidyfault** builds fault-tree plots on top of **ggplot2** and **ggraph**. The workhorse is [`illustrate()`](https://tidyfault.netlify.app/reference/illustrate.html), which lays out nodes and edges; the [`plot()`](https://tidyfault.netlify.app/reference/plot.html) method returns a ggplot object you can extend.
 
 ## Database example
 
@@ -47,7 +47,7 @@ plot(
 
 ## IT security example (larger tree)
 
-The bundled IT security tree ([`it_security_nodes`](../reference/it_security_nodes.html), [`it_security_edges`](../reference/it_security_edges.html)) uses `type = "both"` to emphasize gate structure and basic events:
+The bundled IT security tree ([`it_security_nodes`](https://tidyfault.netlify.app/reference/it_security_nodes.html), [`it_security_edges`](https://tidyfault.netlify.app/reference/it_security_edges.html)) uses `type = "both"` to emphasize gate structure and basic events:
 
 ```{r}
 data("it_security_nodes")
@@ -70,7 +70,7 @@ plot(
 
 Typical order:
 
-1. Curate and analyze with the [core workflow](core-workflow.html) vignette.
+1. Curate and analyze with the [core workflow](https://tidyfault.netlify.app/articles/core-workflow) vignette.
 2. Use **`illustrate()` → `plot()`** whenever you need to communicate structure to collaborators.
 
 ---
@@ -79,6 +79,6 @@ Typical order:
 
 | Topic | Function |
 |-------|----------|
-| Layout and geometry | [`illustrate()`](../reference/illustrate.html) |
-| ggplot wrapper | [`plot()`](../reference/plot.html) |
-| Gate drawing primitives | [`gate_and()`](../reference/gate_and.html), [`gate_or()`](../reference/gate_or.html), [`gate_top()`](../reference/gate_top.html), [`get_gate()`](../reference/get_gate.html) |
+| Layout and geometry | [`illustrate()`](https://tidyfault.netlify.app/reference/illustrate.html) |
+| ggplot wrapper | [`plot()`](https://tidyfault.netlify.app/reference/plot.html) |
+| Gate drawing primitives | [`gate_and()`](https://tidyfault.netlify.app/reference/gate_and.html), [`gate_or()`](https://tidyfault.netlify.app/reference/gate_or.html), [`gate_top()`](https://tidyfault.netlify.app/reference/gate_top.html), [`get_gate()`](https://tidyfault.netlify.app/reference/get_gate.html) |

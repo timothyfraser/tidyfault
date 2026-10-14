@@ -20,7 +20,7 @@ This vignette walks through the standard **tidyfault** pipeline from tidy node a
 - **`nodes`**: one row per gate or basic event, with columns `id`, `event`, and `type` (`"top"`, `"and"`, `"or"`, or `"not"`).
 - **`edges`**: directed links between node `id` values (`from`, `to`), forming a DAG with a single top event. The top event has exactly one child, an `and` or `or` gate; `curate()` stops with a message otherwise.
 
-The objects [`db_nodes`](../reference/db_nodes.html) and [`db_edges`](../reference/db_edges.html) model a small database system whose top event is overall system failure. Load them and inspect the first few rows:
+The objects [`db_nodes`](https://tidyfault.netlify.app/reference/db_nodes.html) and [`db_edges`](https://tidyfault.netlify.app/reference/db_edges.html) model a small database system whose top event is overall system failure. Load them and inspect the first few rows:
 
 ```{r}
 library(tidyfault)
@@ -39,14 +39,14 @@ knitr::kable(head(db_edges, 6), caption = "Edges (excerpt)")
 
 From nodes and edges you typically:
 
-1. [**`curate()`**](../reference/curate.html) — build a gates table (one row per gate, boolean `set`, list-column `items`).
-2. [**`equate()`**](../reference/equate.html) — substitute gates recursively into one top-level boolean string.
-3. [**`formulate()`**](../reference/formulate.html) — turn that string into an R function with one argument per basic event.
-4. [**`calculate()`**](../reference/calculate.html) (optional) — enumerate the full truth table when the number of basic events is moderate.
-5. [**`concentrate()`**](../reference/concentrate.html) — minimal cutsets (default MOCUS backend: Rcpp).
-6. [**`tabulate()`**](../reference/tabulate.html) — coverage of each minimal cutset against failing scenarios in the truth table.
+1. [**`curate()`**](https://tidyfault.netlify.app/reference/curate.html) — build a gates table (one row per gate, boolean `set`, list-column `items`).
+2. [**`equate()`**](https://tidyfault.netlify.app/reference/equate.html) — substitute gates recursively into one top-level boolean string.
+3. [**`formulate()`**](https://tidyfault.netlify.app/reference/formulate.html) — turn that string into an R function with one argument per basic event.
+4. [**`calculate()`**](https://tidyfault.netlify.app/reference/calculate.html) (optional) — enumerate the full truth table when the number of basic events is moderate.
+5. [**`concentrate()`**](https://tidyfault.netlify.app/reference/concentrate.html) — minimal cutsets (default MOCUS backend: Rcpp).
+6. [**`tabulate()`**](https://tidyfault.netlify.app/reference/tabulate.html) — coverage of each minimal cutset against failing scenarios in the truth table.
 
-The next sections run steps 1–3 and 5–6 on `db_*`; see the [quantify binary](quantify-binary.html) vignette for evaluation with [`quantify()`](../reference/quantify.html).
+The next sections run steps 1–3 and 5–6 on `db_*`; see the [quantify binary](https://tidyfault.netlify.app/articles/quantify-binary) vignette for evaluation with [`quantify()`](https://tidyfault.netlify.app/reference/quantify.html).
 
 ---
 
@@ -83,7 +83,7 @@ sort(names(formals(f)))
 
 ## Optional: full truth table with `calculate()`
 
-When $2^n$ rows is acceptable, [`calculate()`](../reference/calculate.html) expands every combination of basic events:
+When $2^n$ rows is acceptable, [`calculate()`](https://tidyfault.netlify.app/reference/calculate.html) expands every combination of basic events:
 
 ```{r}
 truth <- calculate(f)
@@ -95,14 +95,14 @@ sum(truth$outcome) # failure scenarios
 
 ## Minimal cutsets: `concentrate()` and `tabulate()`
 
-[`concentrate()`](../reference/concentrate.html) returns a character vector of minimal cutset expressions. The default method matches the Rcpp MOCUS expansion used by [`mocus()`](../reference/mocus.html).
+[`concentrate()`](https://tidyfault.netlify.app/reference/concentrate.html) returns a character vector of minimal cutset expressions. The default method matches the Rcpp MOCUS expansion used by [`mocus()`](https://tidyfault.netlify.app/reference/mocus.html).
 
 ```{r}
 mymin <- concentrate(gates)
 mymin
 ```
 
-[`tabulate()`](../reference/tabulate.html) joins these cutsets to the truth table implied by `f` and reports how many failing rows each cutset explains:
+[`tabulate()`](https://tidyfault.netlify.app/reference/tabulate.html) joins these cutsets to the truth table implied by `f` and reports how many failing rows each cutset explains:
 
 ```{r}
 mytab <- tabulate(mymin, formula = f)
@@ -124,4 +124,4 @@ Each row is one minimal cutset; `coverage` is the share of all failure scenarios
 | `concentrate` | Gates → minimal cutset strings |
 | `tabulate` | Cutsets + `f` → coverage table |
 
-For visualization, see [Visualizing fault trees](visualizing-fault-trees.html).
+For visualization, see [Visualizing fault trees](https://tidyfault.netlify.app/articles/visualizing-fault-trees).

@@ -11,12 +11,12 @@ vignette: >
 knitr::opts_chunk$set(comment = "#>", message = FALSE, warning = FALSE)
 ```
 
-When point estimates of basic-event probabilities are uncertain, you can **simulate** rates or probabilities, evaluate the top event for each draw with [`quantify(..., prob = TRUE)`](../reference/quantify.html), and summarize the resulting distribution. This follows the IT security workflow in the **tidyfault** paper.
+When point estimates of basic-event probabilities are uncertain, you can **simulate** rates or probabilities, evaluate the top event for each draw with [`quantify(..., prob = TRUE)`](https://tidyfault.netlify.app/reference/quantify.html), and summarize the resulting distribution. This follows the IT security workflow in the **tidyfault** paper.
 
 ## Model and bundled data
 
-- Use the IT security tree as in [quantify()-ing binary outcomes](quantify-binary.html).
-- [`it_security_probs`](../reference/it_security_probs.html) holds point estimates at $t = 10{,}000$ hours.
+- Use the IT security tree as in [quantify()-ing binary outcomes](https://tidyfault.netlify.app/articles/quantify-binary).
+- [`it_security_probs`](https://tidyfault.netlify.app/reference/it_security_probs.html) holds point estimates at $t = 10{,}000$ hours.
 
 ```{r}
 library(tidyfault)
@@ -96,4 +96,4 @@ sim_probs |>
 - The interval reflects **propagation** of rate uncertainty through the Boolean structure, not sampling error from field data.
 - Tighten or widen the simulation by changing `cv`, `n_draws`, or the distributional assumption on $\lambda$.
 
-For deterministic probability scenarios, see [quantify()-ing probabilities](quantify-probabilities.html).
+For deterministic probability scenarios, see [quantify()-ing probabilities](https://tidyfault.netlify.app/articles/quantify-probabilities).
