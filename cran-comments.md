@@ -8,7 +8,7 @@
 
 * Cloud container (Ubuntu 24.04), R 4.3.3: `R CMD check --as-cran --run-donttest`
   on the built tarball.
-* GitHub Actions, R-CMD-check run 38512781529: ubuntu-latest with R-devel,
+* GitHub Actions, R-CMD-check run 38514627084: ubuntu-latest with R-devel,
   R-release and R-oldrel-1; macos-latest R-release; windows-latest R-release.
 * win-builder (R-devel): <date, result>
 * mac-builder (R-release): <date, result>
